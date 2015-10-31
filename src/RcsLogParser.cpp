@@ -7,17 +7,33 @@
 //============================================================================
 
 #include <iostream>
+#include <string>
+#include <Screen.h>
+#include <Log.h>
+
 using namespace std;
 
-#include <ncurses.h>
+int main(int argc, char* argv[]) {
+	Log log;
+	if(!log.map(argv[1])) {
+		return 1;
+	}
 
-int main()
-{
-    initscr();          /* Start curses mode          */
-    printw("Hello World !!!");  /* Print Hello World          */
-    refresh();          /* Print it on to the real screen */
-    getch();            /* Wait for user input */
-    endwin();           /* End curses mode        */
+	for(size_t line = 57650; line < 57680; ++line) {
+		cout << log.getLine(line);
+	}
 
-    return 0;
+	return 0;
+}
+
+void print_stuff() {
+	Screen screen;
+
+	screen.println("Hello world");
+
+	string input = screen.getInput();
+
+	screen.println("this was the input: " + input);
+
+	input = screen.getInput();
 }
