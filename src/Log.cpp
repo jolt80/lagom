@@ -21,6 +21,9 @@ Log::~Log() {
 	// TODO Auto-generated destructor stub
 }
 
+size_t Log::numLines() const {
+	return lines.size();
+}
 
 bool Log::map(std::string fileName) {
 	struct stat sb;
@@ -72,7 +75,7 @@ bool Log::unmap() {
 	return true;
 }
 
-std::string Log::getLine(size_t index) {
+std::string Log::getLine(size_t index) const {
 	size_t scannedLines = lines.size();
 	if(lines.size() <= index) {
 		scanForLines(index);
@@ -86,7 +89,30 @@ std::string Log::getLine(size_t index) {
 	return "";
 }
 
-void Log::scanForLines(size_t index) {
+std::string Log::getLine(size_t index, size_t maxLen, size_t lineOffset) const {
+	size_t scannedLines = lines.size();
+	if(lines.size() <= index) {
+		scanForLines(index);
+		scannedLines = lines.size();
+	}
+
+	if(index < scannedLines) {
+		pair<char*,char*> line = lines.at(index);
+		size_t len = line.second - line.first + 1;
+
+		if(len <= lineOffset ) return "";
+		else len -= lineOffset;
+
+		if(len > maxLen) len = maxLen;
+		return string(line.first + lineOffset,len);
+	}
+	else {
+		return string("");
+	}
+}
+
+
+void Log::scanForLines(size_t index) const {
 	size_t lastScannedLine = lines.size() - 1;
 
 	if(lines.at(lastScannedLine).second != fileEnd) {

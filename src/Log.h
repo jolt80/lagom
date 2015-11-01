@@ -27,15 +27,18 @@ public:
 	bool map(std::string fileName);
 	bool unmap();
 
-	std::string getLine(size_t index);
+	size_t numLines() const;
+
+	std::string getLine(size_t index) const;
+	std::string getLine(size_t index, size_t maxLen, size_t lineOffset = 0) const;
 
 protected:
-	void scanForLines(size_t index);
+	void scanForLines(size_t index) const;
 
 	char *fileStart;
 	char* fileEnd;
 
-	std::vector< std::pair<char*,char*> > lines;
+	mutable std::vector< std::pair<char*,char*> > lines;
 };
 
 #endif /* LOG_H_ */
