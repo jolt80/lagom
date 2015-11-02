@@ -7,7 +7,9 @@
 
 #include <Log.h>
 
+#include <sstream>
 #include <cstring>
+#include <cstdint>
 
 using namespace std;
 
@@ -115,7 +117,7 @@ std::string Log::getLine(size_t index, size_t maxLen, size_t lineOffset) const {
 void Log::scanForLines(size_t index) const {
 	size_t lastScannedLine = lines.size() - 1;
 
-	if(lines.at(lastScannedLine).second != fileEnd) {
+	if(lines.at(lastScannedLine).second < fileEnd) {
 		for(; lastScannedLine <= index; ++lastScannedLine) {
 			// second point to '\n' at the end of the line
 			char* search = lines.at(lastScannedLine).second;
@@ -130,5 +132,17 @@ void Log::scanForLines(size_t index) const {
 			lines.push_back(make_pair(lineStart,lineEnd));
 		}
 	}
+}
+
+std::string Log::toString() const {
+	stringstream ret;
+
+	ret << "fileStart = ";
+	ret << hex << "0x" << to_string((intptr_t)fileStart);
+	ret << ", fileEnd = ";
+	ret << hex << "0x" << to_string((intptr_t)fileEnd);
+	ret << "size = " << dec << (intptr_t)((fileEnd - fileStart));
+
+	return ret.str();
 }
 

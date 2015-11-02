@@ -21,6 +21,10 @@ int main(int argc, char* argv[]) {
 	if(!log.map(argv[1])) {
 		return 1;
 	}
+//
+//	cout << log.getLine(57672) << endl;
+//
+//	cout << log.toString() << endl;
 
 	Screen screen(log);
 

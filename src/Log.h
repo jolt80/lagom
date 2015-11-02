@@ -32,6 +32,8 @@ public:
 	std::string getLine(size_t index) const;
 	std::string getLine(size_t index, size_t maxLen, size_t lineOffset = 0) const;
 
+	std::string toString() const;
+
 protected:
 	void scanForLines(size_t index) const;
 
