@@ -14,7 +14,7 @@
 using namespace std;
 
 
-Log::Log() {
+Log::Log() :  numLines{UINT_MAX} {
 	// TODO Auto-generated constructor stub
 
 }
@@ -23,8 +23,8 @@ Log::~Log() {
 	// TODO Auto-generated destructor stub
 }
 
-size_t Log::numLines() const {
-	return lines.size();
+size_t Log::getNumLines() const {
+	return numLines;
 }
 
 bool Log::map(std::string fileName) {
@@ -88,7 +88,7 @@ std::string Log::getLine(size_t index) const {
 		pair<char*,char*> line = lines.at(index);
 		return string(line.first,line.second - line.first + 1);
 	}
-	return "";
+	return string();
 }
 
 std::string Log::getLine(size_t index, size_t maxLen, size_t lineOffset) const {
@@ -102,14 +102,14 @@ std::string Log::getLine(size_t index, size_t maxLen, size_t lineOffset) const {
 		pair<char*,char*> line = lines.at(index);
 		size_t len = line.second - line.first + 1;
 
-		if(len <= lineOffset ) return "";
+		if(len <= lineOffset ) return string();
 		else len -= lineOffset;
 
 		if(len > maxLen) len = maxLen;
 		return string(line.first + lineOffset,len);
 	}
 	else {
-		return string("");
+		return string();
 	}
 }
 
@@ -128,6 +128,8 @@ void Log::scanForLines(size_t index) const {
 			char* lineEnd = (char*)::memchr(lineStart,'\n',maxLength);
 			if(NULL == lineEnd) {
 				lineEnd = fileEnd;
+				// Found end of file
+				numLines = lastScannedLine + 1;
 			}
 			lines.push_back(make_pair(lineStart,lineEnd));
 		}

@@ -39,7 +39,7 @@ void Screen::drawLog(size_t startLine, size_t lineOffset) {
 		size_t line = startLine + i;
 		printBuf.at(i) = log.getLine(line,cols,lineOffset);
 		::move(i,0);
-		::printw("%d%s",log.numLines(),printBuf.at(i).c_str());
+		::addstr(printBuf.at(i).c_str());
 	}
 	::refresh();          /* Print it on to the real screen */
 }

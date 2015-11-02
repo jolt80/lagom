@@ -63,7 +63,7 @@ int main(int argc, char* argv[]) {
 				acceleratedInc(currLine,numSameInput,screen.getRows());
 		}
 
-		if(currLine + screen.getRows() > log.numLines()) currLine = log.numLines();
+		if(currLine + screen.getRows() > log.getNumLines()) currLine = log.getNumLines() - screen.getRows();
 		screen.drawLog(currLine,lineOffset);
 		screen.refresh();
 		lastInput = input;

@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 #include <utility>
+#include <climits>
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -27,7 +28,7 @@ public:
 	bool map(std::string fileName);
 	bool unmap();
 
-	size_t numLines() const;
+	size_t getNumLines() const;
 
 	std::string getLine(size_t index) const;
 	std::string getLine(size_t index, size_t maxLen, size_t lineOffset = 0) const;
@@ -39,6 +40,7 @@ protected:
 
 	char *fileStart;
 	char* fileEnd;
+	mutable size_t numLines;
 
 	mutable std::vector< std::pair<char*,char*> > lines;
 };
