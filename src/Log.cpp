@@ -15,12 +15,9 @@ using namespace std;
 
 
 Log::Log() :  numLines{UINT_MAX} {
-	// TODO Auto-generated constructor stub
-
 }
 
 Log::~Log() {
-	// TODO Auto-generated destructor stub
 }
 
 size_t Log::getNumLines() const {
@@ -64,7 +61,7 @@ bool Log::map(std::string fileName) {
 	char* lineStart = fileStart;
 
 	char* lineEnd = (char*)::memchr(lineStart,'\n',fileEnd - lineStart);
-	lines.push_back(make_pair(lineStart,lineEnd));
+	lines.push_back(StringLiteral{lineStart,lineEnd});
 
 	return true;
 }
@@ -85,8 +82,7 @@ std::string Log::getLine(size_t index) const {
 	}
 
 	if(index < scannedLines) {
-		pair<char*,char*> line = lines.at(index);
-		return string(line.first,line.second - line.first + 1);
+		return lines.at(index).toString();
 	}
 	return string();
 }
@@ -99,28 +95,22 @@ std::string Log::getLine(size_t index, size_t maxLen, size_t lineOffset) const {
 	}
 
 	if(index < scannedLines) {
-		pair<char*,char*> line = lines.at(index);
-		size_t len = line.second - line.first + 1;
-
-		if(len <= lineOffset ) return string();
-		else len -= lineOffset;
-
-		if(len > maxLen) len = maxLen;
-		return string(line.first + lineOffset,len);
+		StringLiteral line = lines.at(index);
+		if(line.trimFromStart(lineOffset)) {
+			return line.toString();
+		}
 	}
-	else {
-		return string();
-	}
+	return string();
 }
 
 
 void Log::scanForLines(size_t index) const {
 	size_t lastScannedLine = lines.size() - 1;
 
-	if(lines.at(lastScannedLine).second < fileEnd) {
+	if(lines.at(lastScannedLine).getStrEnd() < fileEnd) {
 		for(; lastScannedLine <= index; ++lastScannedLine) {
 			// second point to '\n' at the end of the line
-			char* search = lines.at(lastScannedLine).second;
+			char* search = const_cast<char*>(lines.at(lastScannedLine).getStrEnd());
 
 			char* lineStart = search + 1;
 
@@ -131,7 +121,7 @@ void Log::scanForLines(size_t index) const {
 				// Found end of file
 				numLines = lastScannedLine + 1;
 			}
-			lines.push_back(make_pair(lineStart,lineEnd));
+			lines.push_back(StringLiteral{lineStart,lineEnd});
 		}
 	}
 }

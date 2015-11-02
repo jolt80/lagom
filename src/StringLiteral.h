@@ -40,8 +40,10 @@ class StringLiteral {
     // Construct a StringLiteral from an std::string or a const char*
     StringLiteral(std::string string) : str{string.c_str()}, strLen{string.size()} {}
     StringLiteral(const char* str_) : str{str_}, strLen{strlen(str_)} {}
+    StringLiteral(const char* startPtr, const char* endPtr) : str{startPtr}, strLen{(size_t)(endPtr-startPtr)} {}
 
     const char* getStr() const;
+    const char* getStrEnd() const;
     size_t getLength() const;
 
     /**

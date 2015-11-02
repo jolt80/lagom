@@ -10,8 +10,8 @@
 
 #include <string>
 #include <vector>
-#include <utility>
 #include <climits>
+#include <StringLiteral.h>
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -42,7 +42,7 @@ protected:
 	char* fileEnd;
 	mutable size_t numLines;
 
-	mutable std::vector< std::pair<char*,char*> > lines;
+	mutable std::vector< StringLiteral > lines;
 };
 
 #endif /* LOG_H_ */

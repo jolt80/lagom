@@ -7,6 +7,12 @@ const char* StringLiteral::getStr() const
   return str;
 }
 
+const char* StringLiteral::getStrEnd() const
+{
+  return str + strLen;
+}
+
+
 size_t StringLiteral::getLength() const
 {
   return strLen;

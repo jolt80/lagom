@@ -18,7 +18,6 @@ size_t Screen::getCols() const {
 	return cols;
 }
 
-
 Screen::Screen(const Log& _log) : log(_log) {
 	::initscr();          /* Start curses mode          */
     getmaxyx(stdscr, rows, cols);
