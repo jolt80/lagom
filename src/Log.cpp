@@ -103,6 +103,19 @@ std::string Log::getLine(size_t index, size_t maxLen, size_t lineOffset) const {
 	return string();
 }
 
+StringLiteral Log::lineAt(size_t index) const {
+	if(index < numLines) {
+		size_t scannedLines = lines.size();
+		if(lines.size() <= index) {
+			scanForLines(index+100);
+		}
+
+		if(index < numLines) {
+			return lines.at(index);
+		}
+	}
+	return StringLiteral{};
+}
 
 void Log::scanForLines(size_t index) const {
 	size_t lastScannedLine = lines.size() - 1;
@@ -124,6 +137,16 @@ void Log::scanForLines(size_t index) const {
 			lines.push_back(StringLiteral{lineStart,lineEnd});
 		}
 	}
+}
+
+size_t Log::searchForLineContaining(size_t startLine, std::string search) const {
+	size_t lineIndex = startLine;
+
+	while(!(lineAt(lineIndex).contains(search))) {
+		lineIndex++;
+		if(lineIndex >= numLines) return numLines;
+	}
+	return lineIndex;
 }
 
 std::string Log::toString() const {

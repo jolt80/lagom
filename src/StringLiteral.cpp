@@ -111,6 +111,20 @@ bool StringLiteral::startsWith(const StringLiteral& compareStr) const
   return 0 == strncmp(str,compareStr.str,compareStr.strLen);
 }
 
+size_t StringLiteral::contains(std::string containsStr) const {
+	size_t searchSize = containsStr.size();
+	size_t searchIndex = 0;
+	for(size_t i{0}; i < strLen; ++i) {
+		if(str[i] == containsStr[searchIndex]) {
+			searchIndex++;
+			if(searchIndex == searchSize) return true;
+		} else {
+			searchIndex = 0;
+		}
+	}
+	return false;
+}
+
 bool StringLiteral::empty() const
 {
   return strLen == 0;

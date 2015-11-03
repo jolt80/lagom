@@ -20,6 +20,8 @@ public:
 	size_t getRows() const;
 	size_t getCols() const;
 
+	void updateSize();
+
 	void print(const std::string str);
 	void print(const char* str);
 
@@ -35,6 +37,8 @@ public:
 
 protected:
 	const Log& log;
+
+	bool isNumberOrLetter(int c) const;
 
 	size_t rows;
 	size_t cols;

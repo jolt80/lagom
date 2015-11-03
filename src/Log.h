@@ -12,6 +12,7 @@
 #include <vector>
 #include <climits>
 #include <StringLiteral.h>
+#include <string>
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -30,6 +31,8 @@ public:
 
 	size_t getNumLines() const;
 
+	size_t searchForLineContaining(size_t startLine, std::string search) const;
+
 	std::string getLine(size_t index) const;
 	std::string getLine(size_t index, size_t maxLen, size_t lineOffset = 0) const;
 
@@ -37,6 +40,7 @@ public:
 
 protected:
 	void scanForLines(size_t index) const;
+	StringLiteral lineAt(size_t index) const;
 
 	char *fileStart;
 	char* fileEnd;

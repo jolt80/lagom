@@ -94,7 +94,8 @@ class StringLiteral {
      *   - offset from start of string
      *   - length of string if not found
      */
-    size_t findFirstOf(char charToFind)const;
+    size_t findFirstOf(char charToFind) const;
+    size_t contains(std::string containsStr) const;
 
     /**
      * Returns true if the StringLiteral starts with a specific string.
