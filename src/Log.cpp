@@ -105,7 +105,6 @@ std::string Log::getLine(size_t index, size_t maxLen, size_t lineOffset) const {
 
 StringLiteral Log::lineAt(size_t index) const {
 	if(index < numLines) {
-		size_t scannedLines = lines.size();
 		if(lines.size() <= index) {
 			scanForLines(index+100);
 		}
@@ -120,22 +119,20 @@ StringLiteral Log::lineAt(size_t index) const {
 void Log::scanForLines(size_t index) const {
 	size_t lastScannedLine = lines.size() - 1;
 
-	if(lines.at(lastScannedLine).getStrEnd() < fileEnd) {
-		for(; lastScannedLine <= index; ++lastScannedLine) {
-			// second point to '\n' at the end of the line
-			char* search = const_cast<char*>(lines.at(lastScannedLine).getStrEnd());
+	for(; lastScannedLine <= index && lines.at(lastScannedLine).getStrEnd() < fileEnd; ++lastScannedLine) {
+		// second point to '\n' at the end of the line
+		char* search = const_cast<char*>(lines.at(lastScannedLine).getStrEnd());
 
-			char* lineStart = search + 1;
+		char* lineStart = search + 1;
 
-			size_t maxLength = fileEnd - lineStart;
-			char* lineEnd = (char*)::memchr(lineStart,'\n',maxLength);
-			if(NULL == lineEnd) {
-				lineEnd = fileEnd;
-				// Found end of file
-				numLines = lastScannedLine + 1;
-			}
-			lines.push_back(StringLiteral{lineStart,lineEnd});
+		size_t maxLength = fileEnd - lineStart;
+		char* lineEnd = (char*)::memchr(lineStart,'\n',maxLength);
+		if(NULL == lineEnd) {
+			lineEnd = fileEnd;
+			// Found end of file
+			numLines = lastScannedLine + 1;
 		}
+		lines.push_back(StringLiteral{lineStart,lineEnd});
 	}
 }
 

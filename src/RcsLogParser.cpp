@@ -80,6 +80,12 @@ int main(int argc, char* argv[]) {
 				}
 			}
 			break;
+			case KEY_END:
+			{
+				log.getLine(UINT_MAX);
+				currLine = log.getNumLines();
+			}
+			break;
 
 			case KEY_RESIZE:
 				screen.updateSize();
