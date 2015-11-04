@@ -22,6 +22,15 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
+	cout << log.getFormattedLine(15000,100,0) << endl;
+}
+
+int main2(int argc, char* argv[]) {
+	Log log;
+	if(!log.map(argv[1])) {
+		return 1;
+	}
+
 	Screen screen(log);
 
 	size_t currLine = 0;

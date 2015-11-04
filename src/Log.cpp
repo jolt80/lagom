@@ -11,6 +11,8 @@
 #include <cstring>
 #include <cstdint>
 
+#include <regex>
+
 using namespace std;
 
 
@@ -114,6 +116,111 @@ StringLiteral Log::lineAt(size_t index) const {
 		}
 	}
 	return StringLiteral{};
+}
+
+std::string Log::getFormattedLine(size_t index, size_t maxLen, size_t lineOffset) const {
+	static const char* pad = "\033[1;31m|\033[0m";
+	string line = lineAt(index).toString();
+	string ret;
+
+	cout << line << endl;
+
+	if( (format | FormatMask::timeAndDate) != 0) {
+		try {
+		  std::regex re("(\\[\\d{4}-\\d{2}-\\d{2})\\s*(\\d{1,2}:\\d{1,2}:\\d{1,2}\\.\\d{3})");
+		  std::smatch match;
+		  std::regex_search(line, match, re);
+		  if (match.size() > 1) {
+		    ret.append(match.str(2));
+		  } else {
+			  // pad
+			  ret.append(' ',12);
+		  }
+		} catch (std::regex_error& e) {
+			return e.what();
+		}
+
+		ret.append(pad);
+	}
+
+	if( (format | FormatMask::timediff) != 0) {
+		try {
+		  std::regex re("\\((\\+\\d+\\.\\d+)\\)");
+		  std::smatch match;
+		  std::regex_search(line, match, re);
+		  if (match.size() > 1) {
+		    ret.append(match.str(1));
+		  }
+		} catch (std::regex_error& e) {
+			return e.what();
+		}
+
+		ret.append(pad);
+	}
+
+	if( (format | FormatMask::level) != 0) {
+		try {
+		  std::regex re("du1 com_ericsson_triobjif:(.*?):");
+		  std::smatch match;
+		  std::regex_search(line, match, re);
+		  if (match.size() > 1) {
+		    ret.append(match.str(1));
+		  }
+		} catch (std::regex_error& e) {
+			return e.what();
+		}
+
+		ret.append(pad);
+	}
+
+	if( (format | (FormatMask::traceobj | FormatMask::thread)) != 0) {
+		try {
+		  std::regex re("processAndObjIf = \"(.*?)\\((.*?)\\)\"");
+		  std::smatch match;
+		  std::regex_search(line, match, re);
+		  if (match.size() > 1 && (format | (FormatMask::thread))) {
+		    ret.append(match.str(1));
+			ret.append(pad);
+		  }
+		  if (match.size() > 2 && (format | (FormatMask::traceobj))) {
+		    ret.append(match.str(2));
+			ret.append(pad);
+		  }
+		} catch (std::regex_error& e) {
+			return e.what();
+		}
+	}
+
+	if( (format | (FormatMask::traceobj | FormatMask::thread)) != 0) {
+		try {
+		  std::regex re("processAndObjIf = \"(.*?)\\((.*?)\\)\"");
+		  std::smatch match;
+		  std::regex_search(line, match, re);
+		  if (match.size() > 1 && (format | (FormatMask::thread))) {
+		    ret.append(match.str(1));
+			ret.append(pad);
+		  }
+		  if (match.size() > 2 && (format | (FormatMask::traceobj))) {
+		    ret.append(match.str(2));
+			ret.append(pad);
+		  }
+		} catch (std::regex_error& e) {
+			return e.what();
+		}
+	}
+
+	try {
+		std::regex re("msg = \"(.*)\"\\s+\\}");
+		std::smatch match;
+		std::regex_search(line, match, re);
+		if (match.size() > 1) {
+			ret.append(match.str(1));
+		}
+	} catch (std::regex_error& e) {
+		return e.what();
+	}
+
+	return ret;
 }
 
 void Log::scanForLines(size_t index) const {
