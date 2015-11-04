@@ -39,9 +39,9 @@ void Screen::drawLog(size_t startLine, size_t lineOffset) {
 	size_t numLinesToPrint = rows - 1;
 	for(size_t i = 0; i < numLinesToPrint; ++i) {
 		size_t line = startLine + i;
-		printBuf.at(i) = log.getLine(line,cols,lineOffset);
+		printBuf.at(i) = log.getFormattedLine(line,cols,lineOffset);
 		::move(i,0);
-		::printw("[%d] %s",line,printBuf.at(i).c_str());
+		::addstr(printBuf.at(i).c_str());
 	}
 	::move(numLinesToPrint,0);
 	::addstr(string(cols,' ').c_str());

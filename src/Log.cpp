@@ -116,6 +116,17 @@ StringLiteral Log::lineAt(size_t index) const {
 	return StringLiteral{};
 }
 
+std::string Log::getFormattedLine(size_t index, size_t maxLen, size_t lineOffset) const {
+	StringLiteral line = lineAt(index);
+
+//	stringstream ret;
+
+	if(line.trimFromStart(lineOffset)) {
+		return line.toString();
+	}
+	return string();
+}
+
 void Log::scanForLines(size_t index) const {
 	size_t lastScannedLine = lines.size() - 1;
 
