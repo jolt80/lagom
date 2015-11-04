@@ -16,6 +16,23 @@ using namespace std;
 void acceleratedInc(size_t& val, int num, size_t scaling = 1);
 void acceleratedDec(size_t& val, int num, size_t scaling = 1);
 
+//int main(int argc, char* argv[]) {
+//	Log log;
+//	if(!log.map(argv[1])) {
+//		return 1;
+//	}
+//
+//	for(size_t i = 0; i < 10000; ++i) {
+//		cout << "i";
+//		for(auto token : log.getTokenizedLine(i)) {
+//			cout << "|";
+//			cout << token;
+//		}
+//		cout << endl;
+//	}
+//
+//}
+
 int main(int argc, char* argv[]) {
 	Log log;
 	if(!log.map(argv[1])) {
@@ -29,7 +46,9 @@ int main(int argc, char* argv[]) {
 
 	std::string search;
 
-	screen.drawLog(currLine);
+	bool filtered = false;
+
+	screen.drawLog(currLine,filtered);
 	screen.refresh();
 
 	int numSameInput = 0;
@@ -86,13 +105,23 @@ int main(int argc, char* argv[]) {
 				currLine = log.getNumLines();
 			}
 			break;
-
+			case KEY_HOME:
+			{
+				currLine = 0;
+			}
+			break;
+			case KEY_IC:
+				filtered = !filtered;
+				break;
+			case KEY_F(1):
+				log.format |= FormatMask::timeAndDate;
+				break;
 			case KEY_RESIZE:
 				screen.updateSize();
 		}
 
 		if(currLine + screen.getRows() > log.getNumLines()) currLine = log.getNumLines() - screen.getRows();
-		screen.drawLog(currLine,lineOffset);
+		screen.drawLog(currLine,filtered,lineOffset);
 		screen.refresh();
 		lastInput = input;
 	}

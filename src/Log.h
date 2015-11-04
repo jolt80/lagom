@@ -22,15 +22,15 @@
 #include <sys/mman.h>
 
 namespace FormatMask {
-	static const uint32_t line{0b1};
-	static const uint32_t timeAndDate{0b10};
-	static const uint32_t timediff{0b100};
-	static const uint32_t level{0b1000};
-	static const uint32_t cpu{0b10000};
-	static const uint32_t thread{0b100000};
-	static const uint32_t traceobj{0b1000000};
-	static const uint32_t fileandline{0b10000000};
-	static const uint32_t msg{0b100000000};
+	static const uint32_t line {0b1};
+	static const uint32_t timeAndDate {0b10};
+	static const uint32_t timediff {0b100};
+	static const uint32_t level {0b1000};
+	static const uint32_t cpu {0b10000};
+	static const uint32_t thread {0b100000};
+	static const uint32_t traceobj {0b1000000};
+	static const uint32_t fileandline {0b10000000};
+	static const uint32_t msg {0b100000000};
 }
 
 class Log {
@@ -38,7 +38,7 @@ public:
 	Log();
 	virtual ~Log();
 
-	static uint32_t format;
+	uint32_t format = UINT_MAX;
 
 	bool map(std::string fileName);
 	bool unmap();
@@ -49,7 +49,7 @@ public:
 
 	std::string getLine(size_t index) const;
 	std::string getLine(size_t index, size_t maxLen, size_t lineOffset = 0) const;
-	std::string getFormattedLine(size_t index, size_t maxLen, size_t lineOffset = 0) const;
+	std::vector<std::string> getTokenizedLine(size_t index) const;
 
 	std::string toString() const;
 

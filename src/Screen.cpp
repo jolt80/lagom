@@ -27,6 +27,15 @@ Screen::Screen(const Log& _log) : log(_log) {
 	::initscr();          /* Start curses mode          */
     ::noecho();
     ::keypad(stdscr, TRUE);   // for KEY_UP, KEY_DOWN
+	if(has_colors() == FALSE)
+	{
+		endwin();
+		printf("Your terminal does not support color\n");
+		exit(1);
+	}
+	start_color();			/* Start color 			*/
+	use_default_colors();
+	init_pair(1, COLOR_RED, -1);
     updateSize();
 }
 
@@ -34,14 +43,24 @@ Screen::~Screen() {
 	::endwin();           /* End curses mode        */
 }
 
-void Screen::drawLog(size_t startLine, size_t lineOffset) {
+void Screen::drawLog(size_t startLine, bool filtered, size_t lineOffset) {
 	::clear();
 	size_t numLinesToPrint = rows - 1;
+
 	for(size_t i = 0; i < numLinesToPrint; ++i) {
 		size_t line = startLine + i;
-		printBuf.at(i) = log.getFormattedLine(line,cols,lineOffset);
 		::move(i,0);
-		::addstr(printBuf.at(i).c_str());
+		if(filtered) {
+			for(auto token : log.getTokenizedLine(line)) {
+				attron(COLOR_PAIR(1));
+				::addstr("|");
+				attroff(COLOR_PAIR(1));
+				::addstr(token.c_str());
+			}
+		}
+		else {
+			::addstr(log.getLine(line,cols,lineOffset).c_str());
+		}
 	}
 	::move(numLinesToPrint,0);
 	::addstr(string(cols,' ').c_str());

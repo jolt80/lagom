@@ -28,7 +28,7 @@ public:
 	void println(const std::string str);
 	void println(const char* str);
 
-	void drawLog(size_t startLine, size_t lineOffset = 0);
+	void drawLog(size_t startLine, bool filtered, size_t lineOffset = 0);
 
 	void refresh();
 
