@@ -10,11 +10,11 @@
 
 using namespace std;
 
-size_t Screen::getRows() const {
+int Screen::getRows() const {
 	return rows;
 }
 
-size_t Screen::getCols() const {
+int Screen::getCols() const {
 	return cols;
 }
 
@@ -37,25 +37,46 @@ Screen::Screen(const Log& _log) : log(_log) {
 	use_default_colors();
 	init_pair(1, COLOR_RED, -1);
     updateSize();
+
+    // Init format
+    format = 0;
+	format |= TriFormatMask::line;
+	format |= TriFormatMask::time;
+	format |= TriFormatMask::fileAndLine;
+	format |= TriFormatMask::msg;
 }
 
 Screen::~Screen() {
 	::endwin();           /* End curses mode        */
 }
 
-void Screen::drawLog(size_t startLine, bool filtered, size_t lineOffset) {
+void Screen::drawLog(int startLine, bool filtered, int lineOffset) {
 	::clear();
-	size_t numLinesToPrint = rows - 1;
+	int numLinesToPrint = rows - 1;
+	uint32_t formatMask;
 
-	for(size_t i = 0; i < numLinesToPrint; ++i) {
-		size_t line = startLine + i;
+	for(int i = 0; i < numLinesToPrint; ++i) {
+		int line = startLine + i;
 		::move(i,0);
 		if(filtered) {
-			for(auto token : log.getTokenizedLine(line)) {
-				attron(COLOR_PAIR(1));
-				::addstr("|");
-				attroff(COLOR_PAIR(1));
-				::addstr(token.c_str());
+			if(log.getTriLogTokens(line,s)) {
+				if( (format & TriFormatMask::line) != 0) {
+					::printw("%d",line);
+				}
+				for(int j = 0; j < 11; ++j) {
+					formatMask = 1 << (j+1);
+					if( (format & formatMask) != 0) {
+						attron(COLOR_PAIR(1));
+						::addstr("|");
+						attroff(COLOR_PAIR(1));
+						for(auto character : s[j]) {
+							::addch(character);
+						}
+					}
+				}
+			}
+			else {
+				::addstr(log.getLine(line,cols,lineOffset).c_str());
 			}
 		}
 		else {
@@ -78,7 +99,7 @@ std::string Screen::getInputLine() {
 			ret += (char)c;
 		}
 		else if( c == KEY_BACKSPACE) {
-			size_t inputSize = ret.size();
+			int inputSize = ret.size();
 			if(inputSize > 0)
 			{
 				--inputSize;

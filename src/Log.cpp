@@ -10,19 +10,24 @@
 #include <sstream>
 #include <cstring>
 #include <cstdint>
+#include <cassert>
 
-#include <regex>
+#include <re2/re2.h>
+#include <re2/stringpiece.h>
 
 using namespace std;
 
 
-Log::Log() :  numLines{UINT_MAX} {
+Log::Log(std::string triRegex) :
+		TriLog{triRegex},
+		numLines{INT_MAX} {
+	assert(TriLog.ok());
 }
 
 Log::~Log() {
 }
 
-size_t Log::getNumLines() const {
+int Log::getNumLines() const {
 	return numLines;
 }
 
@@ -76,11 +81,11 @@ bool Log::unmap() {
 	return true;
 }
 
-std::string Log::getLine(size_t index) const {
-	size_t scannedLines = lines.size();
-	if(lines.size() <= index) {
+std::string Log::getLine(int index) const {
+	int scannedLines = static_cast<int>(lines.size());
+	if(scannedLines <= index) {
 		scanForLines(index);
-		scannedLines = lines.size();
+		scannedLines = static_cast<int>(lines.size());
 	}
 
 	if(index < scannedLines) {
@@ -89,11 +94,11 @@ std::string Log::getLine(size_t index) const {
 	return string();
 }
 
-std::string Log::getLine(size_t index, size_t maxLen, size_t lineOffset) const {
-	size_t scannedLines = lines.size();
-	if(lines.size() <= index) {
+std::string Log::getLine(int index, int maxLen, int lineOffset) const {
+	int scannedLines = static_cast<int>(lines.size());
+	if(scannedLines <= index) {
 		scanForLines(index);
-		scannedLines = lines.size();
+		scannedLines = static_cast<int>(lines.size());
 	}
 
 	if(index < scannedLines) {
@@ -105,9 +110,9 @@ std::string Log::getLine(size_t index, size_t maxLen, size_t lineOffset) const {
 	return string();
 }
 
-StringLiteral Log::lineAt(size_t index) const {
+StringLiteral Log::lineAt(int index) const {
 	if(index < numLines) {
-		if(lines.size() <= index) {
+		if(static_cast<int>(lines.size()) <= index) {
 			scanForLines(index+100);
 		}
 
@@ -118,96 +123,13 @@ StringLiteral Log::lineAt(size_t index) const {
 	return StringLiteral{};
 }
 
-std::vector<std::string> Log::getTokenizedLine(size_t index) const {
-	string line = lineAt(index).toString();
-	vector<string> ret;
-
-	if( (format | FormatMask::timeAndDate) != 0) {
-		try {
-			std::regex re("(\\[\\d{4}-\\d{2}-\\d{2})\\s*(\\d{1,2}:\\d{1,2}:\\d{1,2}\\.\\d{3})");
-			std::smatch match;
-			std::regex_search(line, match, re);
-			if (match.size() > 1) {
-				ret.push_back(match.str(2));
-			} else {
-				ret.push_back(string{});
-			}
-		} catch (std::regex_error& e) {
-			ret.push_back(e.what());
-			return ret;
-		}
-	}
-
-	if( (format | FormatMask::timediff) != 0) {
-		try {
-			std::regex re("\\((\\+\\d+\\.\\d+)\\)");
-			std::smatch match;
-			std::regex_search(line, match, re);
-			if (match.size() > 1) {
-				ret.push_back(match.str(1));
-			} else {
-				ret.push_back(string{});
-			}
-		} catch (std::regex_error& e) {
-			ret.push_back(e.what());
-			return ret;
-		}
-	}
-
-	if( (format | FormatMask::level) != 0) {
-		try {
-			std::regex re("du1 com_ericsson_triobjif:(.*?):");
-			std::smatch match;
-			std::regex_search(line, match, re);
-			if (match.size() > 1) {
-				ret.push_back(match.str(1));
-			} else {
-				ret.push_back(string{});
-			}
-		} catch (std::regex_error& e) {
-			ret.push_back(e.what());
-			return ret;
-		}
-	}
-
-	if( (format | (FormatMask::traceobj | FormatMask::thread)) != 0) {
-		try {
-			std::regex re("processAndObjIf = \"(.*?)\\((.*?)\\)\"");
-			std::smatch match;
-			std::regex_search(line, match, re);
-			if (match.size() > 1 && (format | (FormatMask::thread))) {
-				ret.push_back(match.str(1));
-			} else {
-				ret.push_back(string{});
-			}
-			if (match.size() > 2 && (format | (FormatMask::traceobj))) {
-				ret.push_back(match.str(2));
-			}else {
-				ret.push_back(string{});
-			}
-		} catch (std::regex_error& e) {
-			ret.push_back(e.what());
-			return ret;
-		}
-	}
-
-	try {
-		std::regex re("msg = \"(.*)\"\\s+\\}");
-		std::smatch match;
-		std::regex_search(line, match, re);
-		if (match.size() > 1) {
-			ret.push_back(match.str(1));
-		}
-	} catch (std::regex_error& e) {
-		ret.push_back(e.what());
-		return ret;
-	}
-
-	return ret;
+bool Log::getTriLogTokens(int index, re2::StringPiece s[]) const {
+	// Expect to get 10 matches for a TRI log
+	return RE2::FullMatch(lineAt(index).toStringPiece(),TriLog,&s[0],&s[1],&s[2],&s[3],&s[4],&s[5],&s[6],&s[7],&s[8]);
 }
 
-void Log::scanForLines(size_t index) const {
-	size_t lastScannedLine = lines.size() - 1;
+void Log::scanForLines(int index) const {
+	int lastScannedLine = lines.size() - 1;
 
 	for(; lastScannedLine <= index && lines.at(lastScannedLine).getStrEnd() < fileEnd; ++lastScannedLine) {
 		// second point to '\n' at the end of the line
@@ -215,7 +137,7 @@ void Log::scanForLines(size_t index) const {
 
 		char* lineStart = search + 1;
 
-		size_t maxLength = fileEnd - lineStart;
+		int maxLength = fileEnd - lineStart;
 		char* lineEnd = (char*)::memchr(lineStart,'\n',maxLength);
 		if(NULL == lineEnd) {
 			lineEnd = fileEnd;
@@ -226,8 +148,8 @@ void Log::scanForLines(size_t index) const {
 	}
 }
 
-size_t Log::searchForLineContaining(size_t startLine, std::string search) const {
-	size_t lineIndex = startLine;
+int Log::searchForLineContaining(int startLine, std::string search) const {
+	int lineIndex = startLine;
 
 	while(!(lineAt(lineIndex).contains(search))) {
 		lineIndex++;

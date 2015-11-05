@@ -11,38 +11,52 @@
 #include <Screen.h>
 #include <Log.h>
 
+#include <cassert>
+
 using namespace std;
 
-void acceleratedInc(size_t& val, int num, size_t scaling = 1);
-void acceleratedDec(size_t& val, int num, size_t scaling = 1);
-
-//int main(int argc, char* argv[]) {
-//	Log log;
-//	if(!log.map(argv[1])) {
-//		return 1;
-//	}
-//
-//	for(size_t i = 0; i < 10000; ++i) {
-//		cout << "i";
-//		for(auto token : log.getTokenizedLine(i)) {
-//			cout << "|";
-//			cout << token;
-//		}
-//		cout << endl;
-//	}
-//
-//}
+void acceleratedInc(int& val, int num, int scaling = 1);
+void acceleratedDec(int& val, int num, int scaling = 1);
 
 int main(int argc, char* argv[]) {
-	Log log;
+	const char* timeStr = "\\[\\d{4}-\\d{2}-\\d{2}\\s*(\\d{1,2}:\\d{1,2}:\\d{1,2}\\.\\d{3}).*?\\]";
+	const char* timeDiffStr = "\\((\\+\\d+\\.\\d+)\\)";
+	const char* card = "(\\w+)";
+	const char* traceLevel = "com_ericsson_triobjif:(.*?):";
+	const char* cpuId = "{ cpu_id = (\\w+) },";
+	const char* processAndObjIf = "\\{ processAndObjIf = \"(.*?)\\((.*?)\\)\",";
+	const char* fileAndLine = "fileAndLine = \".*?(\\w+\\.\\w+:\\d+)\",";
+	const char* msg = "msg = \"\\s*(.*)\" }";
+	const char* separator = ".*?";
+
+	std::string triRegex;
+
+	triRegex += timeStr;
+	triRegex += separator;
+	triRegex += timeDiffStr;
+	triRegex += separator;
+	triRegex += card;
+	triRegex += separator;
+	triRegex += traceLevel;
+	triRegex += separator;
+	triRegex += cpuId;
+	triRegex += separator;
+	triRegex += processAndObjIf;
+	triRegex += separator;
+	triRegex += fileAndLine;
+	triRegex += separator;
+	triRegex += msg;
+	triRegex += separator;
+
+	Log log(triRegex);
 	if(!log.map(argv[1])) {
 		return 1;
 	}
 
 	Screen screen(log);
 
-	size_t currLine = 0;
-	size_t lineOffset = 0;
+	int currLine = 0;
+	int lineOffset = 0;
 
 	std::string search;
 
@@ -84,7 +98,7 @@ int main(int argc, char* argv[]) {
 			{
 				::addstr("search> ");
 				search = screen.getInputLine();
-				size_t foundLine = log.searchForLineContaining(currLine,search);
+				int foundLine = log.searchForLineContaining(currLine,search);
 				if(foundLine != log.getNumLines()) {
 					currLine = foundLine;
 				}
@@ -93,7 +107,7 @@ int main(int argc, char* argv[]) {
 			case 'n':
 			case KEY_ENTER:
 			{
-				size_t foundLine = log.searchForLineContaining(currLine+1,search);
+				int foundLine = log.searchForLineContaining(currLine+1,search);
 				if(foundLine != log.getNumLines()) {
 					currLine = foundLine;
 				}
@@ -113,8 +127,35 @@ int main(int argc, char* argv[]) {
 			case KEY_IC:
 				filtered = !filtered;
 				break;
-			case KEY_F(1):
-				log.format |= FormatMask::timeAndDate;
+			case '1':
+				screen.format ^= TriFormatMask::line;
+				break;
+			case '2':
+				screen.format ^= TriFormatMask::time;
+				break;
+			case '3':
+				screen.format ^= TriFormatMask::timeDiff;
+				break;
+			case '4':
+				screen.format ^= TriFormatMask::card;
+				break;
+			case '5':
+				screen.format ^= TriFormatMask::traceLevel;
+				break;
+			case '6':
+				screen.format ^= TriFormatMask::cpuId;
+				break;
+			case '7':
+				screen.format ^= TriFormatMask::process;
+				break;
+			case '8':
+				screen.format ^= TriFormatMask::traceObj;
+				break;
+			case '9':
+				screen.format ^= TriFormatMask::fileAndLine;
+				break;
+			case '0':
+				screen.format ^= TriFormatMask::msg;
 				break;
 			case KEY_RESIZE:
 				screen.updateSize();
@@ -129,8 +170,8 @@ int main(int argc, char* argv[]) {
 	return 0;
 }
 
-void acceleratedInc(size_t& val, int num, size_t scaling) {
-	size_t toInc;
+void acceleratedInc(int& val, int num, int scaling) {
+	int toInc;
 
 	if ( num > 100 ) {
 		toInc = scaling * 10;
@@ -143,8 +184,8 @@ void acceleratedInc(size_t& val, int num, size_t scaling) {
 	val += toInc;
 }
 
-void acceleratedDec(size_t& val, int num, size_t scaling) {
-	size_t toDec;
+void acceleratedDec(int& val, int num, int scaling) {
+	int toDec;
 
 	if ( num > 100 ) {
 		toDec = scaling * 10;

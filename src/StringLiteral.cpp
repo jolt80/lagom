@@ -13,7 +13,7 @@ const char* StringLiteral::getStrEnd() const
 }
 
 
-size_t StringLiteral::getLength() const
+int StringLiteral::getLength() const
 {
   return strLen;
 }
@@ -74,7 +74,7 @@ StringLiteral& StringLiteral::operator=( const char * other )
   return *this;
 }
 
-StringLiteral StringLiteral::subString( size_t start, size_t length) const
+StringLiteral StringLiteral::subString( int start, int length) const
 {
   if(start + length <= strLen)
   {
@@ -86,7 +86,7 @@ StringLiteral StringLiteral::subString( size_t start, size_t length) const
   }
 }
 
-size_t StringLiteral::findFirstOf(char charToFind)const
+int StringLiteral::findFirstOf(char charToFind)const
 {
   const char* found = strchr(str, charToFind);
   if(nullptr == found)
@@ -111,10 +111,10 @@ bool StringLiteral::startsWith(const StringLiteral& compareStr) const
   return 0 == strncmp(str,compareStr.str,compareStr.strLen);
 }
 
-size_t StringLiteral::contains(std::string containsStr) const {
-	size_t searchSize = containsStr.size();
-	size_t searchIndex = 0;
-	for(size_t i{0}; i < strLen; ++i) {
+int StringLiteral::contains(std::string containsStr) const {
+	int searchSize = containsStr.size();
+	int searchIndex = 0;
+	for(int i{0}; i < strLen; ++i) {
 		if(str[i] == containsStr[searchIndex]) {
 			searchIndex++;
 			if(searchIndex == searchSize) return true;
@@ -137,7 +137,7 @@ void StringLiteral::clear()
 }
 
 
-bool StringLiteral::trimFromStart(size_t offset)
+bool StringLiteral::trimFromStart(int offset)
 {
   if(offset > strLen)
   {
@@ -153,7 +153,7 @@ bool StringLiteral::trimFromStart(size_t offset)
   }
 }
 
-bool StringLiteral::trimFromEnd(size_t offset)
+bool StringLiteral::trimFromEnd(int offset)
 {
   if(offset > strLen)
   {
@@ -186,7 +186,7 @@ std::size_t StringLiteral::hash() const
   const char* input = str;
   std::size_t result = 0x55555555;
 
-  for (uint32_t index = 0; index < strLen; ++index) {
+  for (int index = 0; index < strLen; ++index) {
     result ^= *input++;
     result = result << 5;
   }

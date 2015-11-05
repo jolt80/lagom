@@ -13,6 +13,7 @@
 #include <functional>
 #include <string>
 #include <cstring>
+#include <re2/stringpiece.h>
 
 /**
  *
@@ -35,16 +36,18 @@ class StringLiteral {
      * Constructors.
      */
     constexpr StringLiteral() : str{nullptr}, strLen{0} {}
-    constexpr StringLiteral(const char* str_, size_t strLen_) : str{str_}, strLen{strLen_} {}
+    constexpr StringLiteral(const char* str_, int strLen_) : str{str_}, strLen{strLen_} {}
 
     // Construct a StringLiteral from an std::string or a const char*
-    StringLiteral(std::string string) : str{string.c_str()}, strLen{string.size()} {}
-    StringLiteral(const char* str_) : str{str_}, strLen{strlen(str_)} {}
-    StringLiteral(const char* startPtr, const char* endPtr) : str{startPtr}, strLen{(size_t)(endPtr-startPtr)} {}
+    StringLiteral(std::string string) : str{string.c_str()}, strLen{static_cast<int>(string.size())} {}
+    StringLiteral(const char* str_) : str{str_}, strLen{static_cast<int>(strlen(str_))} {}
+    StringLiteral(const char* startPtr, const char* endPtr) : str{startPtr}, strLen{(int)(endPtr-startPtr)} {}
+
+    inline re2::StringPiece toStringPiece() const { return re2::StringPiece{str, strLen}; }
 
     const char* getStr() const;
     const char* getStrEnd() const;
-    size_t getLength() const;
+    int getLength() const;
 
     /**
      * This is the operator used by std containers to sort key objects.
@@ -85,7 +88,7 @@ class StringLiteral {
      *    - StringLiteral with the substring if start and length are valid
      *    - Empty StringLiteral if combination of start and length is invalid
      */
-    StringLiteral subString( size_t start, size_t length) const;
+    StringLiteral subString( int start, int length) const;
 
     /**
      * Find first occurence of character in StringLiteral
@@ -94,8 +97,8 @@ class StringLiteral {
      *   - offset from start of string
      *   - length of string if not found
      */
-    size_t findFirstOf(char charToFind) const;
-    size_t contains(std::string containsStr) const;
+    int findFirstOf(char charToFind) const;
+    int contains(std::string containsStr) const;
 
     /**
      * Returns true if the StringLiteral starts with a specific string.
@@ -105,13 +108,13 @@ class StringLiteral {
     bool empty() const;
     void clear();
 
-    bool trimFromStart(size_t offset);
-    bool trimFromEnd(size_t offset);
+    bool trimFromStart(int offset);
+    bool trimFromEnd(int offset);
 
     /**
      * Attempt to convert the contents to an integer.
      */
-    int32_t toInt() const;
+    int toInt() const;
 
     /**
      * Not bad performance, but might be good to experiment a bit more with this.
@@ -122,10 +125,10 @@ class StringLiteral {
 
   private:
     // Construct a StringLiteral as a substring of an existing StringLiteral, no error checks!
-    StringLiteral(const StringLiteral& other, size_t start, size_t length) : str{other.str+start}, strLen{length} { }
+    StringLiteral(const StringLiteral& other, int start, int length) : str{other.str+start}, strLen{length} { }
 
     const char* str;
-    size_t strLen;
+    int strLen;
 };
 
 namespace std
