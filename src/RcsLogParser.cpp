@@ -9,14 +9,29 @@
 #include <iostream>
 #include <string>
 #include <Screen.h>
+#include <State.h>
 #include <Log.h>
 
 #include <cassert>
+#include <thread>
 
 using namespace std;
 
 void acceleratedInc(int& val, int num, int scaling = 1);
 void acceleratedDec(int& val, int num, int scaling = 1);
+
+void guiLoop(Screen& screen,State& state)  {
+	screen.drawLog(state.currLine,state.filtered);
+	screen.refresh();
+
+	while(state.running)
+	{
+		usleep(1000);
+		if(state.currLine + screen.getRows() > screen.log.getNumLines()) state.currLine = screen.log.getNumLines() - screen.getRows();
+		screen.drawLog(state.currLine,state.filtered,state.lineOffset);
+		screen.refresh();
+	}
+}
 
 int main(int argc, char* argv[]) {
 	const char* timeStr = "\\[\\d{4}-\\d{2}-\\d{2}\\s*(\\d{1,2}:\\d{1,2}:\\d{1,2}\\.\\d{3}).*?\\]";
@@ -53,17 +68,11 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
-	Screen screen(log);
+	State currentState;
+	Screen screen(log,currentState);
 
-	int currLine = 0;
-	int lineOffset = 0;
-
-	std::string search;
-
-	bool filtered = false;
-
-	screen.drawLog(currLine,filtered);
-	screen.refresh();
+	// Spawn the gui thread
+    thread gui(guiLoop,std::ref(screen),std::ref(currentState));
 
 	int numSameInput = 0;
 	int lastInput = 0;
@@ -74,98 +83,100 @@ int main(int argc, char* argv[]) {
 
 		switch(input) {
 			case KEY_UP:
-				acceleratedDec(currLine,numSameInput);
+				acceleratedDec(currentState.currLine,numSameInput);
 			break;
 			case KEY_DOWN:
-				acceleratedInc(currLine,numSameInput);
+				acceleratedInc(currentState.currLine,numSameInput);
 			break;
 			case KEY_LEFT:
-				if(lineOffset >= 10) lineOffset -= 10;
+				if(currentState.lineOffset >= 10) currentState.lineOffset -= 10;
 			break;
 			case KEY_RIGHT:
-				lineOffset += 10;
+				currentState.lineOffset += 10;
 			break;
 			case KEY_PPAGE:
 			{
-				acceleratedDec(currLine,numSameInput,screen.getRows());
+				acceleratedDec(currentState.currLine,numSameInput,screen.getRows());
 			}
 			break;
 			case KEY_NPAGE:
-				acceleratedInc(currLine,numSameInput,screen.getRows());
+				acceleratedInc(currentState.currLine,numSameInput,screen.getRows());
 			break;
 			case 's':
 			case '/':
 			{
 				::addstr("search> ");
-				search = screen.getInputLine();
-				int foundLine = log.searchForLineContaining(currLine,search);
+				currentState.search = screen.getInputLine();
+				int foundLine = log.searchForLineContaining(currentState.currLine,currentState.search);
 				if(foundLine != log.getNumLines()) {
-					currLine = foundLine;
+					currentState.currLine = foundLine;
 				}
 			}
 			break;
 			case 'n':
 			case KEY_ENTER:
 			{
-				int foundLine = log.searchForLineContaining(currLine+1,search);
+				int foundLine = log.searchForLineContaining(currentState.currLine+1,currentState.search);
 				if(foundLine != log.getNumLines()) {
-					currLine = foundLine;
+					currentState.currLine = foundLine;
 				}
 			}
 			break;
 			case KEY_END:
 			{
 				log.getLine(UINT_MAX);
-				currLine = log.getNumLines();
+				currentState.currLine = log.getNumLines();
 			}
 			break;
 			case KEY_HOME:
 			{
-				currLine = 0;
+				currentState.currLine = 0;
 			}
 			break;
 			case KEY_IC:
-				filtered = !filtered;
+				currentState.filtered = !currentState.filtered;
 				break;
 			case '1':
-				screen.format ^= TriFormatMask::line;
+				currentState.format ^= TriFormatMask::line;
 				break;
 			case '2':
-				screen.format ^= TriFormatMask::time;
+				currentState.format ^= TriFormatMask::time;
 				break;
 			case '3':
-				screen.format ^= TriFormatMask::timeDiff;
+				currentState.format ^= TriFormatMask::timeDiff;
 				break;
 			case '4':
-				screen.format ^= TriFormatMask::card;
+				currentState.format ^= TriFormatMask::card;
 				break;
 			case '5':
-				screen.format ^= TriFormatMask::traceLevel;
+				currentState.format ^= TriFormatMask::traceLevel;
 				break;
 			case '6':
-				screen.format ^= TriFormatMask::cpuId;
+				currentState.format ^= TriFormatMask::cpuId;
 				break;
 			case '7':
-				screen.format ^= TriFormatMask::process;
+				currentState.format ^= TriFormatMask::process;
 				break;
 			case '8':
-				screen.format ^= TriFormatMask::traceObj;
+				currentState.format ^= TriFormatMask::traceObj;
 				break;
 			case '9':
-				screen.format ^= TriFormatMask::fileAndLine;
+				currentState.format ^= TriFormatMask::fileAndLine;
 				break;
 			case '0':
-				screen.format ^= TriFormatMask::msg;
+				currentState.format ^= TriFormatMask::msg;
 				break;
 			case KEY_RESIZE:
 				screen.updateSize();
+				if(currentState.currLine + screen.getRows() > screen.log.getNumLines()) currentState.currLine = screen.log.getNumLines() - screen.getRows();
+				//currentState.forceUpdate = true;
 		}
-
-		if(currLine + screen.getRows() > log.getNumLines()) currLine = log.getNumLines() - screen.getRows();
-		screen.drawLog(currLine,filtered,lineOffset);
-		screen.refresh();
 		lastInput = input;
 	}
+
+	currentState.running = false;
+
+    gui.join();
 
 	return 0;
 }

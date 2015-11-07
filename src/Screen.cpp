@@ -20,10 +20,9 @@ int Screen::getCols() const {
 
 void Screen::updateSize() {
 	getmaxyx(stdscr, rows, cols);
-    printBuf.resize(rows);
 }
 
-Screen::Screen(const Log& _log) : log(_log) {
+Screen::Screen(const Log& _log, State& _state) : log(_log), currentState(_state) {
 	::initscr();          /* Start curses mode          */
     ::noecho();
     ::keypad(stdscr, TRUE);   // for KEY_UP, KEY_DOWN
@@ -36,58 +35,59 @@ Screen::Screen(const Log& _log) : log(_log) {
 	start_color();			/* Start color 			*/
 	use_default_colors();
 	init_pair(1, COLOR_RED, -1);
+	lastDrawnState.format = 0;
     updateSize();
-
-    // Init format
-    format = 0;
-	format |= TriFormatMask::line;
-	format |= TriFormatMask::time;
-	format |= TriFormatMask::fileAndLine;
-	format |= TriFormatMask::msg;
 }
 
 Screen::~Screen() {
+	::move(0,0);
+	::clear();
 	::endwin();           /* End curses mode        */
 }
 
 void Screen::drawLog(int startLine, bool filtered, int lineOffset) {
-	::clear();
-	int numLinesToPrint = rows - 1;
-	uint32_t formatMask;
 
-	for(int i = 0; i < numLinesToPrint; ++i) {
-		int line = startLine + i;
-		::move(i,0);
-		if(filtered) {
-			if(log.getTriLogTokens(line,s)) {
-				if( (format & TriFormatMask::line) != 0) {
-					::printw("%d",line);
-				}
-				for(int j = 0; j < 11; ++j) {
-					formatMask = 1 << (j+1);
-					if( (format & formatMask) != 0) {
-						attron(COLOR_PAIR(1));
-						::addstr("|");
-						attroff(COLOR_PAIR(1));
-						for(auto character : s[j]) {
-							::addch(character);
+	if(currentState != lastDrawnState) {
+		::clear();
+		int numLinesToPrint = rows - 1;
+		uint32_t formatMask;
+
+		for(int i = 0; i < numLinesToPrint; ++i) {
+			int line = startLine + i;
+			::move(i,0);
+			if(filtered) {
+				if(log.getTriLogTokens(line,s)) {
+					if( (currentState.format & TriFormatMask::line) != 0) {
+						::printw("%d",line);
+					}
+					for(int j = 0; j < 11; ++j) {
+						formatMask = 1 << (j+1);
+						if( (currentState.format & formatMask) != 0) {
+							attron(COLOR_PAIR(1));
+							::addstr("|");
+							attroff(COLOR_PAIR(1));
+							for(auto character : s[j]) {
+								::addch(character);
+							}
 						}
 					}
+				}
+				else {
+					::addstr(log.getLine(line,cols,lineOffset).c_str());
 				}
 			}
 			else {
 				::addstr(log.getLine(line,cols,lineOffset).c_str());
 			}
 		}
-		else {
-			::addstr(log.getLine(line,cols,lineOffset).c_str());
-		}
+		::move(numLinesToPrint,0);
+		::addstr(string(cols,' ').c_str());
+		::move(numLinesToPrint,0);
+		::addch(':');
+		::refresh();          /* Print it on to the real screen */
+		lastDrawnState = currentState;
+		lastDrawnState.forceUpdate = false;
 	}
-	::move(numLinesToPrint,0);
-	::addstr(string(cols,' ').c_str());
-	::move(numLinesToPrint,0);
-	::addch(':');
-	::refresh();          /* Print it on to the real screen */
 }
 
 std::string Screen::getInputLine() {
