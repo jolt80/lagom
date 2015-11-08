@@ -11,6 +11,7 @@
 #include <Screen.h>
 #include <State.h>
 #include <Log.h>
+#include <Logger.h>
 
 #include <cassert>
 #include <thread>
@@ -20,20 +21,28 @@ using namespace std;
 void acceleratedInc(int& val, int num, int scaling = 1);
 void acceleratedDec(int& val, int num, int scaling = 1);
 
-void guiLoop(Screen& screen,State& state)  {
-	screen.drawLog(state.currLine,state.filtered);
-	screen.refresh();
+Logger logger(".debug_log");
 
+void guiLoop(Screen& screen,State& state)  {
+	logger.registerClient(" gui");
 	while(state.running)
 	{
-		usleep(1000);
-		if(state.currLine + screen.getRows() > screen.log.getNumLines()) state.currLine = screen.log.getNumLines() - screen.getRows();
-		screen.drawLog(state.currLine,state.filtered,state.lineOffset);
-		screen.refresh();
+		if(!screen.log.areLineNumbersParsed()) {
+			screen.log.scanForLines(INT_MAX,9500);
+		}
+		else if(!screen.areLinesScannedForWidths()) {
+			screen.scanForWidths(9500);
+		}
+		else {
+			usleep(10000);
+		}
+		screen.drawLog();
 	}
 }
 
 int main(int argc, char* argv[]) {
+	logger.registerClient("main");
+
 	const char* timeStr = "\\[\\d{4}-\\d{2}-\\d{2}\\s*(\\d{1,2}:\\d{1,2}:\\d{1,2}\\.\\d{3}).*?\\]";
 	const char* timeDiffStr = "\\((\\+\\d+\\.\\d+)\\)";
 	const char* card = "(\\w+)";
@@ -124,8 +133,8 @@ int main(int argc, char* argv[]) {
 			break;
 			case KEY_END:
 			{
-				log.getLine(UINT_MAX);
-				currentState.currLine = log.getNumLines();
+				log.lineAt(INT_MAX);
+				currentState.currLine = log.getNumLines() - screen.getRows();
 			}
 			break;
 			case KEY_HOME:
@@ -133,6 +142,10 @@ int main(int argc, char* argv[]) {
 				currentState.currLine = 0;
 			}
 			break;
+			case 'l':
+				::addstr("line> ");
+				currentState.currLine = screen.getInputInteger();
+				break;
 			case KEY_IC:
 				currentState.filtered = !currentState.filtered;
 				break;
@@ -167,9 +180,8 @@ int main(int argc, char* argv[]) {
 				currentState.format ^= TriFormatMask::msg;
 				break;
 			case KEY_RESIZE:
+				logger.log("Triggering resize");
 				screen.updateSize();
-				if(currentState.currLine + screen.getRows() > screen.log.getNumLines()) currentState.currLine = screen.log.getNumLines() - screen.getRows();
-				//currentState.forceUpdate = true;
 		}
 		lastInput = input;
 	}

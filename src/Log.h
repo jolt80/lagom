@@ -20,6 +20,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/mman.h>
+#include <chrono>
 
 #include <re2/re2.h>
 
@@ -31,6 +32,7 @@ public:
 	bool map(std::string fileName);
 	bool unmap();
 
+	bool areLineNumbersParsed() const;
 	int getNumLines() const;
 
 	int searchForLineContaining(int startLine, std::string search) const;
@@ -44,10 +46,10 @@ public:
 
 	StringLiteral lineAt(int index) const;
 
+	void scanForLines(int index, long maxDuration = 2000000) const;
 protected:
 	RE2 TriLog;
 
-	void scanForLines(int index) const;
 
 	char *fileStart;
 	char* fileEnd;

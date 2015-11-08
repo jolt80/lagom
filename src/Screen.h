@@ -13,6 +13,8 @@
 #include <ncurses.h>
 #include <string>
 #include <re2/stringpiece.h>
+#include <chrono>
+
 
 class Screen {
 public:
@@ -33,16 +35,23 @@ public:
 	void println(const std::string str);
 	void println(const char* str);
 
-	void drawLog(int startLine, bool filtered, int lineOffset = 0);
+	void drawLog();
 
 	void refresh();
 
 	std::string getInputLine();
+	int getInputInteger();
 	int getInput();
 
+	bool areLinesScannedForWidths() const;
+	void scanForWidths(long maxDuration = 2000000);
+
 protected:
+	std::array<int,12> maxWidth{ { 12,13,12,12,3,30,30,30,1000,1000,1000,1000 } };
+
 	State lastDrawnState;
 	re2::StringPiece s[20];
+	int lastLineScannedForWidths = 0;
 
 	bool isNumberOrLetter(int c) const;
 	bool updateNeeded() const;

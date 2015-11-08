@@ -7,8 +7,12 @@
 
 #include "Screen.h"
 #include <iostream>
+#include <Logger.h>
+
+extern Logger logger;
 
 using namespace std;
+using namespace std::chrono;
 
 int Screen::getRows() const {
 	return rows;
@@ -20,12 +24,13 @@ int Screen::getCols() const {
 
 void Screen::updateSize() {
 	getmaxyx(stdscr, rows, cols);
+	//currentState.forceUpdate = true;
 }
 
 Screen::Screen(const Log& _log, State& _state) : log(_log), currentState(_state) {
 	::initscr();          /* Start curses mode          */
-    ::noecho();
-    ::keypad(stdscr, TRUE);   // for KEY_UP, KEY_DOWN
+	::noecho();
+	::keypad(stdscr, TRUE);   // for KEY_UP, KEY_DOWN
 	if(has_colors() == FALSE)
 	{
 		endwin();
@@ -36,7 +41,7 @@ Screen::Screen(const Log& _log, State& _state) : log(_log), currentState(_state)
 	use_default_colors();
 	init_pair(1, COLOR_RED, -1);
 	lastDrawnState.format = 0;
-    updateSize();
+	updateSize();
 }
 
 Screen::~Screen() {
@@ -45,7 +50,8 @@ Screen::~Screen() {
 	::endwin();           /* End curses mode        */
 }
 
-void Screen::drawLog(int startLine, bool filtered, int lineOffset) {
+void Screen::drawLog() {
+	if(currentState.currLine + rows > log.getNumLines()) currentState.currLine = log.getNumLines() - rows;
 
 	if(currentState != lastDrawnState) {
 		::clear();
@@ -53,31 +59,60 @@ void Screen::drawLog(int startLine, bool filtered, int lineOffset) {
 		uint32_t formatMask;
 
 		for(int i = 0; i < numLinesToPrint; ++i) {
-			int line = startLine + i;
+			int line = currentState.currLine + i;
 			::move(i,0);
-			if(filtered) {
+			if(currentState.filtered) {
 				if(log.getTriLogTokens(line,s)) {
 					if( (currentState.format & TriFormatMask::line) != 0) {
 						::printw("%d",line);
 					}
-					for(int j = 0; j < 11; ++j) {
-						formatMask = 1 << (j+1);
+					for(int j = 0; j < 9; ++j) {
+						int formatIndex = j+1;
+						formatMask = 1 << formatIndex;
 						if( (currentState.format & formatMask) != 0) {
 							attron(COLOR_PAIR(1));
 							::addstr("|");
 							attroff(COLOR_PAIR(1));
-							for(auto character : s[j]) {
-								::addch(character);
+							int width = currentState.width[formatIndex];
+							re2::StringPiece token = s[j];
+							int foundChars = token.size();
+							int offset = 0;
+							if(formatIndex != 9) offset = foundChars - width;
+							if(offset < 0) {
+								for(int k = 0; k > offset; --k) {
+									::addch(' ');
+								}
+								for(int k = 0; k < (width + offset); ++k) {
+									::addch(token[k]);
+								}
 							}
+							else {
+								for(int k = 0; k < width; ++k) {
+									::addch(token[k + offset]);
+								}
+							}
+//
+//							int foundChars = token.size();
+//							int offset = foundChars - width;
+//							if(offset < 0) {
+//								for(int k = 0; k > offset; --k) {
+//									::addch(' ');
+//								}
+//							}
+//							else {
+//								for(int k = 0; k < width; ++k) {
+//									::addch(token[k + offset]);
+//								}
+//							}
 						}
 					}
 				}
 				else {
-					::addstr(log.getLine(line,cols,lineOffset).c_str());
+					::addstr(log.getLine(line,cols,currentState.lineOffset).c_str());
 				}
 			}
 			else {
-				::addstr(log.getLine(line,cols,lineOffset).c_str());
+				::addstr(log.getLine(line,cols,currentState.lineOffset).c_str());
 			}
 		}
 		::move(numLinesToPrint,0);
@@ -116,6 +151,34 @@ std::string Screen::getInputLine() {
 	return ret;
 }
 
+int Screen::getInputInteger() {
+	int c;
+	std::string ret;
+	while((c = ::getch()) != '\n') {
+		if(c >= '0' && c <= '9') {
+			::addch(c);
+			ret += (char)c;
+		}
+		else if( c == KEY_BACKSPACE) {
+			int inputSize = ret.size();
+			if(inputSize > 0)
+			{
+				--inputSize;
+				ret.resize(inputSize);
+				int ypos, xpos;
+				getyx(stdscr, ypos, xpos);
+				xpos--;
+				::move(ypos,xpos);
+				::addch(' ');
+				::move(ypos,xpos);
+			}
+		}
+	}
+	return std::atoi(ret.c_str());
+}
+
+
+
 bool Screen::isNumberOrLetter(int c) const {
 	if(c >= '0' && c <= '9') return true;
 	if(c >= 'A' && c <= 'Z') return true;
@@ -149,4 +212,37 @@ void Screen::println(const char* str) {
 	std::string print(str);
 	print += '\n';
 	::printw(print.c_str());  /* Print string          */
+}
+
+bool Screen::areLinesScannedForWidths() const {
+	return lastLineScannedForWidths == log.getNumLines();
+}
+
+void Screen::scanForWidths(long maxDuration) {
+	logger << "enter scanForWidths\n";
+
+	int startLine = lastLineScannedForWidths;
+	auto start = high_resolution_clock::now();
+
+	for(; lastLineScannedForWidths < log.getNumLines(); ++lastLineScannedForWidths) {
+		// Regex matching a TRI Log line
+		if(log.getTriLogTokens(lastLineScannedForWidths,s)) {
+			for(int i = 0; i < 12; ++i)
+			{
+				if(currentState.width[i] < s[i].size() && s[i].size() <= maxWidth[i]) currentState.width[i] = s[i].size();
+			}
+		}
+
+		if(lastLineScannedForWidths % 1000 == 0) {
+			auto end = high_resolution_clock::now();
+			auto duration = end - start;
+			if(duration_cast<microseconds>(duration).count() > maxDuration) break;
+		}
+	}
+
+	auto end = high_resolution_clock::now();
+	auto duration = end - start;
+
+	logger << "scanned " << lastLineScannedForWidths - startLine << " for widths in " << duration_cast<microseconds>(duration).count() << " us\n";
+
 }

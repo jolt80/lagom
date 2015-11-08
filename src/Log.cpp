@@ -11,12 +11,16 @@
 #include <cstring>
 #include <cstdint>
 #include <cassert>
+#include <Logger.h>
 
 #include <re2/re2.h>
 #include <re2/stringpiece.h>
 
 using namespace std;
+using namespace std::chrono;
 
+
+extern Logger logger;
 
 Log::Log(std::string triRegex) :
 		TriLog{triRegex},
@@ -25,6 +29,10 @@ Log::Log(std::string triRegex) :
 }
 
 Log::~Log() {
+}
+
+bool Log::areLineNumbersParsed() const {
+	return INT_MAX != numLines;
 }
 
 int Log::getNumLines() const {
@@ -82,38 +90,24 @@ bool Log::unmap() {
 }
 
 std::string Log::getLine(int index) const {
-	int scannedLines = static_cast<int>(lines.size());
-	if(scannedLines <= index) {
-		scanForLines(index);
-		scannedLines = static_cast<int>(lines.size());
-	}
-
-	if(index < scannedLines) {
-		return lines.at(index).toString();
-	}
-	return string();
+	return lineAt(index).toString();
 }
 
 std::string Log::getLine(int index, int maxLen, int lineOffset) const {
-	int scannedLines = static_cast<int>(lines.size());
-	if(scannedLines <= index) {
-		scanForLines(index);
-		scannedLines = static_cast<int>(lines.size());
+	StringLiteral line = lineAt(index);
+	if(line.trimFromStart(lineOffset)) {
+		return line.toString();
 	}
-
-	if(index < scannedLines) {
-		StringLiteral line = lines.at(index);
-		if(line.trimFromStart(lineOffset)) {
-			return line.toString();
-		}
-	}
-	return string();
+	return string{};
 }
 
 StringLiteral Log::lineAt(int index) const {
 	if(index < numLines) {
 		if(static_cast<int>(lines.size()) <= index) {
-			scanForLines(index+100);
+			if(index <= (INT_MAX - 100))
+				scanForLines(index+100);
+			else
+				scanForLines(INT_MAX);
 		}
 
 		if(index < numLines) {
@@ -125,11 +119,16 @@ StringLiteral Log::lineAt(int index) const {
 
 bool Log::getTriLogTokens(int index, re2::StringPiece s[]) const {
 	// Expect to get 10 matches for a TRI log
-	return RE2::FullMatch(lineAt(index).toStringPiece(),TriLog,&s[0],&s[1],&s[2],&s[3],&s[4],&s[5],&s[6],&s[7],&s[8]);
+	StringLiteral line = lineAt(index);
+
+	return RE2::FullMatch(line.toStringPiece(),TriLog,&s[0],&s[1],&s[2],&s[3],&s[4],&s[5],&s[6],&s[7],&s[8]);
 }
 
-void Log::scanForLines(int index) const {
+void Log::scanForLines(int index, long maxDuration) const {
+	logger << "enter scanForLines\n";
 	int lastScannedLine = lines.size() - 1;
+	int startLine = lastScannedLine;
+	auto start = high_resolution_clock::now();
 
 	for(; lastScannedLine <= index && lines.at(lastScannedLine).getStrEnd() < fileEnd; ++lastScannedLine) {
 		// second point to '\n' at the end of the line
@@ -145,7 +144,18 @@ void Log::scanForLines(int index) const {
 			numLines = lastScannedLine + 1;
 		}
 		lines.push_back(StringLiteral{lineStart,lineEnd});
+
+		if(lastScannedLine % 1000 == 0) {
+			auto end = high_resolution_clock::now();
+			auto duration = end - start;
+			if(duration_cast<microseconds>(duration).count() > maxDuration) break;
+		}
 	}
+
+	auto end = high_resolution_clock::now();
+	auto duration = end - start;
+
+	logger << "scanned " << lastScannedLine - startLine << " in " << duration_cast<microseconds>(duration).count() << " us\n";
 }
 
 int Log::searchForLineContaining(int startLine, std::string search) const {
