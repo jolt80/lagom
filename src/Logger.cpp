@@ -31,8 +31,9 @@ void Logger::log(std::string msg) {
 
 	string name = clients.at(std::this_thread::get_id());
 
+	//<< std::put_time(std::localtime(&now_c),"%H:%M:%S:")
 	mutex.lock();
-	of << "- " << std::put_time(std::localtime(&now_c),"%H:%M:%S:") << millis << " - " << name << " - " << msg << endl;
+	of << "- " << millis << " - " << name << " - " << msg << endl;
 	of.flush();
 	mutex.unlock();
 }

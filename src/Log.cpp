@@ -22,8 +22,9 @@ using namespace std::chrono;
 
 extern Logger logger;
 
-Log::Log(std::string triRegex) :
+Log::Log(std::string triRegex, std::string baseLttngRegex) :
 		TriLog{triRegex},
+		BaseLttngLog{baseLttngRegex},
 		numLines{INT_MAX} {
 	assert(TriLog.ok());
 }
@@ -121,7 +122,8 @@ bool Log::getTriLogTokens(int index, re2::StringPiece s[]) const {
 	// Expect to get 10 matches for a TRI log
 	StringLiteral line = lineAt(index);
 
-	return RE2::FullMatch(line.toStringPiece(),TriLog,&s[0],&s[1],&s[2],&s[3],&s[4],&s[5],&s[6],&s[7],&s[8]);
+	return RE2::FullMatch(line.toStringPiece(),TriLog,&s[0],&s[1],&s[2],&s[3],&s[4],&s[5],&s[6],&s[7],&s[8]) ||
+		   RE2::FullMatch(line.toStringPiece(),BaseLttngLog,&s[0],&s[1],&s[2],&s[3],&s[4],&s[8]);
 }
 
 void Log::scanForLines(int index, long maxDuration) const {

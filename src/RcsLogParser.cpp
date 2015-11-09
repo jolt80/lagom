@@ -17,6 +17,7 @@
 #include <thread>
 
 using namespace std;
+using namespace std::chrono;
 
 void acceleratedInc(int& val, int num, int scaling = 1);
 void acceleratedDec(int& val, int num, int scaling = 1);
@@ -28,13 +29,10 @@ void guiLoop(Screen& screen,State& state)  {
 	while(state.running)
 	{
 		if(!screen.log.areLineNumbersParsed()) {
-			screen.log.scanForLines(INT_MAX,9500);
+			screen.log.scanForLines(INT_MAX,4500);
 		}
 		else if(!screen.areLinesScannedForWidths()) {
-			screen.scanForWidths(9500);
-		}
-		else {
-			usleep(10000);
+			screen.scanForWidths(4500);
 		}
 		screen.drawLog();
 	}
@@ -46,11 +44,13 @@ int main(int argc, char* argv[]) {
 	const char* timeStr = "\\[\\d{4}-\\d{2}-\\d{2}\\s*(\\d{1,2}:\\d{1,2}:\\d{1,2}\\.\\d{3}).*?\\]";
 	const char* timeDiffStr = "\\((\\+\\d+\\.\\d+)\\)";
 	const char* card = "(\\w+)";
-	const char* traceLevel = "com_ericsson_triobjif:(.*?):";
+	const char* triTraceLevel = "com_ericsson_triobjif:(.*?):";
+	const char* lttngObjAndTraceLevel = "\\w+:(\\w+)";
 	const char* cpuId = "{ cpu_id = (\\w+) },";
 	const char* processAndObjIf = "\\{ processAndObjIf = \"(.*?)\\((.*?)\\)\",";
 	const char* fileAndLine = "fileAndLine = \".*?(\\w+\\.\\w+:\\d+)\",";
 	const char* msg = "msg = \"\\s*(.*)\" }";
+	const char* lttngMsg = "\\{ (.*) }";
 	const char* separator = ".*?";
 
 	std::string triRegex;
@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
 	triRegex += separator;
 	triRegex += card;
 	triRegex += separator;
-	triRegex += traceLevel;
+	triRegex += triTraceLevel;
 	triRegex += separator;
 	triRegex += cpuId;
 	triRegex += separator;
@@ -72,7 +72,22 @@ int main(int argc, char* argv[]) {
 	triRegex += msg;
 	triRegex += separator;
 
-	Log log(triRegex);
+	std::string baseLttngRegex;
+	baseLttngRegex += timeStr;
+	baseLttngRegex += separator;
+	baseLttngRegex += timeDiffStr;
+	baseLttngRegex += separator;
+	baseLttngRegex += card;
+	baseLttngRegex += separator;
+	baseLttngRegex += lttngObjAndTraceLevel;
+	baseLttngRegex += separator;
+	baseLttngRegex += cpuId;
+	baseLttngRegex += separator;
+	baseLttngRegex += lttngMsg;
+
+
+
+	Log log(triRegex,baseLttngRegex);
 	if(!log.map(argv[1])) {
 		return 1;
 	}
@@ -197,9 +212,9 @@ void acceleratedInc(int& val, int num, int scaling) {
 	int toInc;
 
 	if ( num > 100 ) {
-		toInc = scaling * 10;
-	} else if ( num > 50 ) {
 		toInc = scaling * 5;
+	} else if ( num > 50 ) {
+		toInc = scaling * 2;
 	} else {
 		toInc = scaling;
 	}
@@ -211,9 +226,9 @@ void acceleratedDec(int& val, int num, int scaling) {
 	int toDec;
 
 	if ( num > 100 ) {
-		toDec = scaling * 10;
-	} else if ( num > 50 ) {
 		toDec = scaling * 5;
+	} else if ( num > 50 ) {
+		toDec = scaling * 2;
 	} else {
 		toDec = scaling;
 	}

@@ -35,6 +35,7 @@ public:
 	void println(const std::string str);
 	void println(const char* str);
 
+	void printToken(re2::StringPiece token, int formatIndex);
 	void drawLog();
 
 	void refresh();

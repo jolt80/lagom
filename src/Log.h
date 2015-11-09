@@ -26,7 +26,7 @@
 
 class Log {
 public:
-	Log(std::string triRegex);
+	Log(std::string triRegex, std::string baseLttngRegex);
 	virtual ~Log();
 
 	bool map(std::string fileName);
@@ -49,7 +49,7 @@ public:
 	void scanForLines(int index, long maxDuration = 2000000) const;
 protected:
 	RE2 TriLog;
-
+	RE2 BaseLttngLog;
 
 	char *fileStart;
 	char* fileEnd;

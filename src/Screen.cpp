@@ -50,6 +50,18 @@ Screen::~Screen() {
 	::endwin();           /* End curses mode        */
 }
 
+void Screen::printToken(re2::StringPiece token, int formatIndex) {
+	if(formatIndex > 1) {
+		attron(COLOR_PAIR(1));
+		::addstr("|");
+		attroff(COLOR_PAIR(1));
+	}
+
+	for(int k = 0; k < token.size(); ++k) {
+		::addch(token[k]);
+	}
+}
+
 void Screen::drawLog() {
 	if(currentState.currLine + rows > log.getNumLines()) currentState.currLine = log.getNumLines() - rows;
 
@@ -61,59 +73,27 @@ void Screen::drawLog() {
 		for(int i = 0; i < numLinesToPrint; ++i) {
 			int line = currentState.currLine + i;
 			::move(i,0);
+			if( (currentState.format & TriFormatMask::line) != 0) {
+				::printw("%d",line);
+				attron(COLOR_PAIR(1));
+				::addstr("|");
+				attroff(COLOR_PAIR(1));
+			}
+
 			if(currentState.filtered) {
 				if(log.getTriLogTokens(line,s)) {
-					if( (currentState.format & TriFormatMask::line) != 0) {
-						::printw("%d",line);
-					}
 					for(int j = 0; j < 9; ++j) {
 						int formatIndex = j+1;
 						formatMask = 1 << formatIndex;
 						if( (currentState.format & formatMask) != 0) {
-							attron(COLOR_PAIR(1));
-							::addstr("|");
-							attroff(COLOR_PAIR(1));
-							int width = currentState.width[formatIndex];
 							re2::StringPiece token = s[j];
-							int foundChars = token.size();
-							int offset = 0;
-							if(formatIndex != 9) offset = foundChars - width;
-							if(offset < 0) {
-								for(int k = 0; k > offset; --k) {
-									::addch(' ');
-								}
-								for(int k = 0; k < (width + offset); ++k) {
-									::addch(token[k]);
-								}
-							}
-							else {
-								for(int k = 0; k < width; ++k) {
-									::addch(token[k + offset]);
-								}
-							}
-//
-//							int foundChars = token.size();
-//							int offset = foundChars - width;
-//							if(offset < 0) {
-//								for(int k = 0; k > offset; --k) {
-//									::addch(' ');
-//								}
-//							}
-//							else {
-//								for(int k = 0; k < width; ++k) {
-//									::addch(token[k + offset]);
-//								}
-//							}
+							printToken(token,formatIndex);
 						}
 					}
-				}
-				else {
-					::addstr(log.getLine(line,cols,currentState.lineOffset).c_str());
+					continue;
 				}
 			}
-			else {
-				::addstr(log.getLine(line,cols,currentState.lineOffset).c_str());
-			}
+			::addstr(log.getLine(line,cols,currentState.lineOffset).c_str());
 		}
 		::move(numLinesToPrint,0);
 		::addstr(string(cols,' ').c_str());
