@@ -29,10 +29,13 @@ void guiLoop(Screen& screen,State& state)  {
 	while(state.running)
 	{
 		if(!screen.log.areLineNumbersParsed()) {
-			screen.log.scanForLines(INT_MAX,4500);
+			screen.log.scanForLines(INT_MAX,25000);
 		}
 		else if(!screen.areLinesScannedForWidths()) {
-			screen.scanForWidths(4500);
+			screen.scanForWidths(25000);
+		}
+		else {
+			usleep(25000);
 		}
 		screen.drawLog();
 	}

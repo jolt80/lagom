@@ -28,7 +28,7 @@ public:
     template<typename T>
     Logger& operator<< (const T& data)
     {
-        of << data;
+//        of << data;
 
         return *this;
     }

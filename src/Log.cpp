@@ -94,12 +94,12 @@ std::string Log::getLine(int index) const {
 	return lineAt(index).toString();
 }
 
-std::string Log::getLine(int index, int maxLen, int lineOffset) const {
+StringLiteral Log::getLine(int index, int maxLen, int lineOffset) const {
 	StringLiteral line = lineAt(index);
 	if(line.trimFromStart(lineOffset)) {
-		return line.toString();
+		return line;
 	}
-	return string{};
+	return StringLiteral{};
 }
 
 StringLiteral Log::lineAt(int index) const {
@@ -112,6 +112,7 @@ StringLiteral Log::lineAt(int index) const {
 		}
 
 		if(index < numLines) {
+			logger.log("returning line at " + to_string(index));
 			return lines.at(index);
 		}
 	}

@@ -51,23 +51,57 @@ Screen::~Screen() {
 }
 
 void Screen::printToken(re2::StringPiece token, int formatIndex) {
+	int ypos;
+	int xpos;
 	if(formatIndex > 1) {
 		attron(COLOR_PAIR(1));
 		::addstr("|");
 		attroff(COLOR_PAIR(1));
 	}
+	getyx(stdscr, ypos, xpos);
 
-	for(int k = 0; k < token.size(); ++k) {
+	int charsToPrint = cols - xpos;
+	if(token.size() < charsToPrint) charsToPrint = token.size();
+
+	for(int k = 0; k < charsToPrint; ++k) {
+		::addch(token[k]);
+	}
+	::move(ypos,xpos + charsToPrint);
+}
+
+void Screen::printToken(re2::StringPiece token) {
+	int ypos;
+	int xpos;
+	getyx(stdscr, ypos, xpos);
+
+	int charsToPrint = cols - xpos;
+	if(token.size() < charsToPrint) charsToPrint = token.size();
+	for(int k = 0; k < charsToPrint; ++k) {
 		::addch(token[k]);
 	}
 }
 
+
 void Screen::drawLog() {
-	if(currentState.currLine + rows > log.getNumLines()) currentState.currLine = log.getNumLines() - rows;
+	logger.log("entering with currLine = " + to_string(currentState.currLine));
+
+	// Find starting line and how many lines should be drawn
+	int numLinesToPrint = rows - 1;
+	if(currentState.currLine > (log.getNumLines() - rows + 1)) {
+		// One more line to take into account the bottom line
+		currentState.currLine = log.getNumLines() - rows + 1;
+		if(currentState.currLine < 0) {
+			currentState.currLine = 0;
+		}
+	}
+//	if(log.getNumLines() < numLinesToPrint) {
+//		numLinesToPrint = log.getNumLines();
+//	}
+
+	logger.log("currLine = " + to_string(currentState.currLine));
 
 	if(currentState != lastDrawnState) {
 		::clear();
-		int numLinesToPrint = rows - 1;
 		uint32_t formatMask;
 
 		for(int i = 0; i < numLinesToPrint; ++i) {
@@ -93,11 +127,11 @@ void Screen::drawLog() {
 					continue;
 				}
 			}
-			::addstr(log.getLine(line,cols,currentState.lineOffset).c_str());
+			printToken(log.getLine(line,cols,currentState.lineOffset));
 		}
-		::move(numLinesToPrint,0);
+		::move(rows - 1,0);
 		::addstr(string(cols,' ').c_str());
-		::move(numLinesToPrint,0);
+		::move(rows - 1,0);
 		::addch(':');
 		::refresh();          /* Print it on to the real screen */
 		lastDrawnState = currentState;

@@ -15,12 +15,12 @@ using namespace std;
 using namespace std::chrono;
 
 Logger::Logger(const char* logFileName) {
-	of.open (logFileName, std::ofstream::out | std::ofstream::app);
+//	of.open (logFileName, std::ofstream::out | std::ofstream::app);
 }
 
 Logger::~Logger() {
-	of.flush();
-	of.close();
+//	of.flush();
+//	of.close();
 }
 
 void Logger::log(std::string msg) {
@@ -33,8 +33,8 @@ void Logger::log(std::string msg) {
 
 	//<< std::put_time(std::localtime(&now_c),"%H:%M:%S:")
 	mutex.lock();
-	of << "- " << millis << " - " << name << " - " << msg << endl;
-	of.flush();
+//	of << "- " << millis << " - " << name << " - " << msg << endl;
+//	of.flush();
 	mutex.unlock();
 }
 

@@ -38,7 +38,7 @@ public:
 	int searchForLineContaining(int startLine, std::string search) const;
 
 	std::string getLine(int index) const;
-	std::string getLine(int index, int maxLen, int lineOffset = 0) const;
+	StringLiteral getLine(int index, int maxLen, int lineOffset = 0) const;
 
 	bool getTriLogTokens(int index, re2::StringPiece[]) const;
 

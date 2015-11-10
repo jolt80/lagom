@@ -36,6 +36,11 @@ public:
 	void println(const char* str);
 
 	void printToken(re2::StringPiece token, int formatIndex);
+	void printToken(re2::StringPiece token);
+	inline void printToken(StringLiteral token) {
+		printToken(token.toStringPiece());
+	}
+
 	void drawLog();
 
 	void refresh();
