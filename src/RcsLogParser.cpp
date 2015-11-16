@@ -42,6 +42,11 @@ void guiLoop(Screen& screen,State& state)  {
 }
 
 int main(int argc, char* argv[]) {
+	if(argc != 2) {
+		cout << "Usage: rcs_log_parser <logfile>" << endl;
+		exit(1);
+	}
+
 	logger.registerClient("main");
 
 	const char* timeStr = "\\[\\d{4}-\\d{2}-\\d{2}\\s*(\\d{1,2}:\\d{1,2}:\\d{1,2}\\.\\d{3}).*?\\]";
@@ -88,8 +93,6 @@ int main(int argc, char* argv[]) {
 	baseLttngRegex += separator;
 	baseLttngRegex += lttngMsg;
 
-
-
 	Log log(triRegex,baseLttngRegex);
 	if(!log.map(argv[1])) {
 		return 1;
@@ -115,12 +118,12 @@ int main(int argc, char* argv[]) {
 			case KEY_DOWN:
 				acceleratedInc(currentState.currLine,numSameInput);
 			break;
-			case KEY_LEFT:
-				if(currentState.lineOffset >= 10) currentState.lineOffset -= 10;
-			break;
-			case KEY_RIGHT:
-				currentState.lineOffset += 10;
-			break;
+//			case KEY_LEFT:
+//				if(currentState.lineOffset >= 10) currentState.lineOffset -= 10;
+//			break;
+//			case KEY_RIGHT:
+//				currentState.lineOffset += 10;
+//			break;
 			case KEY_PPAGE:
 			{
 				acceleratedDec(currentState.currLine,numSameInput,screen.getRows());
@@ -152,7 +155,7 @@ int main(int argc, char* argv[]) {
 			case KEY_END:
 			{
 				log.lineAt(INT_MAX);
-				currentState.currLine = log.getNumLines() - screen.getRows();
+				currentState.currLine = INT_MAX;
 			}
 			break;
 			case KEY_HOME:

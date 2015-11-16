@@ -53,11 +53,9 @@ Screen::~Screen() {
 void Screen::printToken(re2::StringPiece token, int formatIndex) {
 	int ypos;
 	int xpos;
-	if(formatIndex > 1) {
-		attron(COLOR_PAIR(1));
-		::addstr("|");
-		attroff(COLOR_PAIR(1));
-	}
+	attron(COLOR_PAIR(1));
+	::addstr("|");
+	attroff(COLOR_PAIR(1));
 	getyx(stdscr, ypos, xpos);
 
 	int charsToPrint = cols - xpos;
@@ -71,8 +69,14 @@ void Screen::printToken(re2::StringPiece token, int formatIndex) {
 
 void Screen::printToken(re2::StringPiece token) {
 	int ypos;
+	(void)ypos; // supress not used
 	int xpos;
 	getyx(stdscr, ypos, xpos);
+	if( (currentState.format & TriFormatMask::line) != 0) {
+		attron(COLOR_PAIR(1));
+		::addstr("|");
+		attroff(COLOR_PAIR(1));
+	}
 
 	int charsToPrint = cols - xpos;
 	if(token.size() < charsToPrint) charsToPrint = token.size();
@@ -109,9 +113,6 @@ void Screen::drawLog() {
 			::move(i,0);
 			if( (currentState.format & TriFormatMask::line) != 0) {
 				::printw("%d",line);
-				attron(COLOR_PAIR(1));
-				::addstr("|");
-				attroff(COLOR_PAIR(1));
 			}
 
 			if(currentState.filtered) {
