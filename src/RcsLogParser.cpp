@@ -24,24 +24,44 @@ void acceleratedDec(int& val, int num, int scaling = 1);
 
 Logger logger(".debug_log");
 
+int main(int argc, char* argv[]) {
+	re2::StringPiece s[10];
+
+	Settings settings;
+	Log log(settings);
+
+	if(!log.map(argv[1])) {
+		return 1;
+	}
+
+	for(auto tokenizer : settings.getTokenizers()) {
+		cout << "iteration" << endl;
+		cout << tokenizer->toString() << endl;
+	}
+
+	cout << "before getTriLogTokens" << endl;
+	log.getTriLogTokens(100,s);
+
+}
+
 void guiLoop(Screen& screen,State& state)  {
 	logger.registerClient(" gui");
 	while(state.running)
 	{
 		if(!screen.log.areLineNumbersParsed()) {
-			screen.log.scanForLines(INT_MAX,25000);
+			screen.log.scanForLines(INT_MAX,10000);
 		}
-		else if(!screen.areLinesScannedForWidths()) {
-			screen.scanForWidths(25000);
-		}
+//		else if(!screen.areLinesScannedForWidths()) {
+//			screen.scanForWidths(25000);
+//		}
 		else {
-			usleep(25000);
+			usleep(10000);
 		}
 		screen.drawLog();
 	}
 }
 
-int main(int argc, char* argv[]) {
+int main2(int argc, char* argv[]) {
 	if(argc != 2) {
 		cout << "Usage: rcs_log_parser <logfile>" << endl;
 		exit(1);
@@ -49,51 +69,10 @@ int main(int argc, char* argv[]) {
 
 	logger.registerClient("main");
 
-	const char* timeStr = "\\[\\d{4}-\\d{2}-\\d{2}\\s*(\\d{1,2}:\\d{1,2}:\\d{1,2}\\.\\d{3}).*?\\]";
-	const char* timeDiffStr = "\\((\\+\\d+\\.\\d+)\\)";
-	const char* card = "(\\w+)";
-	const char* triTraceLevel = "com_ericsson_triobjif:(.*?):";
-	const char* lttngObjAndTraceLevel = "\\w+:(\\w+)";
-	const char* cpuId = "{ cpu_id = (\\w+) },";
-	const char* processAndObjIf = "\\{ processAndObjIf = \"(.*?)\\((.*?)\\)\",";
-	const char* fileAndLine = "fileAndLine = \".*?(\\w+\\.\\w+:\\d+)\",";
-	const char* msg = "msg = \"\\s*(.*)\" }";
-	const char* lttngMsg = "\\{ (.*) }";
-	const char* separator = ".*?";
+	Settings settings;
 
-	std::string triRegex;
+	Log log(settings);
 
-	triRegex += timeStr;
-	triRegex += separator;
-	triRegex += timeDiffStr;
-	triRegex += separator;
-	triRegex += card;
-	triRegex += separator;
-	triRegex += triTraceLevel;
-	triRegex += separator;
-	triRegex += cpuId;
-	triRegex += separator;
-	triRegex += processAndObjIf;
-	triRegex += separator;
-	triRegex += fileAndLine;
-	triRegex += separator;
-	triRegex += msg;
-	triRegex += separator;
-
-	std::string baseLttngRegex;
-	baseLttngRegex += timeStr;
-	baseLttngRegex += separator;
-	baseLttngRegex += timeDiffStr;
-	baseLttngRegex += separator;
-	baseLttngRegex += card;
-	baseLttngRegex += separator;
-	baseLttngRegex += lttngObjAndTraceLevel;
-	baseLttngRegex += separator;
-	baseLttngRegex += cpuId;
-	baseLttngRegex += separator;
-	baseLttngRegex += lttngMsg;
-
-	Log log(triRegex,baseLttngRegex);
 	if(!log.map(argv[1])) {
 		return 1;
 	}

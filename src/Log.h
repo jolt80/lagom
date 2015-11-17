@@ -8,6 +8,7 @@
 #ifndef LOG_H_
 #define LOG_H_
 
+#include <Settings.h>
 #include <string>
 #include <vector>
 #include <climits>
@@ -26,7 +27,7 @@
 
 class Log {
 public:
-	Log(std::string triRegex, std::string baseLttngRegex);
+	Log(Settings& _settings);
 	virtual ~Log();
 
 	bool map(std::string fileName);
@@ -48,12 +49,10 @@ public:
 
 	void scanForLines(int index, long maxDuration = 2000000) const;
 protected:
-	RE2 TriLog;
-	RE2 BaseLttngLog;
-
+	mutable int numLines;
+	Settings& settings;
 	char *fileStart;
 	char* fileEnd;
-	mutable int numLines;
 
 	mutable std::vector< StringLiteral > lines;
 };

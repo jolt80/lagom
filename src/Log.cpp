@@ -22,11 +22,8 @@ using namespace std::chrono;
 
 extern Logger logger;
 
-Log::Log(std::string triRegex, std::string baseLttngRegex) :
-		TriLog{triRegex},
-		BaseLttngLog{baseLttngRegex},
-		numLines{INT_MAX} {
-	assert(TriLog.ok());
+Log::Log(Settings& _settings) :
+		numLines{INT_MAX}, settings{_settings} {
 }
 
 Log::~Log() {
@@ -120,16 +117,36 @@ StringLiteral Log::lineAt(int index) const {
 }
 
 bool Log::getTriLogTokens(int index, re2::StringPiece s[]) const {
-	// Expect to get 10 matches for a TRI log
+	// Expect to get 9 matches for a TRI log
 	StringLiteral line = lineAt(index);
 
-	return RE2::FullMatch(line.toStringPiece(),TriLog,&s[0],&s[1],&s[2],&s[3],&s[4],&s[5],&s[6],&s[7],&s[8]) ||
-		   RE2::FullMatch(line.toStringPiece(),BaseLttngLog,&s[0],&s[1],&s[2],&s[3],&s[4],&s[8]);
+	for(auto tokenizer : settings.getTokenizers()) {
+		if(tokenizer->tokenizeLine(line.toStringPiece(),s)) return true;
+	}
+
+	return false;
 }
 
 void Log::scanForLines(int index, long maxDuration) const {
-	logger << "enter scanForLines\n";
-	int lastScannedLine = lines.size() - 1;
+	cout << "enter scanForLines\n";
+	int lastScannedLine = lines.size();
+
+	// find first line
+	if(lastScannedLine == 0) {
+		char* lineStart = fileStart;
+
+		int maxLength = fileEnd - lineStart;
+		char* lineEnd = (char*)::memchr(lineStart,'\n',maxLength);
+		if(NULL == lineEnd) {
+			lineEnd = fileEnd;
+			// Found end of file
+			numLines = lastScannedLine + 1;
+		}
+		lines.push_back(StringLiteral{lineStart,lineEnd});
+	}
+	else {
+		lastScannedLine--;
+	}
 	int startLine = lastScannedLine;
 	auto start = high_resolution_clock::now();
 
