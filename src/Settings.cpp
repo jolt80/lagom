@@ -17,7 +17,7 @@ Settings::Settings() {
 	const char* processAndObjIf = "\\{ processAndObjIf = \"(.*?)\\((.*?)\\)\",";
 	const char* fileAndLine = "fileAndLine = \".*?(\\w+\\.\\w+:\\d+)\",";
 	const char* msg = "msg = \"\\s*(.*)\" }";
-	const char* lttngMsg = "\\{ (.*) }";
+	const char* lttngMsg = "\\{ (.*) \\}";
 
 	std::vector<std::pair<int,std::string>> triRegex;
 

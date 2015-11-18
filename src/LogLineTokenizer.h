@@ -10,7 +10,10 @@
 
 #include <re2/re2.h>
 #include <vector>
+#include <array>
 #include <string>
+
+#define NUM_TOKENS 9
 
 /**
  * Wraps an RE2 regex and provides matching for which log token index
@@ -28,10 +31,14 @@ public:
 
 	std::string toString() const;
 private:
-	RE2::Arg* matches[10];
 	std::string name;
 	RE2* pattern;
-	std::vector<unsigned int> matchMapping;
+
+	std::array<re2::StringPiece,NUM_TOKENS> matches;
+	RE2::Arg* argv[NUM_TOKENS];
+	int argc;
+
+	std::array<int,NUM_TOKENS> matchMapping;
 };
 
 #endif /* LOGLINETOKENIZER_H_ */

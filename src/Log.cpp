@@ -23,7 +23,7 @@ using namespace std::chrono;
 extern Logger logger;
 
 Log::Log(Settings& _settings) :
-		numLines{INT_MAX}, settings{_settings} {
+		numLines{INT_MAX}, settings{_settings}, fileStart{nullptr}, fileEnd{nullptr} {
 }
 
 Log::~Log() {
@@ -57,7 +57,7 @@ bool Log::map(std::string fileName) {
 		return false;
 	}
 
-	fileStart = (char*) mmap (0, sb.st_size, PROT_READ, MAP_SHARED, fd, 0);
+	fileStart = (char*) ::mmap (0, sb.st_size, PROT_READ, MAP_SHARED, fd, 0);
 	fileEnd = fileStart + sb.st_size;
 
 	if (fileStart == MAP_FAILED) {
@@ -66,7 +66,7 @@ bool Log::map(std::string fileName) {
 	}
 
 	if (close (fd) == -1) {
-		perror ("close");
+		::perror ("close");
 		return false;
 	}
 
@@ -81,7 +81,7 @@ bool Log::map(std::string fileName) {
 
 bool Log::unmap() {
 	if (::munmap (fileStart, fileEnd - fileStart) == -1) {
-		perror ("munmap");
+		::perror ("munmap");
 		return false;
 	}
 	return true;
@@ -109,7 +109,6 @@ StringLiteral Log::lineAt(int index) const {
 		}
 
 		if(index < numLines) {
-			logger.log("returning line at " + to_string(index));
 			return lines.at(index);
 		}
 	}
@@ -128,7 +127,6 @@ bool Log::getTriLogTokens(int index, re2::StringPiece s[]) const {
 }
 
 void Log::scanForLines(int index, long maxDuration) const {
-	cout << "enter scanForLines\n";
 	int lastScannedLine = lines.size();
 
 	// find first line

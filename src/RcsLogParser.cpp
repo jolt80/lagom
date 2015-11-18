@@ -25,6 +25,7 @@ void acceleratedDec(int& val, int num, int scaling = 1);
 Logger logger(".debug_log");
 
 int main(int argc, char* argv[]) {
+	cout << "enter main" << endl;
 	re2::StringPiece s[10];
 
 	Settings settings;
@@ -40,7 +41,13 @@ int main(int argc, char* argv[]) {
 	}
 
 	cout << "before getTriLogTokens" << endl;
-	log.getTriLogTokens(100,s);
+
+	cout << log.getLine(273) << endl;
+	log.getTriLogTokens(273,s);
+
+	for(auto token : s) {
+		cout << token << endl;
+	}
 
 }
 
