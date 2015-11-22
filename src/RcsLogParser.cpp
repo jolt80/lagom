@@ -19,56 +19,66 @@
 using namespace std;
 using namespace std::chrono;
 
-void acceleratedInc(int& val, int num, int scaling = 1);
-void acceleratedDec(int& val, int num, int scaling = 1);
+//void acceleratedInc(int& val, int num, int scaling = 1);
+//void acceleratedDec(int& val, int num, int scaling = 1);
 
 Logger logger(".debug_log");
 
-int main(int argc, char* argv[]) {
-	cout << "enter main" << endl;
-	re2::StringPiece s[10];
+//int main2(int argc, char* argv[]) {
+//	cout << "enter main" << endl;
+//	re2::StringPiece s[10];
+//
+//	Settings settings;
+//	Log log(settings);
+//
+//	if(!log.map(argv[1])) {
+//		return 1;
+//	}
+//
+//	for(auto tokenizer : settings.getTokenizers()) {
+//		cout << "iteration" << endl;
+//		cout << tokenizer->toString() << endl;
+//	}
+//
+//	cout << "before getTriLogTokens" << endl;
+//
+//	cout << log.getLine(273) << endl;
+//	log.getTriLogTokens(273,s);
+//
+//	for(auto token : s) {
+//		cout << token << endl;
+//	}
+//
+//}
 
-	Settings settings;
-	Log log(settings);
-
-	if(!log.map(argv[1])) {
-		return 1;
-	}
-
-	for(auto tokenizer : settings.getTokenizers()) {
-		cout << "iteration" << endl;
-		cout << tokenizer->toString() << endl;
-	}
-
-	cout << "before getTriLogTokens" << endl;
-
-	cout << log.getLine(273) << endl;
-	log.getTriLogTokens(273,s);
-
-	for(auto token : s) {
-		cout << token << endl;
-	}
-
-}
-
-void guiLoop(Screen& screen,State& state)  {
-	logger.registerClient(" gui");
-	while(state.running)
-	{
-		if(!screen.log.areLineNumbersParsed()) {
-			screen.log.scanForLines(INT_MAX,10000);
-		}
-//		else if(!screen.areLinesScannedForWidths()) {
-//			screen.scanForWidths(25000);
+//void guiLoop(Screen& screen,State& state)  {
+//	logger.registerClient(" gui");
+//	while(state.running)
+//	{
+//		if(!screen.log.areLineNumbersParsed()) {
+//			screen.log.scanForLines(INT_MAX,10000);
 //		}
-		else {
-			usleep(10000);
-		}
-		screen.drawLog();
+////		else if(!screen.areLinesScannedForWidths()) {
+////			screen.scanForWidths(25000);
+////		}
+//		else {
+//			usleep(10000);
+//		}
+//		screen.drawLog();
+//	}
+//}
+
+void log_line_scanner(Log& log)  {
+	logger.registerClient("log_line_scanner");
+	while(!log.areLineNumbersParsed())
+	{
+		log.scanForLines(INT_MAX,10000);
+		usleep(10);
 	}
 }
 
-int main2(int argc, char* argv[]) {
+
+int main(int argc, char* argv[]) {
 	if(argc != 2) {
 		cout << "Usage: rcs_log_parser <logfile>" << endl;
 		exit(1);
@@ -86,9 +96,10 @@ int main2(int argc, char* argv[]) {
 
 	State currentState;
 	Screen screen(log,currentState);
+	screen.drawLog();
 
-	// Spawn the gui thread
-    thread gui(guiLoop,std::ref(screen),std::ref(currentState));
+	// Spawn a thread that scans the whole file for log lines
+    thread log_line_scanner_t(log_line_scanner,std::ref(log));
 
 	int numSameInput = 0;
 	int lastInput = 0;
@@ -99,10 +110,15 @@ int main2(int argc, char* argv[]) {
 
 		switch(input) {
 			case KEY_UP:
-				acceleratedDec(currentState.currLine,numSameInput);
+			{
+				if(currentState.currLine > 0)
+					currentState.currLine--;
+				else
+					currentState.currLine = 0;
+			}
 			break;
 			case KEY_DOWN:
-				acceleratedInc(currentState.currLine,numSameInput);
+				currentState.currLine++;
 			break;
 //			case KEY_LEFT:
 //				if(currentState.lineOffset >= 10) currentState.lineOffset -= 10;
@@ -112,11 +128,14 @@ int main2(int argc, char* argv[]) {
 //			break;
 			case KEY_PPAGE:
 			{
-				acceleratedDec(currentState.currLine,numSameInput,screen.getRows());
+				if(currentState.currLine >= screen.getRows())
+					currentState.currLine -= screen.getRows();
+				else
+					currentState.currLine = 0;
 			}
 			break;
 			case KEY_NPAGE:
-				acceleratedInc(currentState.currLine,numSameInput,screen.getRows());
+				currentState.currLine += screen.getRows();
 			break;
 			case 's':
 			case '/':
@@ -191,40 +210,42 @@ int main2(int argc, char* argv[]) {
 				screen.updateSize();
 		}
 		lastInput = input;
+
+		screen.drawLog();
 	}
 
 	currentState.running = false;
 
-    gui.join();
+	log_line_scanner_t.join();
 
 	return 0;
 }
 
-void acceleratedInc(int& val, int num, int scaling) {
-	int toInc;
-
-	if ( num > 100 ) {
-		toInc = scaling * 5;
-	} else if ( num > 50 ) {
-		toInc = scaling * 2;
-	} else {
-		toInc = scaling;
-	}
-
-	val += toInc;
-}
-
-void acceleratedDec(int& val, int num, int scaling) {
-	int toDec;
-
-	if ( num > 100 ) {
-		toDec = scaling * 5;
-	} else if ( num > 50 ) {
-		toDec = scaling * 2;
-	} else {
-		toDec = scaling;
-	}
-
-	if(toDec > val) val = 0;
-	else val -= toDec;
-}
+//void acceleratedInc(int& val, int num, int scaling) {
+//	int toInc;
+//
+//	if ( num > 100 ) {
+//		toInc = scaling * 5;
+//	} else if ( num > 50 ) {
+//		toInc = scaling * 2;
+//	} else {
+//		toInc = scaling;
+//	}
+//
+//	val += toInc;
+//}
+//
+//void acceleratedDec(int& val, int num, int scaling) {
+//	int toDec;
+//
+//	if ( num > 100 ) {
+//		toDec = scaling * 5;
+//	} else if ( num > 50 ) {
+//		toDec = scaling * 2;
+//	} else {
+//		toDec = scaling;
+//	}
+//
+//	if(toDec > val) val = 0;
+//	else val -= toDec;
+//}

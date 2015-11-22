@@ -14,7 +14,7 @@ OBJS := $(patsubst %.cpp,obj/%.o,$(notdir $(SRCS)))
 RE2_OBJS = $(wildcard re2/obj/re2/*.o)
 RE2_OBJS += $(wildcard re2/obj/util/*.o)
 
-LIBS += -lcurses -pthread
+LIBS += -lcurses -lpanel -pthread
 
 ifdef LMR_SITE
 LIBS += -ltinfo -L/app/vbuild/RHEL6-x86_64/gcc/4.9.2/lib64 -Wl,-rpath,/app/vbuild/RHEL6-x86_64/gcc/4.9.2/lib64

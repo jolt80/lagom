@@ -64,8 +64,12 @@ bool LogLineTokenizer::tokenizeLine(re2::StringPiece line, re2::StringPiece res[
 
 	result = RE2::FullMatchN(line,*pattern,argv,argc);
 
+	unsigned int matchIdx{0};
 	for(unsigned int i{0}; i < NUM_TOKENS; ++i) {
-		if(matchMapping[i] != -1) res[i] = matches[i];
+		if(matchMapping[i] != -1) {
+			res[i] = matches[matchIdx];
+			matchIdx++;
+		}
 		else res[i].clear();
 	}
 

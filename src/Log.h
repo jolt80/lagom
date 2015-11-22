@@ -22,6 +22,7 @@
 #include <unistd.h>
 #include <sys/mman.h>
 #include <chrono>
+#include <mutex>
 
 #include <re2/re2.h>
 
@@ -46,9 +47,12 @@ public:
 	std::string toString() const;
 
 	StringLiteral lineAt(int index) const;
-
 	void scanForLines(int index, long maxDuration = 2000000) const;
+
 protected:
+
+	mutable std::recursive_mutex mutex;
+
 	mutable int numLines;
 	Settings& settings;
 	char *fileStart;

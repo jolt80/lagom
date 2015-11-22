@@ -105,6 +105,12 @@ void Screen::drawLog() {
 	logger.log("currLine = " + to_string(currentState.currLine));
 
 	if(currentState != lastDrawnState) {
+		log.getLine(currentState.currLine);
+		if(currentState.currLine > log.getNumLines()) {
+			currentState.forceUpdate = true;
+			return drawLog();
+		}
+		logger.log("entering for-loop with currline " + to_string(currentState.currLine));
 		::clear();
 		uint32_t formatMask;
 

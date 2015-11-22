@@ -5,6 +5,7 @@
  *      Author: jolt
  */
 
+#include <AutoLock.h>
 #include <Log.h>
 
 #include <sstream>
@@ -12,6 +13,7 @@
 #include <cstdint>
 #include <cassert>
 #include <Logger.h>
+#include <AutoLock.h>
 
 #include <re2/re2.h>
 #include <re2/stringpiece.h>
@@ -38,6 +40,8 @@ int Log::getNumLines() const {
 }
 
 bool Log::map(std::string fileName) {
+	AutoLock lock(mutex);
+
 	struct stat sb;
 	int fd;
 
@@ -80,6 +84,8 @@ bool Log::map(std::string fileName) {
 }
 
 bool Log::unmap() {
+	AutoLock lock(mutex);
+
 	if (::munmap (fileStart, fileEnd - fileStart) == -1) {
 		::perror ("munmap");
 		return false;
@@ -100,6 +106,8 @@ StringLiteral Log::getLine(int index, int maxLen, int lineOffset) const {
 }
 
 StringLiteral Log::lineAt(int index) const {
+	AutoLock lock(mutex);
+
 	if(index < numLines) {
 		if(static_cast<int>(lines.size()) <= index) {
 			if(index <= (INT_MAX - 100))
@@ -109,6 +117,11 @@ StringLiteral Log::lineAt(int index) const {
 		}
 
 		if(index < numLines) {
+			if(index < 0 || index > lines.size()) {
+				char* crash = 0;
+				cout << crash;
+			}
+
 			return lines.at(index);
 		}
 	}
@@ -127,6 +140,7 @@ bool Log::getTriLogTokens(int index, re2::StringPiece s[]) const {
 }
 
 void Log::scanForLines(int index, long maxDuration) const {
+	AutoLock lock(mutex);
 	int lastScannedLine = lines.size();
 
 	// find first line
