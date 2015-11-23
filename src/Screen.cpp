@@ -31,6 +31,7 @@ Screen::Screen(const Log& _log, State& _state) : log(_log), currentState(_state)
 	::initscr();          /* Start curses mode          */
 	::noecho();
 	::keypad(stdscr, TRUE);   // for KEY_UP, KEY_DOWN
+	::nodelay(stdscr, TRUE);
 	if(has_colors() == FALSE)
 	{
 		endwin();
@@ -111,7 +112,7 @@ void Screen::drawLog() {
 			return drawLog();
 		}
 		logger.log("entering for-loop with currline " + to_string(currentState.currLine));
-		::clear();
+		::erase();
 		uint32_t formatMask;
 
 		for(int i = 0; i < numLinesToPrint; ++i) {
