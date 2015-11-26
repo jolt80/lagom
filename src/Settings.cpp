@@ -12,41 +12,50 @@ Settings::Settings() {
 	const char* timeDiffStr = "\\((\\+\\d+\\.\\d+)\\)";
 	const char* card = "(\\w+)";
 	const char* triTraceLevel = "com_ericsson_triobjif:(.*?):";
-	const char* lttngObjAndTraceLevel = "\\w+:(\\w+)";
+	const char* lttngObjAndTraceLevel = "\\w+:(\\w+):";
 	const char* cpuId = "{ cpu_id = (\\w+) },";
 	const char* processAndObjIf = "\\{ processAndObjIf = \"(.*?)\\((.*?)\\)\",";
-	const char* fileAndLine = "fileAndLine = \".*?(\\w+\\.\\w+:\\d+)\",";
+	const char* fileAndLine = "fileAndLine = \".*?(\\w+\\.\\w+):(\\d+)\",";
 	const char* msg = "msg = \"\\s*(.*)\" }";
 	const char* lttngMsg = "\\{ (.*) \\}";
+	const char* separator = "\\s*";
 
-	std::vector<std::pair<int,std::string>> triRegex;
+	std::string lttngPrefixPattern;
+	lttngPrefixPattern += timeStr;
+	lttngPrefixPattern += separator;
+	lttngPrefixPattern += timeDiffStr;
+	lttngPrefixPattern += separator;
+	lttngPrefixPattern += card;
+	lttngPrefixPattern += separator;
+	lttngPrefixPattern += lttngObjAndTraceLevel;
+	lttngPrefixPattern += separator;
+	lttngPrefixPattern += cpuId;
 
-	triRegex.push_back(std::pair<int,std::string>(1,timeStr));
-	triRegex.push_back(std::pair<int,std::string>(1,timeDiffStr));
-	triRegex.push_back(std::pair<int,std::string>(1,card));
-	triRegex.push_back(std::pair<int,std::string>(1,triTraceLevel));
-	triRegex.push_back(std::pair<int,std::string>(1,cpuId));
-	triRegex.push_back(std::pair<int,std::string>(2,processAndObjIf));
-	triRegex.push_back(std::pair<int,std::string>(1,fileAndLine));
-	triRegex.push_back(std::pair<int,std::string>(1,msg));
+	std::vector<std::string> tokenPatterns;
+	tokenPatterns.push_back(fileAndLine);
+	tokenPatterns.push_back(msg);
 
-	std::vector<std::pair<int,std::string>> baseLttngRegex;
-	baseLttngRegex.push_back(std::pair<int,std::string>(1,timeStr));
-	baseLttngRegex.push_back(std::pair<int,std::string>(1,timeDiffStr));
-	baseLttngRegex.push_back(std::pair<int,std::string>(1,card));
-	baseLttngRegex.push_back(std::pair<int,std::string>(1,lttngObjAndTraceLevel));
-	baseLttngRegex.push_back(std::pair<int,std::string>(1,cpuId));
-	baseLttngRegex.push_back(std::pair<int,std::string>(3,std::string{}));
-	baseLttngRegex.push_back(std::pair<int,std::string>(1,lttngMsg));
+	LogLineTokenizer* lttngBase = new LogLineTokenizer{"LttngBase",lttngPrefixPattern,tokenPatterns};
+	tokenizers.push_back(lttngBase);
 
-	LogLineTokenizer* tri = new LogLineTokenizer{"TRI", triRegex};
-	tokenizers.push_back(tri);
+	tokenWidths.push_back(5);
+	tokenWidths.push_back(12);
+	tokenWidths.push_back(12);
+	tokenWidths.push_back(3);
+	tokenWidths.push_back(6);
+	tokenWidths.push_back(2);
+	tokenWidths.push_back(2);
+	tokenWidths.push_back(20);
+	tokenWidths.push_back(200);
+	tokenWidths.push_back(200);
 
-	LogLineTokenizer* baseLttng = new LogLineTokenizer{"BaseLttng", baseLttngRegex};
-	tokenizers.push_back(baseLttng);
 
 }
 
 Settings::~Settings() {
-	// TODO Auto-generated destructor stub
+	for(auto tokenizer : tokenizers) delete tokenizer;
+}
+
+int Settings::getWidth(int tokenIndex) const {
+	return tokenWidths.at(tokenIndex);
 }

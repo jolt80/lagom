@@ -1,0 +1,55 @@
+# Settings for rcs_log_parser
+#############################
+
+## TokenNames
+#############
+# TokenNames assigns names to the tokens that are mapped to each number key on the keyboard
+#
+# Ordering of tokens (regex captures) is the same as the physical key layout on a keyboard: 2,3,4,5,6,7,8,9,0
+# Key 1 is reserved for Line number
+#############################################################################################################
+
+TokenNames {
+ # Key:Name,     Width,   Visible   
+    
+     1:Line,         5,         1
+     2:Time,        12,         1
+     3:TimeDiff,    12,         0
+     4:Card,         3,         0
+     5:TraceLevel,   6,         1
+     6:CpuId,        2,         0
+     7:FileAndLine, 20,         1
+     8:Process,     10,         0
+     9:TraceObj,    10,         1
+     0:Msg,        200,         1
+
+}
+
+## Regex expressions for tokens
+###############################
+# "prefixMatcher" is special; it will be matched against the start of each line and consumes its part of the line,
+# if it fails to match, the line is considered to be of an incorrect format for the matcher.
+# If there are more than 1 RegexMatchers defined in this file the next one will be applied to the line.
+#
+# The rest of the matchers will be matched against the rest of the line (the part after prefix) and are assumed to be
+# optional for the line
+#####################################################################################################################
+
+RegexMatcher:LttngBase {
+
+ # 5 captures: Time, TimeDiff, Card, TraceLevel and CpuId
+ prefixMatcher<5>=\[\d{4}-\d{2}-\d{2}\s*(\d{1,2}:\d{1,2}:\d{1,2}\.\d{3}).*?\]\s*\((\+\d+\.\d+)\)\s*(\w+)\s*\w+:(\w+):\s*{ cpu_id = (\w+) },"
+
+ # 2 captures, mapped to one token: FileAndLine with separator ":"
+ fileAndLineMatcher<2,:>=fileAndLine = ".*?(\w+\.\w+):(\d+)",
+
+ # 1 capture, Process
+ processMatcher<1>=\\{ processAndObjIf = "(.*?)\(.*?\)\",
+
+ # 1 capture, TraceObj
+ traceObjMatcher<1>=\\{ processAndObjIf = ".*?\((.*?)\)\",
+
+ # 1 capture: Msg
+ msgMatcher<1>=msg = "\s*(.*)" }
+
+}

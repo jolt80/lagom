@@ -1,6 +1,9 @@
 #include <StringLiteral.h>
 #include <sstream>
 #include <stdint.h>
+#include <iostream>
+
+using namespace std;
 
 const char* StringLiteral::getStr() const
 {
@@ -16,6 +19,11 @@ const char* StringLiteral::getStrEnd() const
 int StringLiteral::getLength() const
 {
   return strLen;
+}
+
+const char StringLiteral::operator [](int i) const {
+	const char* pos = str+i;
+	return *pos;
 }
 
 bool StringLiteral::operator<( const StringLiteral & rhs ) const
@@ -95,8 +103,6 @@ int StringLiteral::findFirstOf(char charToFind)const
   }
   else
   {
-    //lint is wrong here, found is not going to be null
-    //lint -esym(613, found)
     return found - str;
   }
 }

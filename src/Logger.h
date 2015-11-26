@@ -15,7 +15,7 @@
 
 class Logger : public std::ostream {
 public:
-	std::recursive_mutex mutex;
+	std::mutex mutex;
 	std::ofstream of;
 
 	Logger(const char* logFileName);

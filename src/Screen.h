@@ -14,14 +14,16 @@
 #include <string>
 #include <re2/stringpiece.h>
 #include <chrono>
+#include <Settings.h>
 
 
 class Screen {
 public:
-	const Log& log;
+	Log& log;
 	State& currentState;
+	Settings& settings;
 
-	Screen(const Log& _log, State& _state);
+	Screen(Log& _log, State& _state, Settings& _settings);
 	virtual ~Screen();
 
 	int getRows() const;
@@ -37,6 +39,7 @@ public:
 
 	void printToken(re2::StringPiece token, int formatIndex);
 	void printToken(re2::StringPiece token);
+	void printLine(int line);
 	inline void printToken(StringLiteral token) {
 		printToken(token.toStringPiece());
 	}
@@ -49,15 +52,10 @@ public:
 	int getInputInteger();
 	int getInput();
 
-	bool areLinesScannedForWidths() const;
-	void scanForWidths(long maxDuration = 2000000);
-
 protected:
 	std::array<int,12> maxWidth{ { 12,13,12,12,3,30,30,30,1000,1000,1000,1000 } };
 
 	State lastDrawnState;
-	re2::StringPiece s[20];
-	int lastLineScannedForWidths = 0;
 
 	bool isNumberOrLetter(int c) const;
 	bool updateNeeded() const;

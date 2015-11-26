@@ -12,44 +12,69 @@
 #include <State.h>
 #include <Log.h>
 #include <Logger.h>
+#include <TokenMatcher.h>
+#include <StringLiteral.h>
 
 #include <cassert>
 #include <thread>
 
 using namespace std;
 using namespace std::chrono;
-
-//void acceleratedInc(int& val, int num, int scaling = 1);
-//void acceleratedDec(int& val, int num, int scaling = 1);
+using namespace re2;
 
 Logger logger(".debug_log");
 
-//int main2(int argc, char* argv[]) {
-//	cout << "enter main" << endl;
-//	re2::StringPiece s[10];
-//
-//	Settings settings;
-//	Log log(settings);
-//
-//	if(!log.map(argv[1])) {
-//		return 1;
-//	}
-//
-//	for(auto tokenizer : settings.getTokenizers()) {
-//		cout << "iteration" << endl;
-//		cout << tokenizer->toString() << endl;
-//	}
-//
-//	cout << "before getTriLogTokens" << endl;
-//
-//	cout << log.getLine(273) << endl;
-//	log.getTriLogTokens(273,s);
-//
-//	for(auto token : s) {
-//		cout << token << endl;
-//	}
-//
-//}
+void log_line_scanner(Log& log)  {
+	logger.registerClient("log_scanner");
+	int lastTokenizedLine{0};
+	while(!log.areLineNumbersParsed())
+	{
+		log.scanForLines(INT_MAX,1000);
+		usleep(100);
+	}
+	while(lastTokenizedLine < log.getNumLines())
+	{
+		lastTokenizedLine = log.tokenizeLines(lastTokenizedLine,1000);
+		usleep(100);
+	}
+}
+
+int main2(int argc, char* argv[]) {
+	if(argc != 2) {
+		cout << "Usage: rcs_log_parser <logfile>" << endl;
+		exit(1);
+	}
+
+	logger.registerClient("main");
+
+	Settings settings;
+
+	Log log(settings);
+
+	if(!log.map(argv[1])) {
+		return 1;
+	}
+
+	// Spawn a thread that scans the whole file for log lines
+    thread log_line_scanner_t(log_line_scanner,std::ref(log));
+
+    int logline{0};
+    while(logline < log.getNumLines()) {
+    	cout << logline << " | ";
+    	std::string** tokens = log.getLogTokens(logline);
+    	for(int i{0}; i < 9; ++i) {
+    		cout << *(tokens[i]);
+    		if(i != 8) cout << " | ";
+    	}
+    	logline += 10;
+    	usleep(1000);
+    	cout << endl;
+    }
+
+	log_line_scanner_t.join();
+
+	return 0;
+}
 
 //void guiLoop(Screen& screen,State& state)  {
 //	logger.registerClient(" gui");
@@ -68,16 +93,6 @@ Logger logger(".debug_log");
 //	}
 //}
 
-void log_line_scanner(Log& log)  {
-	logger.registerClient("log_line_scanner");
-	while(!log.areLineNumbersParsed())
-	{
-		log.scanForLines(INT_MAX,10000);
-		usleep(10);
-	}
-}
-
-
 int main(int argc, char* argv[]) {
 	if(argc != 2) {
 		cout << "Usage: rcs_log_parser <logfile>" << endl;
@@ -95,7 +110,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	State currentState;
-	Screen screen(log,currentState);
+	Screen screen(log,currentState,settings);
 	screen.drawLog();
 
 	// Spawn a thread that scans the whole file for log lines
@@ -159,7 +174,6 @@ int main(int argc, char* argv[]) {
 			break;
 			case KEY_END:
 			{
-				log.lineAt(INT_MAX);
 				currentState.currLine = INT_MAX;
 			}
 			break;
@@ -206,8 +220,11 @@ int main(int argc, char* argv[]) {
 				currentState.format ^= TriFormatMask::msg;
 				break;
 			case KEY_RESIZE:
+			{
 				logger.log("Triggering resize");
 				screen.updateSize();
+				currentState.forceUpdate = true;
+			}
 		}
 		lastInput = input;
 
@@ -220,32 +237,3 @@ int main(int argc, char* argv[]) {
 
 	return 0;
 }
-
-//void acceleratedInc(int& val, int num, int scaling) {
-//	int toInc;
-//
-//	if ( num > 100 ) {
-//		toInc = scaling * 5;
-//	} else if ( num > 50 ) {
-//		toInc = scaling * 2;
-//	} else {
-//		toInc = scaling;
-//	}
-//
-//	val += toInc;
-//}
-//
-//void acceleratedDec(int& val, int num, int scaling) {
-//	int toDec;
-//
-//	if ( num > 100 ) {
-//		toDec = scaling * 5;
-//	} else if ( num > 50 ) {
-//		toDec = scaling * 2;
-//	} else {
-//		toDec = scaling;
-//	}
-//
-//	if(toDec > val) val = 0;
-//	else val -= toDec;
-//}

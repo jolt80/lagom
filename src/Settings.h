@@ -20,8 +20,11 @@ public:
 		return tokenizers;
 	}
 
+	int getWidth(int tokenIndex) const;
+
 private:
 	std::vector<LogLineTokenizer*> tokenizers;
+	std::vector<int> tokenWidths;
 };
 
 #endif /* SETTINGS_H_ */

@@ -4,7 +4,7 @@ Q=@
 # Search for source files in src
 VPATH += src
 
-CPPFLAGS += -O3 -Wall -std=c++11
+CPPFLAGS += -O3 -Wall -std=c++11 -g
 
 INC += -Isrc
 INC += -Ire2
@@ -27,20 +27,28 @@ compile: $(OBJS) | bin
 
 test:
 	$(Q)echo $(LIBS)
+	$(Q)echo $(patsubst %.o,%.d,$(OBJS))
 
 bin/rcs_log_parser: $(OBJS) | bin
 	$(Q)echo 'Linking target: $@'; \
 	$(CXX) -g -o $@ $(filter %.o,$^) $(RE2_OBJS) $(LIBS) 
 		
-obj/%.o: %.cpp | obj
+obj/%.o: %.cpp %.d | obj
 	$(Q)echo 'Compiling: $<'; \
-	$(CXX) $(INC) $(CPPFLAGS) -c -MMD -MP -MF$(@:%.o=%.d) -MT$(@:%.o=%.d) -o $@ $<
+	$(CXX) $(INC) $(CPPFLAGS) -c -o $@ $<
 
 obj bin:
 	$(Q)mkdir -p $@
 
+%.d: %.cpp
+	@set -e; rm -f $@; \
+	$(CC) -MM $(CPPFLAGS) $< > $@.$$$$; \
+	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
+	rm -f $@.$$$$
+
 clean:
 	$(Q)$(RM) -rf obj
 	$(Q)$(RM) -rf bin
-	
--include $(patsubst %.o,%.d,$(OBJS))
+
+include $(sources:.cpp=.d)
+#-include $(patsubst %.o,%.d,$(OBJS))

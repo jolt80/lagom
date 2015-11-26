@@ -21,7 +21,6 @@
 using namespace std;
 using namespace std::chrono;
 
-
 extern Logger logger;
 
 Log::Log(Settings& _settings) :
@@ -29,10 +28,16 @@ Log::Log(Settings& _settings) :
 }
 
 Log::~Log() {
+	for(auto line : lines) delete line;
+
 }
 
 bool Log::areLineNumbersParsed() const {
 	return INT_MAX != numLines;
+}
+
+bool Log::areAllLinesTokenized() {
+	return lineAt(numLines-1).tokens != nullptr;
 }
 
 int Log::getNumLines() const {
@@ -40,6 +45,7 @@ int Log::getNumLines() const {
 }
 
 bool Log::map(std::string fileName) {
+	//cout << __PRETTY_FUNCTION__ << endl;
 	AutoLock lock(mutex);
 
 	struct stat sb;
@@ -78,12 +84,13 @@ bool Log::map(std::string fileName) {
 	char* lineStart = fileStart;
 
 	char* lineEnd = (char*)::memchr(lineStart,'\n',fileEnd - lineStart);
-	lines.push_back(StringLiteral{lineStart,lineEnd});
+	lines.push_back(new Line{lineStart,lineEnd});
 
 	return true;
 }
 
 bool Log::unmap() {
+	//cout << __PRETTY_FUNCTION__ << endl;
 	AutoLock lock(mutex);
 
 	if (::munmap (fileStart, fileEnd - fileStart) == -1) {
@@ -93,54 +100,44 @@ bool Log::unmap() {
 	return true;
 }
 
-std::string Log::getLine(int index) const {
-	return lineAt(index).toString();
-}
-
-StringLiteral Log::getLine(int index, int maxLen, int lineOffset) const {
-	StringLiteral line = lineAt(index);
-	if(line.trimFromStart(lineOffset)) {
-		return line;
-	}
-	return StringLiteral{};
-}
-
-StringLiteral Log::lineAt(int index) const {
+re2::StringPiece Log::getLine(int index) {
+	//cout<< __PRETTY_FUNCTION__ << endl;
 	AutoLock lock(mutex);
+	return lineAt(index).contents.toStringPiece();
+}
 
+
+Line& Log::lineAt(int index) {
 	if(index < numLines) {
 		if(static_cast<int>(lines.size()) <= index) {
 			if(index <= (INT_MAX - 100))
-				scanForLines(index+100);
+				scanForLinesNotLocked(index+100);
 			else
-				scanForLines(INT_MAX);
+				scanForLinesNotLocked(INT_MAX);
 		}
 
 		if(index < numLines) {
-			if(index < 0 || index > lines.size()) {
-				char* crash = 0;
-				cout << crash;
-			}
-
-			return lines.at(index);
+			return *(lines.at(index));
 		}
 	}
-	return StringLiteral{};
+	return *(lines.at(numLines-1));
 }
 
-bool Log::getTriLogTokens(int index, re2::StringPiece s[]) const {
-	// Expect to get 9 matches for a TRI log
-	StringLiteral line = lineAt(index);
-
-	for(auto tokenizer : settings.getTokenizers()) {
-		if(tokenizer->tokenizeLine(line.toStringPiece(),s)) return true;
-	}
-
-	return false;
-}
-
-void Log::scanForLines(int index, long maxDuration) const {
+std::string** Log::getLogTokens(int index) {
+	//cout<< __PRETTY_FUNCTION__ << endl;
 	AutoLock lock(mutex);
+	Line& line = lineAt(index);
+	if(line.tokens == nullptr) tokenizeLine(line);
+	return line.tokens;
+}
+
+void Log::scanForLines(int index, long maxDuration) {
+	//cout<< __PRETTY_FUNCTION__ << endl;
+	AutoLock lock(mutex);
+	scanForLinesNotLocked(index,maxDuration);
+}
+
+void Log::scanForLinesNotLocked(int index, long maxDuration) {
 	int lastScannedLine = lines.size();
 
 	// find first line
@@ -154,7 +151,7 @@ void Log::scanForLines(int index, long maxDuration) const {
 			// Found end of file
 			numLines = lastScannedLine + 1;
 		}
-		lines.push_back(StringLiteral{lineStart,lineEnd});
+		lines.push_back(new Line{lineStart,lineEnd});
 	}
 	else {
 		lastScannedLine--;
@@ -162,9 +159,9 @@ void Log::scanForLines(int index, long maxDuration) const {
 	int startLine = lastScannedLine;
 	auto start = high_resolution_clock::now();
 
-	for(; lastScannedLine <= index && lines.at(lastScannedLine).getStrEnd() < fileEnd; ++lastScannedLine) {
+	for(; lastScannedLine <= index && lines.at(lastScannedLine)->contents.getStrEnd() < fileEnd; ++lastScannedLine) {
 		// second point to '\n' at the end of the line
-		char* search = const_cast<char*>(lines.at(lastScannedLine).getStrEnd());
+		char* search = const_cast<char*>(lines.at(lastScannedLine)->contents.getStrEnd());
 
 		char* lineStart = search + 1;
 
@@ -175,9 +172,9 @@ void Log::scanForLines(int index, long maxDuration) const {
 			// Found end of file
 			numLines = lastScannedLine + 1;
 		}
-		lines.push_back(StringLiteral{lineStart,lineEnd});
+		lines.push_back(new Line{lineStart,lineEnd});
 
-		if(lastScannedLine % 1000 == 0) {
+		if(lastScannedLine % 100 == 0) {
 			auto end = high_resolution_clock::now();
 			auto duration = end - start;
 			if(duration_cast<microseconds>(duration).count() > maxDuration) break;
@@ -190,10 +187,46 @@ void Log::scanForLines(int index, long maxDuration) const {
 	logger << "scanned " << lastScannedLine - startLine << " in " << duration_cast<microseconds>(duration).count() << " us\n";
 }
 
-int Log::searchForLineContaining(int startLine, std::string search) const {
+
+
+int Log::tokenizeLines(int index, long maxDuration) {
+	auto start = high_resolution_clock::now();
+	auto end = start;
+	long duration = duration_cast<microseconds>(end - start).count();
+
+	int i{index};
+	for(; i < numLines && duration < maxDuration; ++i) {
+		AutoLock lock(mutex);
+		Line& line = lineAt(i);
+		if(line.tokens == nullptr)
+			tokenizeLine(line);
+		if((i % 10) == 0) {
+			end = high_resolution_clock::now();
+			duration = duration_cast<microseconds>(end - start).count();
+		}
+	}
+	return i;
+}
+
+void Log::tokenizeLine(Line& line) {
+	if(line.tokens == nullptr) {
+		line.tokens = new std::string*[9];
+		for(int i{0}; i < 9; ++i) {
+			line.tokens[i] = new std::string();
+		}
+	}
+
+	for(auto tokenizer : settings.getTokenizers()) {
+		if(tokenizer->tokenizeLine(line.contents.toStringPiece(),line.tokens)) break;
+	}
+}
+
+int Log::searchForLineContaining(int startLine, std::string search) {
+	//cout<< __PRETTY_FUNCTION__ << endl;
+	AutoLock lock(mutex);
 	int lineIndex = startLine;
 
-	while(!(lineAt(lineIndex).contains(search))) {
+	while(!(lineAt(lineIndex).contents.contains(search))) {
 		lineIndex++;
 		if(lineIndex >= numLines) return numLines;
 	}

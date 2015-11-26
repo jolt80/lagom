@@ -39,7 +39,7 @@ class StringLiteral {
     constexpr StringLiteral(const char* str_, int strLen_) : str{str_}, strLen{strLen_} {}
 
     // Construct a StringLiteral from an std::string or a const char*
-    StringLiteral(std::string string) : str{string.c_str()}, strLen{static_cast<int>(string.size())} {}
+    StringLiteral(std::string& string) : str{string.c_str()}, strLen{static_cast<int>(string.size())} {}
     StringLiteral(const char* str_) : str{str_}, strLen{static_cast<int>(strlen(str_))} {}
     StringLiteral(const char* startPtr, const char* endPtr) : str{startPtr}, strLen{(int)(endPtr-startPtr)} {}
 
@@ -74,6 +74,7 @@ class StringLiteral {
     bool operator!=( const char * compareStr ) const;
     bool operator!=( const std::string& compareStr ) const;
     bool operator!=( const StringLiteral& compareStr ) const;
+    const char operator [](int i) const;
 
     StringLiteral& operator=( const StringLiteral& other );
     StringLiteral& operator=( const char * other );

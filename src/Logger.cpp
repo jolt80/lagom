@@ -39,6 +39,6 @@ void Logger::log(std::string msg) {
 }
 
 void Logger::registerClient(std::string name) {
-	AutoLock lock(mutex);
-	clients.insert(std::pair<std::thread::id,std::string>(std::this_thread::get_id(),name));
+	//AutoLock lock(mutex);
+	//clients.insert(std::pair<std::thread::id,std::string>(std::this_thread::get_id(),name));
 }

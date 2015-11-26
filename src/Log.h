@@ -26,6 +26,24 @@
 
 #include <re2/re2.h>
 
+struct Line {
+	StringLiteral contents;
+	std::string** tokens = nullptr;
+
+	Line(char* start, char* end) : contents{start,end}, tokens{nullptr} {}
+	Line(const Line&) =delete;
+	Line(Line&&) =delete;
+	~Line() {
+		if(tokens != nullptr) {
+			for(int i{0}; i < 9; ++i) {
+				delete tokens[i];
+			}
+			delete[] tokens;
+		}
+	}
+};
+
+
 class Log {
 public:
 	Log(Settings& _settings);
@@ -35,30 +53,31 @@ public:
 	bool unmap();
 
 	bool areLineNumbersParsed() const;
+	bool areAllLinesTokenized();
 	int getNumLines() const;
 
-	int searchForLineContaining(int startLine, std::string search) const;
+	int searchForLineContaining(int startLine, std::string search);
 
-	std::string getLine(int index) const;
-	StringLiteral getLine(int index, int maxLen, int lineOffset = 0) const;
-
-	bool getTriLogTokens(int index, re2::StringPiece[]) const;
+	re2::StringPiece getLine(int index);
+	std::string** getLogTokens(int index);
 
 	std::string toString() const;
 
-	StringLiteral lineAt(int index) const;
-	void scanForLines(int index, long maxDuration = 2000000) const;
-
+	void scanForLines(int index, long maxDuration = 2000000);
+	int tokenizeLines(int index, long maxDuration = 2000000);
 protected:
+	Line& lineAt(int index);
+	void tokenizeLine(Line& line);
+	void scanForLinesNotLocked(int index, long maxDuration = 2000000);
 
-	mutable std::recursive_mutex mutex;
+	mutable std::mutex mutex;
 
-	mutable int numLines;
+	int numLines;
 	Settings& settings;
 	char *fileStart;
 	char* fileEnd;
 
-	mutable std::vector< StringLiteral > lines;
+	std::vector<Line*> lines;
 };
 
 #endif /* LOG_H_ */

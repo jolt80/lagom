@@ -29,11 +29,11 @@ class State {
 public:
 	State() {
 		// Init format
-		format = 0;
-		format |= TriFormatMask::line;
-		format |= TriFormatMask::time;
-		format |= TriFormatMask::fileAndLine;
-		format |= TriFormatMask::msg;
+		format = 0xFFFF;
+//		format |= TriFormatMask::line;
+//		format |= TriFormatMask::time;
+//		format |= TriFormatMask::fileAndLine;
+//		format |= TriFormatMask::msg;
 	}
 
 	State ( const State & ) = default;

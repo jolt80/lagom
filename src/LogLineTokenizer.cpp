@@ -9,82 +9,80 @@
 #include <assert.h>
 #include <sstream>
 #include <iostream>
+#include <StringLiteral.h>
 
 using namespace std;
+using namespace re2;
 
-static const char* separator = ".*?";
-
-LogLineTokenizer::LogLineTokenizer(std::string _name, std::vector<std::pair<int,std::string>> patternInit) : name{_name} {
-	std::string fullPattern = "";
-
+LogLineTokenizer::LogLineTokenizer(std::string _name, std::string prefixPattern, std::vector<std::string> tokenPatterns) : name{_name}, numTokens{0} {
 	cout << "constructor" << endl;
-	int tokenIndex{0};
-	int match{0};
-	cout << "constructor2" << endl;
-	for(auto token : patternInit) {
-		if(token.second != "") {
-			cout << "tokenIndex = " << tokenIndex << ", match = " << match << endl;
-			fullPattern += separator;
-			fullPattern += token.second;
-			for(int j{0}; j < token.first; ++j) {
-				cout << "stuff" << endl;
-				matchMapping[tokenIndex] = match;
-				match++;
-				tokenIndex++;
-			}
-		}
-		else {
-			for(int j{0}; j < token.first; ++j) {
-				matchMapping[tokenIndex] = -1;
-				tokenIndex++;
-			}
-		}
-	}
-	fullPattern += ".*?";
 
-	argc = match;
 
-	pattern = new RE2{ fullPattern };
+	prefixMatcher = new TokenMatcher{prefixPattern};
+	numTokens += prefixMatcher->getNumTokens();
 
-	assert(pattern->ok());
-
-	for(unsigned int i{0}; i < NUM_TOKENS; ++i) {
-		argv[i] = new RE2::Arg();
-		*argv[i] = &matches[i];
+	for(auto pattern : tokenPatterns) {
+		TokenMatcher* tokenMatcher = new TokenMatcher{pattern};
+		tokenMatchers.push_back(tokenMatcher);
+		numTokens += tokenMatcher->getNumTokens();
 	}
 }
 
 LogLineTokenizer::~LogLineTokenizer() {
-	delete pattern;
+	delete prefixMatcher;
+
+	for(auto tokenMatcher : tokenMatchers) {
+		delete tokenMatcher;
+	}
 }
 
-bool LogLineTokenizer::tokenizeLine(re2::StringPiece line, re2::StringPiece res[]) const {
-	bool result = false;
-	re2::StringPiece s;
+int LogLineTokenizer::getNumTokens() const {
+	return numTokens;
+}
 
-	result = RE2::FullMatchN(line,*pattern,argv,argc);
+bool LogLineTokenizer::tokenizeLine(const re2::StringPiece line, std::string** tokens) const {
 
-	unsigned int matchIdx{0};
-	for(unsigned int i{0}; i < NUM_TOKENS; ++i) {
-		if(matchMapping[i] != -1) {
-			res[i] = matches[matchIdx];
-			matchIdx++;
+	StringPiece lineContents{line};
+	bool result{true};
+	int tokenIndex{0};
+
+	result = prefixMatcher->consume(lineContents,&(tokens[tokenIndex]));
+	tokenIndex += prefixMatcher->getNumMatches();
+	for(auto tokenMatcher : tokenMatchers) {
+		if(result) {
+			result = tokenMatcher->match(lineContents,&(tokens[tokenIndex]));
+			tokenIndex += tokenMatcher->getNumMatches();
 		}
-		else res[i].clear();
+		else break;
 	}
-
 	return result;
 }
 
+
+//bool LogLineTokenizer::tokenizeLine(re2::StringPiece line, re2::StringPiece res[]) const {
+//	bool result = false;
+//	re2::StringPiece s;
+//
+//	result = RE2::FullMatchN(line,*pattern,argv,argc);
+//
+//	unsigned int matchIdx{0};
+//	for(unsigned int i{0}; i < NUM_TOKENS; ++i) {
+//		if(matchMapping[i] != -1) {
+//			res[i] = matches[matchIdx];
+//			matchIdx++;
+//		}
+//		else res[i].clear();
+//	}
+//
+//	return result;
+//}
+
 std::string LogLineTokenizer::toString() const {
 	stringstream ss;
-
-	ss << ">>name" << "," << pattern->pattern() << ",";
-	for(auto match : matchMapping) {
-		ss << match << ",";
-	}
+//
+//	ss << ">>name" << "," << pattern->pattern() << ",";
+//	for(auto match : matchMapping) {
+//		ss << match << ",";
+//	}
 	return ss.str();
 }
-
-
-

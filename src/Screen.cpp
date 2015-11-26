@@ -27,11 +27,11 @@ void Screen::updateSize() {
 	//currentState.forceUpdate = true;
 }
 
-Screen::Screen(const Log& _log, State& _state) : log(_log), currentState(_state) {
+Screen::Screen(Log& _log, State& _state, Settings& _settings) : log(_log), currentState(_state), settings(_settings) {
 	::initscr();          /* Start curses mode          */
 	::noecho();
 	::keypad(stdscr, TRUE);   // for KEY_UP, KEY_DOWN
-	::nodelay(stdscr, TRUE);
+	//::nodelay(stdscr, TRUE);
 	if(has_colors() == FALSE)
 	{
 		endwin();
@@ -60,6 +60,7 @@ void Screen::printToken(re2::StringPiece token, int formatIndex) {
 	getyx(stdscr, ypos, xpos);
 
 	int charsToPrint = cols - xpos;
+	if(charsToPrint > settings.getWidth(formatIndex)) charsToPrint = settings.getWidth(formatIndex);
 	if(token.size() < charsToPrint) charsToPrint = token.size();
 
 	for(int k = 0; k < charsToPrint; ++k) {
@@ -86,6 +87,11 @@ void Screen::printToken(re2::StringPiece token) {
 	}
 }
 
+void Screen::printLine(int line) {
+	if( (currentState.format & TriFormatMask::line) != 0) {
+		::printw("%5d",line);
+	}
+}
 
 void Screen::drawLog() {
 	logger.log("entering with currLine = " + to_string(currentState.currLine));
@@ -118,24 +124,23 @@ void Screen::drawLog() {
 		for(int i = 0; i < numLinesToPrint; ++i) {
 			int line = currentState.currLine + i;
 			::move(i,0);
-			if( (currentState.format & TriFormatMask::line) != 0) {
-				::printw("%d",line);
-			}
+			printLine(line);
 
 			if(currentState.filtered) {
-				if(log.getTriLogTokens(line,s)) {
+				std::string** tokens = log.getLogTokens(line);
+				if(tokens != nullptr) {
 					for(int j = 0; j < 9; ++j) {
 						int formatIndex = j+1;
 						formatMask = 1 << formatIndex;
 						if( (currentState.format & formatMask) != 0) {
-							re2::StringPiece token = s[j];
-							printToken(token,formatIndex);
+							printToken(re2::StringPiece{*(tokens[j])},formatIndex);
 						}
 					}
 					continue;
 				}
 			}
-			printToken(log.getLine(line,cols,currentState.lineOffset));
+			//printToken(log.getLine(line,cols,currentState.lineOffset));
+			printToken(log.getLine(line));
 		}
 		::move(rows - 1,0);
 		::addstr(string(cols,' ').c_str());
@@ -234,37 +239,4 @@ void Screen::println(const char* str) {
 	std::string print(str);
 	print += '\n';
 	::printw(print.c_str());  /* Print string          */
-}
-
-bool Screen::areLinesScannedForWidths() const {
-	return lastLineScannedForWidths == log.getNumLines();
-}
-
-void Screen::scanForWidths(long maxDuration) {
-	logger << "enter scanForWidths\n";
-
-	int startLine = lastLineScannedForWidths;
-	auto start = high_resolution_clock::now();
-
-	for(; lastLineScannedForWidths < log.getNumLines(); ++lastLineScannedForWidths) {
-		// Regex matching a TRI Log line
-		if(log.getTriLogTokens(lastLineScannedForWidths,s)) {
-			for(int i = 0; i < 12; ++i)
-			{
-				if(currentState.width[i] < s[i].size() && s[i].size() <= maxWidth[i]) currentState.width[i] = s[i].size();
-			}
-		}
-
-		if(lastLineScannedForWidths % 1000 == 0) {
-			auto end = high_resolution_clock::now();
-			auto duration = end - start;
-			if(duration_cast<microseconds>(duration).count() > maxDuration) break;
-		}
-	}
-
-	auto end = high_resolution_clock::now();
-	auto duration = end - start;
-
-	logger << "scanned " << lastLineScannedForWidths - startLine << " for widths in " << duration_cast<microseconds>(duration).count() << " us\n";
-
 }
