@@ -8,6 +8,7 @@
 #include "Screen.h"
 #include <iostream>
 #include <Logger.h>
+#include <cassert>
 
 extern Logger logger;
 
@@ -41,7 +42,6 @@ Screen::Screen(Log& _log, State& _state, Settings& _settings) : log(_log), curre
 	start_color();			/* Start color 			*/
 	use_default_colors();
 	init_pair(1, COLOR_RED, -1);
-	lastDrawnState.format = 0;
 	updateSize();
 }
 
@@ -51,44 +51,80 @@ Screen::~Screen() {
 	::endwin();           /* End curses mode        */
 }
 
-void Screen::printToken(re2::StringPiece token, int formatIndex) {
+void Screen::printToken(StringLiteral _token, int formatIndex, bool printSeparatorPrefix) {
+	StringLiteral token{_token};
+	const TokenDefinition& tokenDefinition = settings.getTokenDefinition(formatIndex);
 	int ypos;
 	int xpos;
-	attron(COLOR_PAIR(1));
-	::addstr("|");
-	attroff(COLOR_PAIR(1));
+	if(printSeparatorPrefix) {
+		attron(COLOR_PAIR(1));
+		::addstr("|");
+		attroff(COLOR_PAIR(1));
+	}
 	getyx(stdscr, ypos, xpos);
 
-	int charsToPrint = cols - xpos;
-	if(charsToPrint > settings.getWidth(formatIndex)) charsToPrint = settings.getWidth(formatIndex);
-	if(token.size() < charsToPrint) charsToPrint = token.size();
+	assert(xpos < cols);
+	// maximum possible chars to print
+	int charsToPrint = tokenDefinition.getWidth();
 
-	for(int k = 0; k < charsToPrint; ++k) {
-		::addch(token[k]);
+	// limit to available space
+	if(charsToPrint > cols - xpos) {
+		charsToPrint = cols - xpos;
 	}
-	::move(ypos,xpos + charsToPrint);
+
+	// pad with blanks if not long enough
+	int blanksToPrint = 0;
+	if(token.getLength() < charsToPrint) {
+		blanksToPrint = charsToPrint - token.getLength();
+	}
+	// Trim from either end depending on crop alignment
+	else if(token.getLength() > charsToPrint) {
+		if(tokenDefinition.getCrop() == Alignment::LEFT) {
+			token.trimFromStart(token.getLength() - charsToPrint);
+		}
+		else {
+			token.trimFromEnd(token.getLength() - charsToPrint);
+		}
+	}
+
+	if(tokenDefinition.getAlignment() == Alignment::RIGHT) {
+		for(int k = 0; k < blanksToPrint; ++k) {
+			::addch(' ');
+		}
+		for(int k = 0; k < charsToPrint && k < token.getLength(); ++k) {
+			::addch(token[k]);
+		}
+	}
+	else {
+		for(int k = 0; k < charsToPrint && k < token.getLength(); ++k) {
+			::addch(token[k]);
+		}
+		for(int k = 0; k < blanksToPrint; ++k) {
+			::addch(' ');
+		}
+	}
 }
 
-void Screen::printToken(re2::StringPiece token) {
+void Screen::printToken(StringLiteral token) {
 	int ypos;
 	(void)ypos; // supress not used
 	int xpos;
 	getyx(stdscr, ypos, xpos);
-	if( (currentState.format & TriFormatMask::line) != 0) {
+	if( (currentState.tokenVisible[0]) != 0) {
 		attron(COLOR_PAIR(1));
 		::addstr("|");
 		attroff(COLOR_PAIR(1));
 	}
 
-	int charsToPrint = cols - xpos;
-	if(token.size() < charsToPrint) charsToPrint = token.size();
+	int charsToPrint = cols - xpos; // maximum possible chars to print
+	if(token.getLength() < charsToPrint) charsToPrint = token.getLength();
 	for(int k = 0; k < charsToPrint; ++k) {
 		::addch(token[k]);
 	}
 }
 
 void Screen::printLine(int line) {
-	if( (currentState.format & TriFormatMask::line) != 0) {
+	if( (currentState.tokenVisible[0]) != 0) {
 		::printw("%5d",line);
 	}
 }
@@ -119,28 +155,31 @@ void Screen::drawLog() {
 		}
 		logger.log("entering for-loop with currline " + to_string(currentState.currLine));
 		::erase();
-		uint32_t formatMask;
 
 		for(int i = 0; i < numLinesToPrint; ++i) {
+			int tokensPrinted{0};
 			int line = currentState.currLine + i;
 			::move(i,0);
-			printLine(line);
+			if(currentState.tokenVisible[0]) {
+				printLine(line);
+				tokensPrinted++;
+			}
 
 			if(currentState.filtered) {
 				std::string** tokens = log.getLogTokens(line);
 				if(tokens != nullptr) {
 					for(int j = 0; j < 9; ++j) {
 						int formatIndex = j+1;
-						formatMask = 1 << formatIndex;
-						if( (currentState.format & formatMask) != 0) {
-							printToken(re2::StringPiece{*(tokens[j])},formatIndex);
+						if(currentState.tokenVisible[j+1]) {
+							printToken(StringLiteral{*(tokens[j])},formatIndex,tokensPrinted != 0);
+							tokensPrinted++;
 						}
 					}
 					continue;
 				}
 			}
 			//printToken(log.getLine(line,cols,currentState.lineOffset));
-			printToken(log.getLine(line));
+			printToken(StringLiteral{log.getLine(line)});
 		}
 		::move(rows - 1,0);
 		::addstr(string(cols,' ').c_str());
@@ -204,15 +243,12 @@ int Screen::getInputInteger() {
 	return std::atoi(ret.c_str());
 }
 
-
-
 bool Screen::isNumberOrLetter(int c) const {
 	if(c >= '0' && c <= '9') return true;
 	if(c >= 'A' && c <= 'Z') return true;
 	if(c >= 'a' && c <= 'z') return true;
 	return false;
 }
-
 
 int Screen::getInput() {
 	return ::getch();            /* Wait for user input */

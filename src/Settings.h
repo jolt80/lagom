@@ -10,6 +10,7 @@
 #include <re2/re2.h>
 #include <vector>
 #include <LogLineTokenizer.h>
+#include <TokenDefinition.h>
 
 class Settings {
 public:
@@ -20,11 +21,10 @@ public:
 		return tokenizers;
 	}
 
-	int getWidth(int tokenIndex) const;
-
+	const TokenDefinition& getTokenDefinition(int tokenIndex) const;
 private:
 	std::vector<LogLineTokenizer*> tokenizers;
-	std::vector<int> tokenWidths;
+	std::array<TokenDefinition,10> tokens;
 };
 
 #endif /* SETTINGS_H_ */

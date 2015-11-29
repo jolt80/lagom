@@ -14,11 +14,8 @@
 using namespace std;
 using namespace re2;
 
-LogLineTokenizer::LogLineTokenizer(std::string _name, std::string prefixPattern, std::vector<std::string> tokenPatterns) : name{_name}, numTokens{0} {
-	cout << "constructor" << endl;
-
-
-	prefixMatcher = new TokenMatcher{prefixPattern};
+LogLineTokenizer::LogLineTokenizer(std::string _name, TokenMatcherSettings& prefix, std::vector<TokenMatcherSettings>& tokenPatterns) : name{_name}, numTokens{0} {
+	prefixMatcher = new TokenMatcher{prefix};
 	numTokens += prefixMatcher->getNumTokens();
 
 	for(auto pattern : tokenPatterns) {
@@ -47,10 +44,10 @@ bool LogLineTokenizer::tokenizeLine(const re2::StringPiece line, std::string** t
 	int tokenIndex{0};
 
 	result = prefixMatcher->consume(lineContents,&(tokens[tokenIndex]));
-	tokenIndex += prefixMatcher->getNumMatches();
+	tokenIndex += prefixMatcher->getNumTokens();
 	for(auto tokenMatcher : tokenMatchers) {
 		tokenMatcher->match(lineContents,&(tokens[tokenIndex]));
-		tokenIndex += tokenMatcher->getNumMatches();
+		tokenIndex += tokenMatcher->getNumTokens();
 	}
 	return result;
 }

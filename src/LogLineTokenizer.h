@@ -22,7 +22,7 @@
  */
 class LogLineTokenizer {
 public:
-	LogLineTokenizer(std::string _name, std::string prefixPattern, std::vector<std::string> tokenPatterns);
+	LogLineTokenizer(std::string _name, TokenMatcherSettings& prefix, std::vector<TokenMatcherSettings>& tokenPatterns);
 	virtual ~LogLineTokenizer();
 
 	bool tokenizeLine(const re2::StringPiece line, std::string** tokens) const;

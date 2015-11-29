@@ -42,6 +42,7 @@ class StringLiteral {
     StringLiteral(std::string& string) : str{string.c_str()}, strLen{static_cast<int>(string.size())} {}
     StringLiteral(const char* str_) : str{str_}, strLen{static_cast<int>(strlen(str_))} {}
     StringLiteral(const char* startPtr, const char* endPtr) : str{startPtr}, strLen{(int)(endPtr-startPtr)} {}
+    StringLiteral(re2::StringPiece sp) : str{sp.data()}, strLen{sp.size()} {}
 
     inline re2::StringPiece toStringPiece() const { return re2::StringPiece{str, strLen}; }
 

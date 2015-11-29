@@ -24,15 +24,15 @@ using namespace re2;
 
 Logger logger(".debug_log");
 
-void log_line_scanner(Log& log)  {
+void log_line_scanner(Log& log, State& state)  {
 	logger.registerClient("log_scanner");
 	int lastTokenizedLine{0};
-	while(!log.areLineNumbersParsed())
+	while(!log.areLineNumbersParsed() && state.running)
 	{
 		log.scanForLines(INT_MAX,1000);
 		usleep(100);
 	}
-	while(lastTokenizedLine < log.getNumLines())
+	while(lastTokenizedLine < log.getNumLines() && state.running)
 	{
 		lastTokenizedLine = log.tokenizeLines(lastTokenizedLine,1000);
 		usleep(100);
@@ -55,16 +55,19 @@ int main2(int argc, char* argv[]) {
 		return 1;
 	}
 
+	State state;
 	// Spawn a thread that scans the whole file for log lines
-    thread log_line_scanner_t(log_line_scanner,std::ref(log));
+    thread log_line_scanner_t(log_line_scanner,std::ref(log),std::ref(state));
 
     int logline{0};
     while(logline < log.getNumLines()) {
     	cout << logline << " | ";
     	std::string** tokens = log.getLogTokens(logline);
-    	for(int i{0}; i < 9; ++i) {
-    		cout << *(tokens[i]);
-    		if(i != 8) cout << " | ";
+    	if( tokens != nullptr) {
+			for(int i{0}; i < 9; ++i) {
+				cout << *(tokens[i]);
+				if(i != 8) cout << " | ";
+			}
     	}
     	logline += 10;
     	usleep(1000);
@@ -109,12 +112,12 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
-	State currentState;
+	State currentState{settings};
 	Screen screen(log,currentState,settings);
 	screen.drawLog();
 
 	// Spawn a thread that scans the whole file for log lines
-    thread log_line_scanner_t(log_line_scanner,std::ref(log));
+    thread log_line_scanner_t(log_line_scanner,std::ref(log),std::ref(currentState));
 
 	int numSameInput = 0;
 	int lastInput = 0;
@@ -190,34 +193,34 @@ int main(int argc, char* argv[]) {
 				currentState.filtered = !currentState.filtered;
 				break;
 			case '1':
-				currentState.format ^= TriFormatMask::line;
+				currentState.tokenVisible[0] = !currentState.tokenVisible[0];
 				break;
 			case '2':
-				currentState.format ^= TriFormatMask::time;
+				currentState.tokenVisible[1] = !currentState.tokenVisible[1];
 				break;
 			case '3':
-				currentState.format ^= TriFormatMask::timeDiff;
+				currentState.tokenVisible[2] = !currentState.tokenVisible[2];
 				break;
 			case '4':
-				currentState.format ^= TriFormatMask::card;
+				currentState.tokenVisible[3] = !currentState.tokenVisible[3];
 				break;
 			case '5':
-				currentState.format ^= TriFormatMask::traceLevel;
+				currentState.tokenVisible[4] = !currentState.tokenVisible[4];
 				break;
 			case '6':
-				currentState.format ^= TriFormatMask::cpuId;
+				currentState.tokenVisible[5] = !currentState.tokenVisible[5];
 				break;
 			case '7':
-				currentState.format ^= TriFormatMask::process;
+				currentState.tokenVisible[6] = !currentState.tokenVisible[6];
 				break;
 			case '8':
-				currentState.format ^= TriFormatMask::traceObj;
+				currentState.tokenVisible[7] = !currentState.tokenVisible[7];
 				break;
 			case '9':
-				currentState.format ^= TriFormatMask::fileAndLine;
+				currentState.tokenVisible[8] = !currentState.tokenVisible[8];
 				break;
 			case '0':
-				currentState.format ^= TriFormatMask::msg;
+				currentState.tokenVisible[9] = !currentState.tokenVisible[9];
 				break;
 			case KEY_RESIZE:
 			{

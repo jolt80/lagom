@@ -1,10 +1,10 @@
 # Stop echo of command lines
-Q=
+Q=@
 
 # Search for source files in src
 VPATH += src
 
-CPPFLAGS += -O3 -Wall -std=c++11
+CPPFLAGS += -O3 -Wall -std=c++11 -g
 
 INC += -Isrc
 INC += -Ire2

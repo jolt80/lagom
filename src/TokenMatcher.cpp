@@ -12,13 +12,13 @@
 
 using namespace std;
 
-TokenMatcher::TokenMatcher(std::string _pattern, bool _combine, std::string _separator) : combine{_combine}, separator{_separator} {
-	numMatches = findNumberOfMatches(_pattern);
+TokenMatcher::TokenMatcher(const TokenMatcherSettings& settings) : combine{settings.combine}, separator{settings.separator} {
+	numMatches = findNumberOfMatches(settings.pattern);
 	assert(numMatches > 0);
 
 	matches = new re2::StringPiece[numMatches];
 	argv = new RE2::Arg*[numMatches];
-	pattern = new RE2{ _pattern };
+	pattern = new RE2{ settings.pattern };
 
 	assert(pattern->ok());
 	assert(numMatches == pattern->NumberOfCapturingGroups());
@@ -28,9 +28,6 @@ TokenMatcher::TokenMatcher(std::string _pattern, bool _combine, std::string _sep
 		*argv[i] = &matches[i];
 	}
 }
-
-TokenMatcher::TokenMatcher(std::string _pattern) : TokenMatcher{_pattern, false, ":"} {}
-
 
 TokenMatcher::~TokenMatcher() {
 	delete[] matches;
@@ -79,7 +76,6 @@ bool TokenMatcher::findAndConsume(re2::StringPiece& input, std::string** result)
 }
 
 std::string TokenMatcher::getMatch(re2::StringPiece str) const {
-	cout << "matching " << pattern->pattern() << endl;
 	std::string ret;
 
 	bool result = RE2::PartialMatchN(str,*pattern,argv,numMatches);

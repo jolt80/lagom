@@ -14,6 +14,15 @@
 #include <string>
 #include <re2/stringpiece.h>
 
+struct TokenMatcherSettings {
+	TokenMatcherSettings(const std::string& _pattern, bool _combine, const std::string& _separator) : pattern{_pattern}, combine{_combine}, separator{_separator} {};
+	TokenMatcherSettings(const std::string& _pattern) : pattern{_pattern}, combine{false}, separator{":"} {};
+
+	std::string pattern;
+	bool combine;
+	std::string separator;
+};
+
 /**
  * Will find numMatches regex matches.
  *
@@ -23,8 +32,7 @@
  */
 class TokenMatcher {
 public:
-	TokenMatcher(std::string _pattern);
-	TokenMatcher(std::string _pattern, bool _combine, std::string _separator);
+	TokenMatcher(const TokenMatcherSettings& settings);
 	virtual ~TokenMatcher();
 
 	int getNumMatches() const;
@@ -62,8 +70,8 @@ private:
 			else {
 				for(int i{0}; i < numMatches; ++i) {
 					const re2::StringPiece match = matches[i];
-					result[i]->append(match.data(),match.length());
-					result[i]->append(separator);
+					result[0]->append(match.data(),match.length());
+					if(i != numMatches-1) result[0]->append(separator);
 				}
 			}
 		}

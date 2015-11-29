@@ -37,12 +37,9 @@ public:
 	void println(const std::string str);
 	void println(const char* str);
 
-	void printToken(re2::StringPiece token, int formatIndex);
-	void printToken(re2::StringPiece token);
+	void printToken(StringLiteral token, int formatIndex, bool printSeparatorPrefix);
+	void printToken(StringLiteral token);
 	void printLine(int line);
-	inline void printToken(StringLiteral token) {
-		printToken(token.toStringPiece());
-	}
 
 	void drawLog();
 
@@ -53,8 +50,6 @@ public:
 	int getInput();
 
 protected:
-	std::array<int,12> maxWidth{ { 12,13,12,12,3,30,30,30,1000,1000,1000,1000 } };
-
 	State lastDrawnState;
 
 	bool isNumberOrLetter(int c) const;
