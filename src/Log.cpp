@@ -113,10 +113,10 @@ bool Log::unmap() {
 	return true;
 }
 
-re2::StringPiece Log::getLine(int index) {
+StringLiteral Log::getLine(int index) {
 	//cout<< __PRETTY_FUNCTION__ << endl;
 	AutoLock lock(mutex);
-	return lineAt(index).contents.toStringPiece();
+	return lineAt(index).contents;
 }
 
 

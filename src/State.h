@@ -39,11 +39,13 @@ public:
 
 	bool operator==( const State& other ) const {
 		bool ret = forceUpdate == other.forceUpdate &&
-				running == other.running &&
-				filtered == other.filtered &&
-				tokenVisible == other.tokenVisible &&
 				currLine == other.currLine &&
+				running == other.running &&
+				tokenized == other.tokenized &&
+				filtered == other.filtered &&
 				lineOffset == other.lineOffset &&
+				tokenVisible == other.tokenVisible &&
+				filterExpression == other.filterExpression &&
 				search == other.search;
 
 		if(ret) {
@@ -59,16 +61,18 @@ public:
 	}
 
 	std::string search;
+	std::string filterExpression;
 
-	bool running = true;
 	int currLine = 0;
 	int lineOffset = 0;
 
+	bool running = true;
 	bool filtered = false;
 
-	bool forceUpdate = false;
-
+	bool tokenized = false;
 	std::array<bool,10> tokenVisible;
+
+	bool forceUpdate = false;
 };
 
 #endif /* STATE_H_ */

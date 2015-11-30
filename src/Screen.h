@@ -21,22 +21,21 @@
 #ifndef SCREEN_H_
 #define SCREEN_H_
 
-#include <Log.h>
 #include <State.h>
 #include <ncurses.h>
 #include <string>
 #include <re2/stringpiece.h>
 #include <chrono>
 #include <Settings.h>
-
+#include <LogView.h>
 
 class Screen {
 public:
-	Log& log;
+	LogView* logView;
 	State& currentState;
 	Settings& settings;
 
-	Screen(Log& _log, State& _state, Settings& _settings);
+	Screen(LogView* _logView, State& _state, Settings& _settings);
 	virtual ~Screen();
 
 	int getRows() const;

@@ -72,7 +72,7 @@ public:
 
 	int searchForLineContaining(int startLine, std::string search);
 
-	re2::StringPiece getLine(int index);
+	StringLiteral getLine(int index);
 	std::string** getLogTokens(int index);
 
 	std::string toString() const;

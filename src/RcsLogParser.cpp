@@ -26,6 +26,8 @@
 #include <Logger.h>
 #include <TokenMatcher.h>
 #include <StringLiteral.h>
+#include <UnfilteredLogView.h>
+#include <FilteredLogView.h>
 
 #include <cassert>
 #include <thread>
@@ -67,14 +69,16 @@ int main2(int argc, char* argv[]) {
 		return 1;
 	}
 
+	FilteredLogView filteredLogView(&log,"Ft_CONFIG");
+
 	State state;
 	// Spawn a thread that scans the whole file for log lines
     thread log_line_scanner_t(log_line_scanner,std::ref(log),std::ref(state));
 
     int logline{0};
-    while(logline < log.getNumLines()) {
+    while(logline < filteredLogView.getNumLines()) {
     	cout << logline << " | ";
-    	std::string** tokens = log.getLogTokens(logline);
+    	std::string** tokens = filteredLogView.getLogTokens(logline);
     	if( tokens != nullptr) {
 			for(int i{0}; i < 9; ++i) {
 				cout << *(tokens[i]);
@@ -119,13 +123,16 @@ int main(int argc, char* argv[]) {
 	Settings settings;
 
 	Log log(settings);
+	UnfilteredLogView unfilteredLogView{&log};
 
 	if(!log.map(argv[1])) {
 		return 1;
 	}
 
+	FilteredLogView filteredLogView(&log,"Ft_CONFIG");
+
 	State currentState{settings};
-	Screen screen(log,currentState,settings);
+	Screen screen(&filteredLogView,currentState,settings);
 	screen.drawLog();
 
 	// Spawn a thread that scans the whole file for log lines
@@ -202,7 +209,7 @@ int main(int argc, char* argv[]) {
 				currentState.currLine = screen.getInputInteger();
 				break;
 			case KEY_IC:
-				currentState.filtered = !currentState.filtered;
+				currentState.tokenized = !currentState.tokenized;
 				break;
 			case '1':
 				currentState.tokenVisible[0] = !currentState.tokenVisible[0];

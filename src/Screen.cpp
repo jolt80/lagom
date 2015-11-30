@@ -41,7 +41,7 @@ void Screen::updateSize() {
 	//currentState.forceUpdate = true;
 }
 
-Screen::Screen(Log& _log, State& _state, Settings& _settings) : log(_log), currentState(_state), settings(_settings) {
+Screen::Screen(LogView* _logView, State& _state, Settings& _settings) : logView(_logView), currentState(_state), settings(_settings) {
 	::initscr();          /* Start curses mode          */
 	::noecho();
 	::keypad(stdscr, TRUE);   // for KEY_UP, KEY_DOWN
@@ -147,22 +147,22 @@ void Screen::drawLog() {
 
 	// Find starting line and how many lines should be drawn
 	int numLinesToPrint = rows - 1;
-	if(currentState.currLine > (log.getNumLines() - rows + 1)) {
+	if(currentState.currLine > (logView->getNumLines() - rows + 1)) {
 		// One more line to take into account the bottom line
-		currentState.currLine = log.getNumLines() - rows + 1;
+		currentState.currLine = logView->getNumLines() - rows + 1;
 		if(currentState.currLine < 0) {
 			currentState.currLine = 0;
 		}
 	}
-//	if(log.getNumLines() < numLinesToPrint) {
-//		numLinesToPrint = log.getNumLines();
+//	if(logView->getNumLines() < numLinesToPrint) {
+//		numLinesToPrint = logView->getNumLines();
 //	}
 
 	logger.log("currLine = " + to_string(currentState.currLine));
 
 	if(currentState != lastDrawnState) {
-		log.getLine(currentState.currLine);
-		if(currentState.currLine > log.getNumLines()) {
+		logView->getLine(currentState.currLine);
+		if(currentState.currLine > logView->getNumLines()) {
 			currentState.forceUpdate = true;
 			return drawLog();
 		}
@@ -171,15 +171,15 @@ void Screen::drawLog() {
 
 		for(int i = 0; i < numLinesToPrint; ++i) {
 			int tokensPrinted{0};
-			int line = currentState.currLine + i;
+			int line = logView->getLineNumber(currentState.currLine + i);
 			::move(i,0);
 			if(currentState.tokenVisible[0]) {
 				printLine(line);
 				tokensPrinted++;
 			}
 
-			if(currentState.filtered) {
-				std::string** tokens = log.getLogTokens(line);
+			if(currentState.tokenized) {
+				std::string** tokens = logView->getLogTokens(line);
 				if(tokens != nullptr) {
 					for(int j = 0; j < 9; ++j) {
 						int formatIndex = j+1;
@@ -191,8 +191,8 @@ void Screen::drawLog() {
 					continue;
 				}
 			}
-			//printToken(log.getLine(line,cols,currentState.lineOffset));
-			printToken(StringLiteral{log.getLine(line)});
+			//printToken(logView->getLine(line,cols,currentState.lineOffset));
+			printToken(StringLiteral{logView->getLine(line)});
 		}
 		::move(rows - 1,0);
 		::addstr(string(cols,' ').c_str());
