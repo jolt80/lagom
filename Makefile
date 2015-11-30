@@ -1,10 +1,10 @@
 # Stop echo of command lines
-Q=@
+Q=
 
 # Search for source files in src
 VPATH += src
 
-CPPFLAGS += -O3 -Wall -std=c++11 -g
+CPPFLAGS += -O3 -Wall -std=c++11
 
 INC += -Isrc
 INC += -Ire2
@@ -42,7 +42,7 @@ obj bin:
 
 %.d: %.cpp
 	@set -e; rm -f $@; \
-	$(CC) -MM $(CPPFLAGS) $< > $@.$$$$; \
+	$(CXX) -MM $(CPPFLAGS) $< > $@.$$$$; \
 	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
 	rm -f $@.$$$$
 

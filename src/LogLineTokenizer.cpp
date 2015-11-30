@@ -49,11 +49,8 @@ bool LogLineTokenizer::tokenizeLine(const re2::StringPiece line, std::string** t
 	result = prefixMatcher->consume(lineContents,&(tokens[tokenIndex]));
 	tokenIndex += prefixMatcher->getNumMatches();
 	for(auto tokenMatcher : tokenMatchers) {
-		if(result) {
-			result = tokenMatcher->match(lineContents,&(tokens[tokenIndex]));
-			tokenIndex += tokenMatcher->getNumMatches();
-		}
-		else break;
+		tokenMatcher->match(lineContents,&(tokens[tokenIndex]));
+		tokenIndex += tokenMatcher->getNumMatches();
 	}
 	return result;
 }

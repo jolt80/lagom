@@ -127,7 +127,7 @@ std::string** Log::getLogTokens(int index) {
 	//cout<< __PRETTY_FUNCTION__ << endl;
 	AutoLock lock(mutex);
 	Line& line = lineAt(index);
-	if(line.tokens == nullptr) tokenizeLine(line);
+	if(!line.tokenized) tokenizeLine(line);
 	return line.tokens;
 }
 
@@ -216,9 +216,20 @@ void Log::tokenizeLine(Line& line) {
 		}
 	}
 
+	bool success = false;
 	for(auto tokenizer : settings.getTokenizers()) {
-		if(tokenizer->tokenizeLine(line.contents.toStringPiece(),line.tokens)) break;
+		success = tokenizer->tokenizeLine(line.contents.toStringPiece(),line.tokens);
+		if(success) break;
 	}
+
+	if(!success) {
+		for(int i{0}; i < 9; ++i) {
+			delete line.tokens[i];
+		}
+		delete[] line.tokens;
+		line.tokens = nullptr;
+	}
+	line.tokenized = true;
 }
 
 int Log::searchForLineContaining(int startLine, std::string search) {

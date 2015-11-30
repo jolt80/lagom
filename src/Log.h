@@ -28,6 +28,7 @@
 
 struct Line {
 	StringLiteral contents;
+	bool tokenized = false;
 	std::string** tokens = nullptr;
 
 	Line(char* start, char* end) : contents{start,end}, tokens{nullptr} {}
