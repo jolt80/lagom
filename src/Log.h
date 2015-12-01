@@ -70,8 +70,6 @@ public:
 	bool areAllLinesTokenized();
 	int getNumLines() const;
 
-	int searchForLineContaining(int startLine, std::string search);
-
 	StringLiteral getLine(int index);
 	std::string** getLogTokens(int index);
 

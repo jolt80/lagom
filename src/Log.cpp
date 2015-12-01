@@ -114,9 +114,13 @@ bool Log::unmap() {
 }
 
 StringLiteral Log::getLine(int index) {
-	//cout<< __PRETTY_FUNCTION__ << endl;
-	AutoLock lock(mutex);
-	return lineAt(index).contents;
+	if(areLineNumbersParsed()) {
+		return lines.at(index)->contents;
+	}
+	else {
+		AutoLock lock(mutex);
+		return lineAt(index).contents;
+	}
 }
 
 
@@ -138,10 +142,18 @@ Line& Log::lineAt(int index) {
 
 std::string** Log::getLogTokens(int index) {
 	//cout<< __PRETTY_FUNCTION__ << endl;
-	AutoLock lock(mutex);
-	Line& line = lineAt(index);
-	if(!line.tokenized) tokenizeLine(line);
-	return line.tokens;
+	Line* line;
+	if(areLineNumbersParsed())
+	{
+		line = lines.at(index);
+	}
+	else
+	{
+		AutoLock lock(mutex);
+		line = &(lineAt(index));
+	}
+	if(!line->tokenized) tokenizeLine(*line);
+	return line->tokens;
 }
 
 void Log::scanForLines(int index, long maxDuration) {
@@ -203,14 +215,14 @@ void Log::scanForLinesNotLocked(int index, long maxDuration) {
 
 
 int Log::tokenizeLines(int index, long maxDuration) {
+	assert(areLineNumbersParsed());
 	auto start = high_resolution_clock::now();
 	auto end = start;
 	long duration = duration_cast<microseconds>(end - start).count();
 
 	int i{index};
 	for(; i < numLines && duration < maxDuration; ++i) {
-		AutoLock lock(mutex);
-		Line& line = lineAt(i);
+		Line& line = *(lines.at(index));
 		if(line.tokens == nullptr)
 			tokenizeLine(line);
 		if((i % 10) == 0) {
@@ -222,39 +234,45 @@ int Log::tokenizeLines(int index, long maxDuration) {
 }
 
 void Log::tokenizeLine(Line& line) {
+	std::string** tokens;
 	if(line.tokens == nullptr) {
-		line.tokens = new std::string*[9];
+		tokens = new std::string*[9];
 		for(int i{0}; i < 9; ++i) {
-			line.tokens[i] = new std::string();
+			tokens[i] = new std::string();
 		}
 	}
 
 	bool success = false;
 	for(auto tokenizer : settings.getTokenizers()) {
-		success = tokenizer->tokenizeLine(line.contents.toStringPiece(),line.tokens);
+		success = tokenizer->tokenizeLine(line.contents.toStringPiece(),tokens);
 		if(success) break;
 	}
 
 	if(!success) {
 		for(int i{0}; i < 9; ++i) {
-			delete line.tokens[i];
+			delete tokens[i];
 		}
-		delete[] line.tokens;
-		line.tokens = nullptr;
+		delete[] tokens;
+		tokens = nullptr;
 	}
-	line.tokenized = true;
-}
 
-int Log::searchForLineContaining(int startLine, std::string search) {
-	//cout<< __PRETTY_FUNCTION__ << endl;
-	AutoLock lock(mutex);
-	int lineIndex = startLine;
-
-	while(!(lineAt(lineIndex).contents.contains(search))) {
-		lineIndex++;
-		if(lineIndex >= numLines) return numLines;
+	{
+		AutoLock lock(mutex);
+		if(!line.tokenized && line.tokens == nullptr) {
+			line.tokens = tokens;
+			line.tokenized = true;
+			return;
+		}
+		line.tokenized = true;
 	}
-	return lineIndex;
+
+	if(tokens != nullptr) {
+		for(int i{0}; i < 9; ++i) {
+			delete tokens[i];
+		}
+		delete[] tokens;
+		tokens = nullptr;
+	}
 }
 
 std::string Log::toString() const {

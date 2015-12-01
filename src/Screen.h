@@ -57,6 +57,8 @@ public:
 
 	void refresh();
 
+	void setLogView(LogView* newLogView);
+
 	std::string getInputLine();
 	int getInputInteger();
 	int getInput();

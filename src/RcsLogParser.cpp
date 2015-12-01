@@ -28,7 +28,7 @@
 #include <StringLiteral.h>
 #include <UnfilteredLogView.h>
 #include <FilteredLogView.h>
-
+#include <AutoMeasureDuration.h>
 #include <cassert>
 #include <thread>
 
@@ -41,15 +41,22 @@ Logger logger(".debug_log");
 void log_line_scanner(Log& log, State& state)  {
 	logger.registerClient("log_scanner");
 	int lastTokenizedLine{0};
-	while(!log.areLineNumbersParsed() && state.running)
 	{
-		log.scanForLines(INT_MAX,1000);
-		usleep(100);
+		AutoMeasureDuration meas(cout,"parse log numbers ");
+		while(!log.areLineNumbersParsed() && state.running)
+		{
+			log.scanForLines(INT_MAX,1000);
+			usleep(100);
+		}
+
 	}
-	while(lastTokenizedLine < log.getNumLines() && state.running)
 	{
-		lastTokenizedLine = log.tokenizeLines(lastTokenizedLine,1000);
-		usleep(100);
+		AutoMeasureDuration meas(cout,"tokenization of log numbers ");
+		while(lastTokenizedLine < log.getNumLines() && state.running)
+		{
+			lastTokenizedLine = log.tokenizeLines(lastTokenizedLine,1000);
+			usleep(100);
+		}
 	}
 }
 
@@ -69,26 +76,26 @@ int main2(int argc, char* argv[]) {
 		return 1;
 	}
 
-	FilteredLogView filteredLogView(&log,"Ft_CONFIG");
-
 	State state;
 	// Spawn a thread that scans the whole file for log lines
     thread log_line_scanner_t(log_line_scanner,std::ref(log),std::ref(state));
 
-    int logline{0};
-    while(logline < filteredLogView.getNumLines()) {
-    	cout << logline << " | ";
-    	std::string** tokens = filteredLogView.getLogTokens(logline);
-    	if( tokens != nullptr) {
-			for(int i{0}; i < 9; ++i) {
-				cout << *(tokens[i]);
-				if(i != 8) cout << " | ";
-			}
-    	}
-    	logline += 10;
-    	usleep(1000);
-    	cout << endl;
-    }
+	FilteredLogView filteredLogView(&log,"Ft_CONFIG");
+
+//    int logline{0};
+//    while(logline < filteredLogView.getNumLines()) {
+//    	cout << filteredLogView.getLineNumber(logline) << " | ";
+//    	std::string** tokens = filteredLogView.getLogTokens(logline);
+//    	if( tokens != nullptr) {
+//			for(int i{0}; i < 9; ++i) {
+//				cout << *(tokens[i]);
+//				if(i != 8) cout << " | ";
+//			}
+//    	}
+//    	logline += 1;
+//    	usleep(1);
+//    	cout << endl;
+//    }
 
 	log_line_scanner_t.join();
 
@@ -118,25 +125,27 @@ int main(int argc, char* argv[]) {
 		exit(1);
 	}
 
+	std::map<std::string,FilteredLogView*> filteredViews;
+
 	logger.registerClient("main");
 
 	Settings settings;
 
 	Log log(settings);
-	UnfilteredLogView unfilteredLogView{&log};
 
 	if(!log.map(argv[1])) {
 		return 1;
 	}
 
-	FilteredLogView filteredLogView(&log,"Ft_CONFIG");
-
 	State currentState{settings};
-	Screen screen(&filteredLogView,currentState,settings);
-	screen.drawLog();
 
 	// Spawn a thread that scans the whole file for log lines
     thread log_line_scanner_t(log_line_scanner,std::ref(log),std::ref(currentState));
+
+	UnfilteredLogView unfilteredLogView{&log};
+    LogView* currentLogView = &unfilteredLogView;
+	Screen screen(currentLogView,currentState,settings);
+	screen.drawLog();
 
 	int numSameInput = 0;
 	int lastInput = 0;
@@ -179,17 +188,38 @@ int main(int argc, char* argv[]) {
 			{
 				::addstr("search> ");
 				currentState.search = screen.getInputLine();
-				int foundLine = log.searchForLineContaining(currentState.currLine,currentState.search);
-				if(foundLine != log.getNumLines()) {
+				int foundLine = currentLogView->searchForLineContaining(currentState.currLine,currentState.search);
+				if(foundLine != currentLogView->getNumLines()) {
 					currentState.currLine = foundLine;
 				}
+			}
+			break;
+			case 'f':
+			{
+				::addstr("filter> ");
+				std::string filterExp = screen.getInputLine();
+				LogView* filteredView;
+				if(filterExp == "") {
+					filteredView = &unfilteredLogView;
+				}
+				else {
+					filteredView = filteredViews[filterExp];
+					if(nullptr == filteredView) {
+						filteredView = new FilteredLogView(&log,filterExp);
+					}
+				}
+				int newCurrLine = filteredView->findCurrentLine(currentLogView->getLineNumber(currentState.currLine));
+				currentLogView = filteredView;
+				screen.setLogView(filteredView);
+				currentState.currLine = newCurrLine;
+				currentState.forceUpdate = true;
 			}
 			break;
 			case 'n':
 			case KEY_ENTER:
 			{
-				int foundLine = log.searchForLineContaining(currentState.currLine+1,currentState.search);
-				if(foundLine != log.getNumLines()) {
+				int foundLine = currentLogView->searchForLineContaining(currentState.currLine+1,currentState.search);
+				if(foundLine != currentLogView->getNumLines()) {
 					currentState.currLine = foundLine;
 				}
 			}
@@ -254,6 +284,11 @@ int main(int argc, char* argv[]) {
 	}
 
 	currentState.running = false;
+
+	for(auto elem : filteredViews) {
+		delete elem.second;
+		elem.second = nullptr;
+	}
 
 	log_line_scanner_t.join();
 

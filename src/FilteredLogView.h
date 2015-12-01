@@ -24,6 +24,8 @@ public:
 	StringLiteral getLine(int index);
 	int getLineNumber(int index);
 	std::string** getLogTokens(int index);
+	int findCurrentLine(int lineNumber);
+
 
 private:
 	void populateMatchingLines();

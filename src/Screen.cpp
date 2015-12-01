@@ -58,6 +58,10 @@ Screen::Screen(LogView* _logView, State& _state, Settings& _settings) : logView(
 	updateSize();
 }
 
+void Screen::setLogView(LogView* newLogView) {
+	logView = newLogView;
+}
+
 Screen::~Screen() {
 	::move(0,0);
 	::clear();
@@ -157,9 +161,6 @@ void Screen::drawLog() {
 //	if(logView->getNumLines() < numLinesToPrint) {
 //		numLinesToPrint = logView->getNumLines();
 //	}
-
-	logger.log("currLine = " + to_string(currentState.currLine));
-
 	if(currentState != lastDrawnState) {
 		logView->getLine(currentState.currLine);
 		if(currentState.currLine > logView->getNumLines()) {
@@ -171,15 +172,16 @@ void Screen::drawLog() {
 
 		for(int i = 0; i < numLinesToPrint; ++i) {
 			int tokensPrinted{0};
-			int line = logView->getLineNumber(currentState.currLine + i);
+			int logLine  =currentState.currLine + i;
+			int lineNumber = logView->getLineNumber(logLine);
 			::move(i,0);
 			if(currentState.tokenVisible[0]) {
-				printLine(line);
+				printLine(lineNumber);
 				tokensPrinted++;
 			}
 
 			if(currentState.tokenized) {
-				std::string** tokens = logView->getLogTokens(line);
+				std::string** tokens = logView->getLogTokens(logLine);
 				if(tokens != nullptr) {
 					for(int j = 0; j < 9; ++j) {
 						int formatIndex = j+1;
@@ -192,7 +194,7 @@ void Screen::drawLog() {
 				}
 			}
 			//printToken(logView->getLine(line,cols,currentState.lineOffset));
-			printToken(StringLiteral{logView->getLine(line)});
+			printToken(StringLiteral{logView->getLine(logLine)});
 		}
 		::move(rows - 1,0);
 		::addstr(string(cols,' ').c_str());

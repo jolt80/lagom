@@ -22,7 +22,13 @@ public:
 	}
 
 	int searchForLineContaining(int startLine, std::string search) {
-		return log->searchForLineContaining(startLine,search);
+		int lineIndex = startLine;
+
+		while(!(log->getLine(lineIndex).contains(search))) {
+			lineIndex++;
+			if(lineIndex >= log->getNumLines()) return log->getNumLines();
+		}
+		return lineIndex;
 	}
 
 	StringLiteral getLine(int index) {
@@ -35,6 +41,10 @@ public:
 
 	std::string** getLogTokens(int index) {
 		return log->getLogTokens(index);
+	}
+
+	int findCurrentLine(int lineNumber) {
+		return lineNumber;
 	}
 
 private:

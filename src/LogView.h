@@ -21,6 +21,7 @@ public:
 	virtual StringLiteral getLine(int index) =0;
 	virtual int getLineNumber(int index) =0;
 	virtual std::string** getLogTokens(int index) =0;
+	virtual int findCurrentLine(int lineNumber) =0;
 };
 
 #endif /* LOGVIEW_H_ */
