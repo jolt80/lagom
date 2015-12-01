@@ -2,7 +2,20 @@
  * Settings.cpp
  *
  *  Created on: Nov 17, 2015
- *      Author: jolt
+ *      Author: Tomas Szabo
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <Settings.h>
@@ -46,11 +59,11 @@ Settings::Settings() {
 	tokens[1] = TokenDefinition{"Time", 12, Alignment::LEFT, true};
 	tokens[2] = TokenDefinition{"TimeDiff", 12, Alignment::LEFT, false};
 	tokens[3] = TokenDefinition{"Card", 3, Alignment::LEFT, false};
-	tokens[4] = TokenDefinition{"TraceLevel", 6, Alignment::LEFT, false};
+	tokens[4] = TokenDefinition{"TraceLevel", 10, Alignment::LEFT, false};
 	tokens[5] = TokenDefinition{"CpuId", 2, Alignment::LEFT, false};
-	tokens[6] = TokenDefinition{"FileAndLine", 20, Alignment::LEFT, false};
-	tokens[7] = TokenDefinition{"Process", 15, Alignment::LEFT, Alignment::RIGHT, true};
-	tokens[8] = TokenDefinition{"TraceObj", 15, Alignment::LEFT, Alignment::RIGHT, true};
+	tokens[6] = TokenDefinition{"FileAndLine", 30, Alignment::LEFT, false};
+	tokens[7] = TokenDefinition{"Process", 18, Alignment::LEFT, Alignment::RIGHT, true};
+	tokens[8] = TokenDefinition{"TraceObj", 20, Alignment::LEFT, Alignment::RIGHT, true};
 	tokens[9] = TokenDefinition{"Msg", 500, Alignment::LEFT, Alignment::RIGHT, true};
 }
 
