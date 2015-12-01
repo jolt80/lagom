@@ -158,9 +158,9 @@ void Screen::drawLog() {
 			currentState.currLine = 0;
 		}
 	}
-//	if(logView->getNumLines() < numLinesToPrint) {
-//		numLinesToPrint = logView->getNumLines();
-//	}
+	if(logView->getNumLines() < numLinesToPrint) {
+		numLinesToPrint = logView->getNumLines();
+	}
 	if(currentState != lastDrawnState) {
 		logView->getLine(currentState.currLine);
 		if(currentState.currLine > logView->getNumLines()) {
