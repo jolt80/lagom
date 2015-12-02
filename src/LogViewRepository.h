@@ -1,7 +1,7 @@
 /*
- * LogView.h
+ * LogViewFactory.h
  *
- *  Created on: Nov 30, 2015
+ *  Created on: Dec 2, 2015
  *      Author: Tomas Szabo
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -18,23 +18,26 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LOGVIEW_H_
-#define LOGVIEW_H_
+#ifndef LOGVIEWREPOSITORY_H_
+#define LOGVIEWREPOSITORY_H_
 
-#include <string>
-#include <StringLiteral.h>
+#include <FilteredLogView.h>
+#include <forward_list>
 
-class LogView {
+class LogViewRepository {
 public:
-	LogView() {}
-	virtual ~LogView() {}
+	LogViewRepository(Log& _log) : log(_log) {};
+	virtual ~LogViewRepository();
 
-	virtual int getNumLines() const =0;
-	virtual int searchForLineContaining(int startLine, std::string search) =0;
-	virtual StringLiteral getLine(int index) =0;
-	virtual int getLineNumber(int index) =0;
-	virtual std::string** getLogTokens(int index) =0;
-	virtual int findCurrentLine(int lineNumber) =0;
+	LogView* getFilteredLogView(std::string pattern);
+
+	static bool isMultiplePattern(std::string& pattern);
+private:
+	std::vector<int>* buildVectorOfMatchingLines(std::string pattern);
+	std::forward_list<std::string> splitMultiplePattern(std::string& pattern);
+
+	Log& log;
+	std::map<std::string,FilteredLogView*> filteredViews;
 };
 
-#endif /* LOGVIEW_H_ */
+#endif /* LOGVIEWREPOSITORY_H_ */

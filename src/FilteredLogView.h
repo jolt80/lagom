@@ -2,7 +2,20 @@
  * FilteredLogView.h
  *
  *  Created on: Nov 30, 2015
- *      Author: jolt
+ *      Author: Tomas Szabo
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Affero General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Affero General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Affero General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef FILTEREDLOGVIEW_H_
@@ -14,10 +27,10 @@
 
 class FilteredLogView : public LogView {
 public:
-	FilteredLogView(Log* _log, std::string _filterExpression) : log{_log}, filterExpression{_filterExpression} {
-		populateMatchingLines();
-	}
-	virtual ~FilteredLogView() {}
+	friend class LogViewRepository;
+
+	FilteredLogView(Log* _log, std::vector<int>* _matchingLines) : log{_log}, matchingLines{_matchingLines} { }
+	virtual ~FilteredLogView();
 
 	int getNumLines() const;
 	int searchForLineContaining(int startLine, std::string search);
@@ -26,14 +39,9 @@ public:
 	std::string** getLogTokens(int index);
 	int findCurrentLine(int lineNumber);
 
-
-private:
-	void populateMatchingLines();
-
+protected:
 	Log* log;
-	std::string filterExpression;
-
-	std::vector<int> matchingLines;
+	std::vector<int>* matchingLines;
 };
 
 #endif /* FILTEREDLOGVIEW_H_ */

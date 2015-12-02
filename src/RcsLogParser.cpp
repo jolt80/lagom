@@ -27,7 +27,8 @@
 #include <TokenMatcher.h>
 #include <StringLiteral.h>
 #include <UnfilteredLogView.h>
-#include <FilteredLogView.h>
+#include <LogViewRepository.h>
+
 #include <AutoMeasureDuration.h>
 #include <cassert>
 #include <thread>
@@ -80,8 +81,6 @@ int main2(int argc, char* argv[]) {
 	// Spawn a thread that scans the whole file for log lines
     thread log_line_scanner_t(log_line_scanner,std::ref(log),std::ref(state));
 
-	FilteredLogView filteredLogView(&log,"Ft_CONFIG");
-
 //    int logline{0};
 //    while(logline < filteredLogView.getNumLines()) {
 //    	cout << filteredLogView.getLineNumber(logline) << " | ";
@@ -96,6 +95,12 @@ int main2(int argc, char* argv[]) {
 //    	usleep(1);
 //    	cout << endl;
 //    }
+
+    LogViewRepository repo(log);
+
+    cout << repo.getFilteredLogView("Ft_CONFIG")->getNumLines() << endl;
+    cout << repo.getFilteredLogView("ERROR")->getNumLines() << endl;
+    cout << repo.getFilteredLogView("Ft_CONFIG ERROR")->getNumLines() << endl;
 
 	log_line_scanner_t.join();
 
@@ -125,13 +130,12 @@ int main(int argc, char* argv[]) {
 		exit(1);
 	}
 
-	std::map<std::string,FilteredLogView*> filteredViews;
-
 	logger.registerClient("main");
 
 	Settings settings;
 
 	Log log(settings);
+	LogViewRepository logViews(log);
 
 	if(!log.map(argv[1])) {
 		return 1;
@@ -203,10 +207,7 @@ int main(int argc, char* argv[]) {
 					filteredView = &unfilteredLogView;
 				}
 				else {
-					filteredView = filteredViews[filterExp];
-					if(nullptr == filteredView) {
-						filteredView = new FilteredLogView(&log,filterExp);
-					}
+					filteredView = logViews.getFilteredLogView(filterExp);
 				}
 				int newCurrLine = filteredView->findCurrentLine(currentLogView->getLineNumber(currentState.currLine));
 				currentLogView = filteredView;
@@ -284,11 +285,6 @@ int main(int argc, char* argv[]) {
 	}
 
 	currentState.running = false;
-
-	for(auto elem : filteredViews) {
-		delete elem.second;
-		elem.second = nullptr;
-	}
 
 	log_line_scanner_t.join();
 

@@ -27,6 +27,7 @@
 #include <cassert>
 #include <Logger.h>
 #include <AutoLock.h>
+#include <iostream>
 
 #include <re2/re2.h>
 #include <re2/stringpiece.h>
@@ -234,12 +235,18 @@ int Log::tokenizeLines(int index, long maxDuration) {
 }
 
 void Log::tokenizeLine(Line& line) {
-	std::string** tokens;
+	std::string** tokens = nullptr;
 	if(line.tokens == nullptr) {
 		tokens = new std::string*[9];
 		for(int i{0}; i < 9; ++i) {
 			tokens[i] = new std::string();
 		}
+	}
+
+	if(tokens == nullptr) {
+		std::cerr << "expected line.tokenized to be true" << endl;
+		assert(line.tokenized);
+		return;
 	}
 
 	bool success = false;
