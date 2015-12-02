@@ -33,6 +33,8 @@
 #include <cassert>
 #include <thread>
 
+#include <History.h>
+
 using namespace std;
 using namespace std::chrono;
 using namespace re2;
@@ -47,16 +49,15 @@ void log_line_scanner(Log& log, State& state)  {
 		while(!log.areLineNumbersParsed() && state.running)
 		{
 			log.scanForLines(INT_MAX,1000);
-			usleep(100);
+			usleep(1);
 		}
-
 	}
 	{
 		AutoMeasureDuration meas(cout,"tokenization of log numbers ");
 		while(lastTokenizedLine < log.getNumLines() && state.running)
 		{
 			lastTokenizedLine = log.tokenizeLines(lastTokenizedLine,1000);
-			usleep(100);
+			usleep(1);
 		}
 	}
 }
@@ -81,48 +82,57 @@ int main2(int argc, char* argv[]) {
 	// Spawn a thread that scans the whole file for log lines
     thread log_line_scanner_t(log_line_scanner,std::ref(log),std::ref(state));
 
-//    int logline{0};
-//    while(logline < filteredLogView.getNumLines()) {
-//    	cout << filteredLogView.getLineNumber(logline) << " | ";
-//    	std::string** tokens = filteredLogView.getLogTokens(logline);
-//    	if( tokens != nullptr) {
-//			for(int i{0}; i < 9; ++i) {
-//				cout << *(tokens[i]);
-//				if(i != 8) cout << " | ";
-//			}
-//    	}
-//    	logline += 1;
-//    	usleep(1);
-//    	cout << endl;
-//    }
+    History history;
 
-    LogViewRepository repo(log);
-
-    cout << repo.getFilteredLogView("Ft_CONFIG")->getNumLines() << endl;
-    cout << repo.getFilteredLogView("ERROR")->getNumLines() << endl;
-    cout << repo.getFilteredLogView("Ft_CONFIG ERROR")->getNumLines() << endl;
+    cout << "prev = " << history.getPrevEntry() << endl;
+    cout << "prev = " << history.getPrevEntry() << endl;
+    cout << "next = " << history.getNextEntry() << endl;
+    cout << "next = " << history.getNextEntry() << endl;
+    history.addEntry("1");
+    cout << "----------" << endl;
+    cout << "prev = " << history.getPrevEntry() << endl;
+    cout << "prev = " << history.getPrevEntry() << endl;
+    cout << "prev = " << history.getPrevEntry() << endl;
+    cout << "prev = " << history.getPrevEntry() << endl;
+    cout << "next = " << history.getNextEntry() << endl;
+    cout << "next = " << history.getNextEntry() << endl;
+    history.addEntry("2");
+    cout << "----------" << endl;
+    cout << "prev = " << history.getPrevEntry() << endl;
+    cout << "prev = " << history.getPrevEntry() << endl;
+    cout << "prev = " << history.getPrevEntry() << endl;
+    cout << "prev = " << history.getPrevEntry() << endl;
+    cout << "prev = " << history.getPrevEntry() << endl;
+    cout << "next = " << history.getNextEntry() << endl;
+    cout << "next = " << history.getNextEntry() << endl;
+    cout << "next = " << history.getNextEntry() << endl;
+    cout << "next = " << history.getNextEntry() << endl;
+    cout << "prev = " << history.getPrevEntry() << endl;
+    cout << "prev = " << history.getPrevEntry() << endl;
+    cout << "prev = " << history.getPrevEntry() << endl;
+    cout << "prev = " << history.getPrevEntry() << endl;
+    cout << "prev = " << history.getPrevEntry() << endl;
+    cout << "next = " << history.getNextEntry() << endl;
+    cout << "next = " << history.getNextEntry() << endl;
+    cout << "next = " << history.getNextEntry() << endl;
+    cout << "next = " << history.getNextEntry() << endl;
+    history.addEntry("3");
+    cout << "----------" << endl;
+    cout << "prev = " << history.getPrevEntry() << endl;
+    cout << "prev = " << history.getPrevEntry() << endl;
+    cout << "choose current" << endl;
+    history.moveCurrentToEnd();
+    cout << "prev = " << history.getPrevEntry() << endl;
+    cout << "prev = " << history.getPrevEntry() << endl;
+    cout << "prev = " << history.getPrevEntry() << endl;
+    cout << "next = " << history.getNextEntry() << endl;
+    cout << "next = " << history.getNextEntry() << endl;
+    cout << "next = " << history.getNextEntry() << endl;
 
 	log_line_scanner_t.join();
 
 	return 0;
 }
-
-//void guiLoop(Screen& screen,State& state)  {
-//	logger.registerClient(" gui");
-//	while(state.running)
-//	{
-//		if(!screen.log.areLineNumbersParsed()) {
-//			screen.log.scanForLines(INT_MAX,10000);
-//		}
-////		else if(!screen.areLinesScannedForWidths()) {
-////			screen.scanForWidths(25000);
-////		}
-//		else {
-//			usleep(10000);
-//		}
-//		screen.drawLog();
-//	}
-//}
 
 int main(int argc, char* argv[]) {
 	if(argc != 2) {
@@ -133,6 +143,8 @@ int main(int argc, char* argv[]) {
 	logger.registerClient("main");
 
 	Settings settings;
+	History searchHistory;
+	History filterHistory;
 
 	Log log(settings);
 	LogViewRepository logViews(log);
@@ -191,11 +203,8 @@ int main(int argc, char* argv[]) {
 			case '/':
 			{
 				::addstr("search> ");
-				currentState.search = screen.getInputLine();
-				int foundLine = currentLogView->searchForLineContaining(currentState.currLine,currentState.search);
-				if(foundLine != currentLogView->getNumLines()) {
-					currentState.currLine = foundLine;
-				}
+				currentState.search = screen.getInputLine(&searchHistory);
+				currentState.currLine = currentLogView->searchForLineContaining(currentState.currLine,currentState.search);
 			}
 			break;
 			case '?':
@@ -203,11 +212,10 @@ int main(int argc, char* argv[]) {
 				currentState.searchBackwards = !currentState.searchBackwards;
 			}
 			break;
-
 			case 'f':
 			{
 				::addstr("filter> ");
-				std::string filterExp = screen.getInputLine();
+				std::string filterExp = screen.getInputLine(&filterHistory);
 				LogView* filteredView;
 				if(filterExp == "") {
 					filteredView = &unfilteredLogView;

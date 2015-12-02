@@ -28,6 +28,7 @@
 #include <chrono>
 #include <Settings.h>
 #include <LogView.h>
+#include <History.h>
 
 class Screen {
 public:
@@ -53,13 +54,15 @@ public:
 	void printToken(StringLiteral token);
 	void printLine(int line);
 
+	void fillRestOfLine(int c);
+
 	void drawLog();
 
 	void refresh();
 
 	void setLogView(LogView* newLogView);
 
-	std::string getInputLine();
+	std::string getInputLine(History* history = nullptr);
 	int getInputInteger();
 	int getInput();
 

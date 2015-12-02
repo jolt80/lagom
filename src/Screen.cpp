@@ -206,30 +206,129 @@ void Screen::drawLog() {
 	}
 }
 
-std::string Screen::getInputLine() {
+std::string Screen::getInputLine(History* history) {
+	int start_x, start_y, x, y;
+	getyx(stdscr, start_y, start_x);
+
 	int c;
-	std::string ret;
+	std::string input;
 	while((c = ::getch()) != '\n') {
-		if(c >= ' ' && c <= '~') {
-			::addch(c);
-			ret += (char)c;
+		getyx(stdscr, y, x);
+		int inputSize = (int)input.size();
+		int cursorPos = x - start_x;
+
+		switch(c) {
+		case 27: //ESC
+		{
+			::move(start_y,start_x);
+			fillRestOfLine(' ');
+			::move(start_y,start_x);
+			return std::string{};
 		}
-		else if( c == KEY_BACKSPACE) {
-			int inputSize = ret.size();
-			if(inputSize > 0)
-			{
-				--inputSize;
-				ret.resize(inputSize);
-				int ypos, xpos;
-				getyx(stdscr, ypos, xpos);
-				xpos--;
-				::move(ypos,xpos);
-				::addch(' ');
-				::move(ypos,xpos);
+		break;
+		case KEY_HOME:
+		case 545: // Ctrl+Left
+		case 1: // Ctrl+a
+		{
+			x = start_x;
+		}
+		break;
+		case KEY_END:
+		case 560: // Ctrl+Right
+		case 5: // Ctrl+e
+		{
+			x = start_x + inputSize;
+		}
+		break;
+		case KEY_UP:
+		{
+			if(history) {
+				std::string entry = history->getPrevEntry();
+				input = entry;
+				inputSize = input.size();
+				x = start_x + inputSize;
 			}
 		}
+		break;
+		case KEY_DOWN:
+		{
+			if(history) {
+				std::string entry = history->getNextEntry();
+				input = entry;
+				inputSize = input.size();
+				x = start_x + inputSize;
+			}
+		}
+		break;
+		case KEY_LEFT:
+		{
+			if(x > start_x)
+				x--;
+		}
+		break;
+		case KEY_RIGHT:
+		{
+			if(cursorPos < inputSize)
+				x++;
+		}
+		break;
+		case KEY_BACKSPACE:
+		{
+			if(cursorPos > 0 && cursorPos <= inputSize) {
+				input.erase(cursorPos-1,1);
+				x--;
+			}
+		}
+		break;
+		case KEY_DC:
+		{
+			int inputSize = (int)input.size();
+
+			if(cursorPos >= 0 && cursorPos < inputSize) {
+				input.erase(cursorPos,1);
+			}
+		}
+		break;
+		// Ctrl+k
+		case 11:
+		{
+			int inputSize = (int)input.size();
+
+			if(cursorPos >= 0 && cursorPos < inputSize) {
+				input.erase(cursorPos);
+			}
+		}
+		break;
+		default: // everything in reasonable ascii territory
+		{
+			if(c >= ' ' && c <= '~') {
+				if(history) history->resetPosition();
+				input.insert(cursorPos,1,c);
+				x++;
+			}
+//			ret += std::to_string(c);
+//			ret += " ";
+		}
+
+		}
+
+		::move(start_y,start_x);
+		fillRestOfLine(' ');
+		::move(start_y,start_x);
+		::printw(input.c_str());
+		::move(y,x);
 	}
-	return ret;
+	if(history) history->addEntry(input);
+	return input;
+}
+
+void Screen::fillRestOfLine(int c) {
+	int ypos, xpos;
+	getyx(stdscr, ypos, xpos);
+	for(int pos{xpos}; pos < cols; ++pos) {
+		::addch(c);
+	}
+	::move(ypos,xpos);
 }
 
 int Screen::getInputInteger() {

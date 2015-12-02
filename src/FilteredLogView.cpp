@@ -61,7 +61,7 @@ int FilteredLogView::searchForLineContaining(int startLine, std::string search, 
 		}
 
 		while(!(log->getLine(matchingLines->at(lineIndex)).containsCaseInsensitive(search))) {
-			if(lineIndex >= lastIndex) return lastIndex;
+			if(lineIndex >= lastIndex) return startLine;
 			lineIndex++;
 		}
 		return lineIndex;
@@ -69,7 +69,7 @@ int FilteredLogView::searchForLineContaining(int startLine, std::string search, 
 }
 
 StringLiteral FilteredLogView::getLine(int index) {
-	if(index < matchingLines->size()) {
+	if(index < (int)matchingLines->size()) {
 		return log->getLine(matchingLines->at(index));
 	}
 	else
@@ -79,7 +79,7 @@ StringLiteral FilteredLogView::getLine(int index) {
 }
 
 int FilteredLogView::getLineNumber(int index) {
-	if(index < matchingLines->size())
+	if(index < (int)matchingLines->size())
 		return matchingLines->at(index);
 	else
 		return 0;

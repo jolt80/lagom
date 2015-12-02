@@ -62,7 +62,7 @@ public:
 			}
 
 			while(!(log->getLine(lineIndex).containsCaseInsensitive(search))) {
-				if(lineIndex >= lastIndex) return lastIndex;
+				if(lineIndex >= lastIndex) return startLine;
 				lineIndex++;
 			}
 			return lineIndex;

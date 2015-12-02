@@ -10,6 +10,7 @@ INC += -Isrc
 INC += -Ire2
 
 SRCS := $(wildcard src/*.cpp)
+HEADERS := $(wildcard src/*.h)
 OBJS := $(patsubst %.cpp,obj/%.o,$(notdir $(SRCS)))
 RE2_OBJS = $(wildcard re2/obj/re2/*.o)
 RE2_OBJS += $(wildcard re2/obj/util/*.o)
@@ -28,27 +29,19 @@ compile: $(OBJS) | bin
 test:
 	$(Q)echo $(LIBS)
 	$(Q)echo $(patsubst %.o,%.d,$(OBJS))
+	$(Q)echo $(HEADERS)
 
 bin/rcs_log_parser: $(OBJS) | bin
 	$(Q)echo 'Linking target: $@'; \
 	$(CXX) -g -o $@ $(filter %.o,$^) $(RE2_OBJS) $(LIBS) 
 		
-obj/%.o: %.cpp %.d | obj
+obj/%.o: %.cpp $(HEADERS) | obj
 	$(Q)echo 'Compiling: $<'; \
 	$(CXX) $(INC) $(CPPFLAGS) -c -o $@ $<
 
 obj bin:
 	$(Q)mkdir -p $@
 
-%.d: %.cpp
-	@set -e; rm -f $@; \
-	$(CXX) -MM $(CPPFLAGS) $< > $@.$$$$; \
-	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
-	rm -f $@.$$$$
-
 clean:
 	$(Q)$(RM) -rf obj
 	$(Q)$(RM) -rf bin
-
-include $(sources:.cpp=.d)
-#-include $(patsubst %.o,%.d,$(OBJS))
