@@ -45,11 +45,20 @@ int FilteredLogView::searchForLineContaining(int startLine, std::string search) 
 }
 
 StringLiteral FilteredLogView::getLine(int index) {
-	return log->getLine(matchingLines->at(index));
+	if(index < matchingLines->size()) {
+		return log->getLine(matchingLines->at(index));
+	}
+	else
+	{
+		return StringLiteral{};
+	}
 }
 
 int FilteredLogView::getLineNumber(int index) {
-	return matchingLines->at(index);
+	if(index < matchingLines->size())
+		return matchingLines->at(index);
+	else
+		return 0;
 }
 
 std::string** FilteredLogView::getLogTokens(int index) {
@@ -57,6 +66,7 @@ std::string** FilteredLogView::getLogTokens(int index) {
 }
 
 int FilteredLogView::findCurrentLine(int lineNumber) {
+	if(matchingLines->empty()) return 0;
 	for(unsigned int i{0}; i < matchingLines->size(); ++i) {
 		if(matchingLines->at(i) >= lineNumber) return i;
 	}
