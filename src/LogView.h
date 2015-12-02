@@ -30,7 +30,7 @@ public:
 	virtual ~LogView() {}
 
 	virtual int getNumLines() const =0;
-	virtual int searchForLineContaining(int startLine, std::string search) =0;
+	virtual int searchForLineContaining(int startLine, std::string search, bool searchBackwards = false) =0;
 	virtual StringLiteral getLine(int index) =0;
 	virtual int getLineNumber(int index) =0;
 	virtual std::string** getLogTokens(int index) =0;

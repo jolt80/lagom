@@ -34,14 +34,39 @@ public:
 		return log->getNumLines();
 	}
 
-	int searchForLineContaining(int startLine, std::string search) {
-		int lineIndex = startLine;
+	int searchForLineContaining(int startLine, std::string search, bool searchBackwards = false) {
+		int lineIndex;
+		if(searchBackwards) {
+			if(startLine > 0) {
+				lineIndex = startLine - 1;
+			}
+			else
+			{
+				return 0;
+			}
 
-		while(!(log->getLine(lineIndex).contains(search))) {
-			lineIndex++;
-			if(lineIndex >= log->getNumLines()) return log->getNumLines();
+			while(!(log->getLine(lineIndex).containsCaseInsensitive(search))) {
+				if(lineIndex == 0) return startLine;
+				lineIndex--;
+			}
+			return lineIndex;
 		}
-		return lineIndex;
+		else {
+			int lastIndex = log->getNumLines() - 1;
+			if(startLine < lastIndex) {
+				lineIndex = startLine + 1;
+			}
+			else
+			{
+				return lastIndex;
+			}
+
+			while(!(log->getLine(lineIndex).containsCaseInsensitive(search))) {
+				if(lineIndex >= lastIndex) return lastIndex;
+				lineIndex++;
+			}
+			return lineIndex;
+		}
 	}
 
 	StringLiteral getLine(int index) {

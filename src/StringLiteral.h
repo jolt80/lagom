@@ -114,6 +114,7 @@ class StringLiteral {
      */
     int findFirstOf(char charToFind) const;
     int contains(std::string containsStr) const;
+    int containsCaseInsensitive(std::string containsStr) const;
 
     /**
      * Returns true if the StringLiteral starts with a specific string.

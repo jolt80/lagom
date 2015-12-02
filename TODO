@@ -1,7 +1,5 @@
 List of prioritized tasks:
 
-- Search backwards Shift+n, ? should flip direction
-
 - Search history for filter and search.
   stretch: Written to file so that histroy survives restarts
 
@@ -12,3 +10,8 @@ List of prioritized tasks:
 - Windowed ui-element for filter expressions
 
 - Edit settings file in window in program
+
+DONE:
+- Search backwards Shift+n, ? should flip direction
+
+- Case insensitive search/filter

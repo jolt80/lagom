@@ -33,7 +33,7 @@ public:
 	virtual ~FilteredLogView();
 
 	int getNumLines() const;
-	int searchForLineContaining(int startLine, std::string search);
+	int searchForLineContaining(int startLine, std::string search, bool searchBackwards = false);
 	StringLiteral getLine(int index);
 	int getLineNumber(int index);
 	std::string** getLogTokens(int index);

@@ -152,6 +152,21 @@ int StringLiteral::contains(std::string containsStr) const {
 	return false;
 }
 
+int StringLiteral::containsCaseInsensitive(std::string containsStr) const {
+	int searchSize = containsStr.size();
+	int searchIndex = 0;
+	for(int i{0}; i < strLen; ++i) {
+		// Sloppy comparison but probably pretty efficient
+		if((str[i] | 32 ) == (containsStr[searchIndex] | 32)) {
+			searchIndex++;
+			if(searchIndex == searchSize) return true;
+		} else {
+			searchIndex = 0;
+		}
+	}
+	return false;
+}
+
 bool StringLiteral::empty() const
 {
   return strLen == 0;

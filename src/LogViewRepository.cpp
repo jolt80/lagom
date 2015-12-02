@@ -64,7 +64,7 @@ std::vector<int>* LogViewRepository::buildVectorOfMatchingLines(std::string patt
 	// simple pattern
 	else {
 		for(int i{0}; i < log.getNumLines(); ++i) {
-			if(log.getLine(i).contains(pattern)) {
+			if(log.getLine(i).containsCaseInsensitive(pattern)) {
 				matchingLines->push_back(i);
 			}
 		}

@@ -43,6 +43,7 @@ public:
 				running == other.running &&
 				tokenized == other.tokenized &&
 				filtered == other.filtered &&
+				searchBackwards == other.searchBackwards &&
 				lineOffset == other.lineOffset &&
 				tokenVisible == other.tokenVisible &&
 				filterExpression == other.filterExpression &&
@@ -68,6 +69,7 @@ public:
 
 	bool running = true;
 	bool filtered = false;
+	bool searchBackwards = false;
 
 	bool tokenized = false;
 	std::array<bool,10> tokenVisible;

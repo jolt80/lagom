@@ -198,6 +198,12 @@ int main(int argc, char* argv[]) {
 				}
 			}
 			break;
+			case '?':
+			{
+				currentState.searchBackwards = !currentState.searchBackwards;
+			}
+			break;
+
 			case 'f':
 			{
 				::addstr("filter> ");
@@ -217,12 +223,13 @@ int main(int argc, char* argv[]) {
 			}
 			break;
 			case 'n':
-			case KEY_ENTER:
 			{
-				int foundLine = currentLogView->searchForLineContaining(currentState.currLine+1,currentState.search);
-				if(foundLine != currentLogView->getNumLines()) {
-					currentState.currLine = foundLine;
-				}
+				currentState.currLine = currentLogView->searchForLineContaining(currentState.currLine,currentState.search,currentState.searchBackwards);
+			}
+			break;
+			case 'N':
+			{
+				currentState.currLine = currentLogView->searchForLineContaining(currentState.currLine,currentState.search,!currentState.searchBackwards);
 			}
 			break;
 			case KEY_END:
