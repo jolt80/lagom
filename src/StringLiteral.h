@@ -27,6 +27,7 @@
 #include <string>
 #include <cstring>
 #include <re2/stringpiece.h>
+#include <utility>
 
 /**
  *
@@ -104,6 +105,7 @@ class StringLiteral {
      *    - Empty StringLiteral if combination of start and length is invalid
      */
     StringLiteral subString( int start, int length) const;
+    StringLiteral subString( std::pair<int,int> startAndEnd) const;
 
     /**
      * Find first occurence of character in StringLiteral
@@ -113,6 +115,7 @@ class StringLiteral {
      *   - length of string if not found
      */
     int findFirstOf(char charToFind) const;
+    std::pair<int,int> findFirstAndSecondOf(char charToFind) const;
     int contains(std::string containsStr) const;
     int containsCaseInsensitive(std::string containsStr) const;
 

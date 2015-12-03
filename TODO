@@ -1,9 +1,6 @@
 List of prioritized tasks:
 
-- Search history for filter and search.
-  stretch: Written to file so that histroy survives restarts
-
-- Regex expressions in filter/search
+- Negation flag for regex search
 
 - Settings file for token parsing, etc.
 
@@ -11,7 +8,11 @@ List of prioritized tasks:
 
 - Edit settings file in window in program
 
+- History written to file so that histroy survives restarts
+
 DONE:
+- Search history for filter and search.
+
 - Search backwards Shift+n, ? should flip direction
 
 - Case insensitive search/filter

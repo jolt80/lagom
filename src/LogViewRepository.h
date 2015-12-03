@@ -22,7 +22,7 @@
 #define LOGVIEWREPOSITORY_H_
 
 #include <FilteredLogView.h>
-#include <forward_list>
+#include <list>
 
 class LogViewRepository {
 public:
@@ -32,9 +32,12 @@ public:
 	LogView* getFilteredLogView(std::string pattern);
 
 	static bool isMultiplePattern(std::string& pattern);
+
+	std::string getLastErrorMessage();
 private:
+	std::string errorMessage;
 	std::vector<int>* buildVectorOfMatchingLines(std::string pattern);
-	std::forward_list<std::string> splitMultiplePattern(std::string& pattern);
+	std::list<std::string> splitMultiplePattern(std::string& pattern);
 
 	Log& log;
 	std::map<std::string,FilteredLogView*> filteredViews;

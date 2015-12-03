@@ -23,6 +23,7 @@
 #include <sstream>
 #include <stdint.h>
 #include <iostream>
+#include <cassert>
 
 using namespace std;
 
@@ -115,18 +116,39 @@ StringLiteral StringLiteral::subString( int start, int length) const
   }
 }
 
+StringLiteral StringLiteral::subString( std::pair<int,int> startAndEnd) const {
+	assert(startAndEnd.second >= startAndEnd.first);
+	return subString(startAndEnd.first, startAndEnd.second - startAndEnd.first);
+}
+
 int StringLiteral::findFirstOf(char charToFind)const
 {
-  const char* found = strchr(str, charToFind);
-  if(nullptr == found)
-  {
-    return strLen;
-  }
-  else
-  {
-    return found - str;
-  }
+	for(int i{0}; i < strLen; ++i) {
+		if(str[i] == charToFind) return i;
+	}
+	return strLen;
 }
+
+std::pair<int,int> StringLiteral::findFirstAndSecondOf(char charToFind) const
+{
+	int first = strLen;
+	int second = strLen;
+	int i;
+	for(i = 0; i < strLen; ++i) {
+		if(str[i] == charToFind) {
+			first = i;
+			break;
+		}
+	}
+	for(; i < strLen; ++i) {
+		if(str[i] == charToFind) {
+			second = i;
+			break;
+		}
+	}
+	return std::pair<int,int>(first,second);
+}
+
 
 bool StringLiteral::startsWith(const StringLiteral& compareStr) const
 {

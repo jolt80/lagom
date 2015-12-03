@@ -73,61 +73,25 @@ int main2(int argc, char* argv[]) {
 	Settings settings;
 
 	Log log(settings);
+	LogViewRepository logViews(log);
 
 	if(!log.map(argv[1])) {
 		return 1;
 	}
 
+	std::string filterExp = "     (?i)error     Ft_CONFIG";
+	LogView* filteredView;
+	filteredView = logViews.getFilteredLogView(filterExp);
+	if(nullptr == filteredView) {
+		std::string errormsg{"     "};
+		errormsg += logViews.getLastErrorMessage();
+		cout << errormsg.c_str() << endl;
+	}
+	cout << filteredView->getNumLines() << endl;
+
 	State state;
 	// Spawn a thread that scans the whole file for log lines
     thread log_line_scanner_t(log_line_scanner,std::ref(log),std::ref(state));
-
-    History history;
-
-    cout << "prev = " << history.getPrevEntry() << endl;
-    cout << "prev = " << history.getPrevEntry() << endl;
-    cout << "next = " << history.getNextEntry() << endl;
-    cout << "next = " << history.getNextEntry() << endl;
-    history.addEntry("1");
-    cout << "----------" << endl;
-    cout << "prev = " << history.getPrevEntry() << endl;
-    cout << "prev = " << history.getPrevEntry() << endl;
-    cout << "prev = " << history.getPrevEntry() << endl;
-    cout << "prev = " << history.getPrevEntry() << endl;
-    cout << "next = " << history.getNextEntry() << endl;
-    cout << "next = " << history.getNextEntry() << endl;
-    history.addEntry("2");
-    cout << "----------" << endl;
-    cout << "prev = " << history.getPrevEntry() << endl;
-    cout << "prev = " << history.getPrevEntry() << endl;
-    cout << "prev = " << history.getPrevEntry() << endl;
-    cout << "prev = " << history.getPrevEntry() << endl;
-    cout << "prev = " << history.getPrevEntry() << endl;
-    cout << "next = " << history.getNextEntry() << endl;
-    cout << "next = " << history.getNextEntry() << endl;
-    cout << "next = " << history.getNextEntry() << endl;
-    cout << "next = " << history.getNextEntry() << endl;
-    cout << "prev = " << history.getPrevEntry() << endl;
-    cout << "prev = " << history.getPrevEntry() << endl;
-    cout << "prev = " << history.getPrevEntry() << endl;
-    cout << "prev = " << history.getPrevEntry() << endl;
-    cout << "prev = " << history.getPrevEntry() << endl;
-    cout << "next = " << history.getNextEntry() << endl;
-    cout << "next = " << history.getNextEntry() << endl;
-    cout << "next = " << history.getNextEntry() << endl;
-    cout << "next = " << history.getNextEntry() << endl;
-    history.addEntry("3");
-    cout << "----------" << endl;
-    cout << "prev = " << history.getPrevEntry() << endl;
-    cout << "prev = " << history.getPrevEntry() << endl;
-    cout << "choose current" << endl;
-    history.moveCurrentToEnd();
-    cout << "prev = " << history.getPrevEntry() << endl;
-    cout << "prev = " << history.getPrevEntry() << endl;
-    cout << "prev = " << history.getPrevEntry() << endl;
-    cout << "next = " << history.getNextEntry() << endl;
-    cout << "next = " << history.getNextEntry() << endl;
-    cout << "next = " << history.getNextEntry() << endl;
 
 	log_line_scanner_t.join();
 
@@ -215,6 +179,7 @@ int main(int argc, char* argv[]) {
 			case 'f':
 			{
 				::addstr("filter> ");
+				//screen.saveCursorPosition();
 				std::string filterExp = screen.getInputLine(&filterHistory);
 				LogView* filteredView;
 				if(filterExp == "") {
@@ -222,12 +187,21 @@ int main(int argc, char* argv[]) {
 				}
 				else {
 					filteredView = logViews.getFilteredLogView(filterExp);
+					if(nullptr == filteredView) {
+						std::string errormsg{"     "};
+						errormsg += logViews.getLastErrorMessage();
+						screen.print(errormsg.c_str());
+						screen.refresh();
+						sleep(3);
+						filteredView = currentLogView;
+					}
 				}
 				int newCurrLine = filteredView->findCurrentLine(currentLogView->getLineNumber(currentState.currLine));
 				currentLogView = filteredView;
 				screen.setLogView(filteredView);
 				currentState.currLine = newCurrLine;
 				currentState.forceUpdate = true;
+
 			}
 			break;
 			case 'n':

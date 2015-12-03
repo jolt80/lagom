@@ -22,6 +22,7 @@
 #include <AutoMeasureDuration.h>
 #include <iostream>
 #include <set>
+#include <re2/re2.h>
 
 using namespace std;
 
@@ -32,11 +33,19 @@ LogViewRepository::~LogViewRepository() {
 	}
 }
 
+std::string LogViewRepository::getLastErrorMessage() {
+	std::string ret = errorMessage;
+	errorMessage.clear();
+	return ret;
+}
+
 LogView* LogViewRepository::getFilteredLogView(std::string pattern) {
 	LogView* filteredView = filteredViews[pattern];
 	if(nullptr == filteredView) {
 		AutoMeasureDuration meas(cout,"parsing " + pattern);
-		filteredView = new FilteredLogView(&log,buildVectorOfMatchingLines(pattern));
+		std::vector<int>* vectorOfMatchingLines = buildVectorOfMatchingLines(pattern);
+		if(nullptr == vectorOfMatchingLines) return nullptr;
+		filteredView = new FilteredLogView(&log,vectorOfMatchingLines);
 	}
 
 	return filteredView;
@@ -45,13 +54,17 @@ LogView* LogViewRepository::getFilteredLogView(std::string pattern) {
 
 std::vector<int>* LogViewRepository::buildVectorOfMatchingLines(std::string pattern) {
 	std::vector<int>* matchingLines = new std::vector<int>();
+	std::list<std::string> parts = splitMultiplePattern(pattern);
 
-	if(isMultiplePattern(pattern)) {
-		std::forward_list<std::string> parts = splitMultiplePattern(pattern);
+	if(parts.size() > 1) {
 		std::set<int> totalSetOfMatchingLines;
 
 		for(auto part : parts) {
 			std::vector<int>* partMatchingLines = buildVectorOfMatchingLines(part);
+			if(nullptr == partMatchingLines) {
+				delete matchingLines;
+				return nullptr;
+			}
 			for(auto lineNr : *partMatchingLines) {
 				totalSetOfMatchingLines.insert(lineNr);
 			}
@@ -63,8 +76,24 @@ std::vector<int>* LogViewRepository::buildVectorOfMatchingLines(std::string patt
 	}
 	// simple pattern
 	else {
+		RE2::Options options;
+		options.set_log_errors(false);
+		RE2 matcher{pattern,options};
+		if(!matcher.ok()) {
+			errorMessage += matcher.error();
+			delete matchingLines;
+			return nullptr;
+		}
+		if(matcher.NumberOfCapturingGroups() != 0) {
+			errorMessage += "expressions shouldn't contain capturing groups: ";
+			errorMessage += to_string(matcher.NumberOfCapturingGroups());
+			errorMessage += " groups in ";
+			errorMessage += matcher.pattern();
+			delete matchingLines;
+			return nullptr;
+		}
 		for(int i{0}; i < log.getNumLines(); ++i) {
-			if(log.getLine(i).containsCaseInsensitive(pattern)) {
+			if(RE2::PartialMatch(log.getLine(i).toStringPiece(),matcher)) {
 				matchingLines->push_back(i);
 			}
 		}
@@ -72,23 +101,15 @@ std::vector<int>* LogViewRepository::buildVectorOfMatchingLines(std::string patt
 	return matchingLines;
 }
 
-bool LogViewRepository::isMultiplePattern(std::string& pattern) {
-
-	StringLiteral search{pattern};
-
-	if(search.contains(" ")) return true;
-
-	return false;
-}
-
-std::forward_list<std::string> LogViewRepository::splitMultiplePattern(std::string& pattern) {
-	std::forward_list<std::string> ret;
+std::list<std::string> LogViewRepository::splitMultiplePattern(std::string& pattern) {
+	std::list<std::string> ret;
 	StringLiteral search{pattern};
 
 	do {
-		int offset = search.findFirstOf(' ');
-		ret.push_front(search.subString(0,offset).toString());
-		search.trimFromStart(offset+1);
+		while(!search.empty() && search[0] == ' ') search.trimFromStart(1);
+		int firstSeparator = search.findFirstOf(' ');
+		ret.push_front(search.subString(0,firstSeparator).toString());
+		search.trimFromStart(firstSeparator+1);
 	} while (!search.empty());
 
 	return ret;
