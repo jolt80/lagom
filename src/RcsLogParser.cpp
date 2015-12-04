@@ -70,12 +70,21 @@ int main2(int argc, char* argv[]) {
 
 	logger.registerClient("main");
 
+	string logPath = argv[1];
+
+	size_t tgfWebStringPos = logPath.find("tgfweb.lmera.ericsson.se/");
+	if(tgfWebStringPos != string::npos) {
+		logPath = "/proj/tgf_li/" + logPath.substr(tgfWebStringPos + 25);
+	}
+
+	cout << logPath << endl;
+
 	Settings settings;
 
 	Log log(settings);
 	LogViewRepository logViews(log);
 
-	if(!log.map(argv[1])) {
+	if(!log.map(logPath.c_str())) {
 		return 1;
 	}
 
@@ -104,6 +113,13 @@ int main(int argc, char* argv[]) {
 		exit(1);
 	}
 
+	string logPath = argv[1];
+
+	size_t tgfWebStringPos = logPath.find("tgfweb.lmera.ericsson.se/");
+	if(tgfWebStringPos != string::npos) {
+		logPath = "/proj/tgf_li/" + logPath.substr(tgfWebStringPos + 25);
+	}
+
 	logger.registerClient("main");
 
 	Settings settings;
@@ -113,7 +129,7 @@ int main(int argc, char* argv[]) {
 	Log log(settings);
 	LogViewRepository logViews(log);
 
-	if(!log.map(argv[1])) {
+	if(!log.map(logPath.c_str())) {
 		return 1;
 	}
 

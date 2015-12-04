@@ -318,7 +318,7 @@ std::string Screen::getInputLine(History* history) {
 		::printw(input.c_str());
 		::move(y,x);
 	}
-	if(history) history->addEntry(input);
+	if(history && !input.empty()) history->addEntry(input);
 	return input;
 }
 
