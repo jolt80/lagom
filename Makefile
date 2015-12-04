@@ -10,8 +10,9 @@ INC += -Isrc
 INC += -Ire2
 
 SRCS := $(wildcard src/*.cpp)
-HEADERS := $(wildcard src/*.h)
 OBJS := $(patsubst %.cpp,obj/%.o,$(notdir $(SRCS)))
+DEPS := $(patsubst %.cpp,obj/%.d,$(notdir $(SRCS)))
+
 RE2_OBJS = $(wildcard re2/obj/re2/*.o)
 RE2_OBJS += $(wildcard re2/obj/util/*.o)
 
@@ -35,9 +36,9 @@ bin/rcs_log_parser: $(OBJS) | bin
 	$(Q)echo 'Linking target: $@'; \
 	$(CXX) -g -o $@ $(filter %.o,$^) $(RE2_OBJS) $(LIBS) 
 		
-obj/%.o: %.cpp $(HEADERS) | obj
+obj/%.o: %.cpp Makefile | obj
 	$(Q)echo 'Compiling: $<'; \
-	$(CXX) $(INC) $(CPPFLAGS) -c -o $@ $<
+	$(CXX) -MMD -MP $(INC) $(CPPFLAGS) -c -o $@ $<
 
 obj bin:
 	$(Q)mkdir -p $@
@@ -45,3 +46,5 @@ obj bin:
 clean:
 	$(Q)$(RM) -rf obj
 	$(Q)$(RM) -rf bin
+
+-include $(DEPS)
