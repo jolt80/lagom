@@ -39,6 +39,8 @@ using namespace std;
 using namespace std::chrono;
 using namespace re2;
 
+extern Logger logger;
+
 void log_line_scanner(Log& log, State& state)  {
 	logger.registerClient("log_scanner");
 	int lastTokenizedLine{0};
@@ -58,51 +60,6 @@ void log_line_scanner(Log& log, State& state)  {
 			usleep(1);
 		}
 	}
-}
-
-int main2(int argc, char* argv[]) {
-	if(argc != 2) {
-		cout << "Usage: rcs_log_parser <logfile>" << endl;
-		exit(1);
-	}
-
-	logger.registerClient("main");
-
-	string logPath = argv[1];
-
-	size_t tgfWebStringPos = logPath.find("tgfweb.lmera.ericsson.se/");
-	if(tgfWebStringPos != string::npos) {
-		logPath = "/proj/tgf_li/" + logPath.substr(tgfWebStringPos + 25);
-	}
-
-	cout << logPath << endl;
-
-	Settings settings;
-
-	Log log(settings);
-	LogViewRepository logViews(log);
-
-	if(!log.map(logPath.c_str())) {
-		return 1;
-	}
-
-	std::string filterExp = "     (?i)error     Ft_CONFIG";
-	LogView* filteredView;
-	filteredView = logViews.getFilteredLogView(filterExp);
-	if(nullptr == filteredView) {
-		std::string errormsg{"     "};
-		errormsg += logViews.getLastErrorMessage();
-		cout << errormsg.c_str() << endl;
-	}
-	cout << filteredView->getNumLines() << endl;
-
-	State state;
-	// Spawn a thread that scans the whole file for log lines
-    thread log_line_scanner_t(log_line_scanner,std::ref(log),std::ref(state));
-
-	log_line_scanner_t.join();
-
-	return 0;
 }
 
 int main(int argc, char* argv[]) {

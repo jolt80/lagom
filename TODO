@@ -11,6 +11,8 @@ List of prioritized tasks:
 - History written to file so that histroy survives restarts
 
 DONE:
+- Regex filtering
+
 - Search history for filter and search.
 
 - Search backwards Shift+n, ? should flip direction

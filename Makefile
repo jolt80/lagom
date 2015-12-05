@@ -2,7 +2,7 @@
 Q=@
 
 
-APP_NAME := rcs_log_parser
+APP_NAME := lagom
 
 # Search for source files in src
 VPATH += src test/src
@@ -32,8 +32,8 @@ LIBS += -ltinfo -L/app/vbuild/RHEL6-x86_64/gcc/4.9.2/lib64 -Wl,-rpath,/app/vbuil
 endif
 
 # Default
-all: test
-#all: bin/$(APP_NAME)
+#all: test
+all: bin/$(APP_NAME)
 
 compile: $(OBJS) | bin
 
@@ -63,7 +63,9 @@ obj bin test/obj:
 
 clean:
 	$(Q)$(RM) -rf obj
+	$(Q)$(RM) -rf test/obj
 	$(Q)$(RM) -rf bin
+	$(Q)$(RM) -rf test/unit_tests
 
 -include $(DEPS)
 -include $(TEST_DEPS)
