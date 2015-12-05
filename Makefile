@@ -1,8 +1,11 @@
 # Stop echo of command lines
 Q=@
 
+
+APP_NAME := rcs_log_parser
+
 # Search for source files in src
-VPATH += src
+VPATH += src test/src
 
 CPPFLAGS += -O3 -Wall -std=c++11 -g
 
@@ -10,11 +13,17 @@ INC += -Isrc
 INC += -Ire2
 
 SRCS := $(wildcard src/*.cpp)
-OBJS := $(patsubst %.cpp,obj/%.o,$(notdir $(SRCS)))
+OBJS := $(patsubst %.cpp,obj/%.o,$(filter-out $(APP_NAME).cpp,$(notdir $(SRCS))))
+APP_OBJ := obj/$(APP_NAME).o
 DEPS := $(patsubst %.cpp,obj/%.d,$(notdir $(SRCS)))
 
 RE2_OBJS = $(wildcard re2/obj/re2/*.o)
 RE2_OBJS += $(wildcard re2/obj/util/*.o)
+
+TEST_SRCS := $(wildcard test/src/*.cpp)
+TEST_OBJS := $(patsubst %.cpp,test/obj/%.o,$(notdir $(TEST_SRCS)))
+
+TEST_LIBS := /usr/src/gtest/libgtest.a /usr/src/gtest/libgtest_main.a -pthread
 
 LIBS += -lcurses -lpanel -pthread
 
@@ -23,24 +32,33 @@ LIBS += -ltinfo -L/app/vbuild/RHEL6-x86_64/gcc/4.9.2/lib64 -Wl,-rpath,/app/vbuil
 endif
 
 # Default
-all: bin/rcs_log_parser
+all: test
+#all: bin/$(APP_NAME)
 
 compile: $(OBJS) | bin
 
-test:
-	$(Q)echo $(LIBS)
-	$(Q)echo $(patsubst %.o,%.d,$(OBJS))
-	$(Q)echo $(HEADERS)
+test: test/unit_tests
+	$(Q)test/unit_tests
+	 
 
-bin/rcs_log_parser: $(OBJS) | bin
+test/unit_tests: $(TEST_OBJS) $(OBJS)
+	$(Q)echo 'Linking target: $@'; \
+	$(CXX) -g -o $@  $(filter %.o,$^) $(RE2_OBJS) $(LIBS) $(TEST_LIBS)
+
+print:
+	$(Q)echo $(TEST_SRCS)
+	$(Q)echo $(OBJS)
+	$(Q)echo $(TEST_OBJS)
+
+bin/$(APP_NAME): $(APP_OBJ) $(OBJS) | bin
 	$(Q)echo 'Linking target: $@'; \
 	$(CXX) -g -o $@ $(filter %.o,$^) $(RE2_OBJS) $(LIBS) 
 		
-obj/%.o: %.cpp Makefile | obj
+obj/%.o test/obj/%.o: %.cpp Makefile | obj  test/obj
 	$(Q)echo 'Compiling: $<'; \
 	$(CXX) -MMD -MP $(INC) $(CPPFLAGS) -c -o $@ $<
 
-obj bin:
+obj bin test/obj:
 	$(Q)mkdir -p $@
 
 clean:
@@ -48,3 +66,4 @@ clean:
 	$(Q)$(RM) -rf bin
 
 -include $(DEPS)
+-include $(TEST_DEPS)

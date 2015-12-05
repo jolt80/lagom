@@ -1,4 +1,7 @@
 *~
-/bin
+bin
 .settings
-/obj
+obj
+test/obj
+test/unit_tests
+

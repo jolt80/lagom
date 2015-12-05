@@ -28,6 +28,8 @@
 using namespace std;
 using namespace std::chrono;
 
+Logger logger(".debug_log");
+
 Logger::Logger(const char* logFileName) {
 //	of.open (logFileName, std::ofstream::out | std::ofstream::app);
 }

@@ -1,5 +1,5 @@
 /*
- * RcsLogParser.cpp
+ * rcs_log_parser.cpp
  *
  *  Created on: Nov 1, 2015
  *      Author: Tomas Szabo
@@ -38,8 +38,6 @@
 using namespace std;
 using namespace std::chrono;
 using namespace re2;
-
-Logger logger(".debug_log");
 
 void log_line_scanner(Log& log, State& state)  {
 	logger.registerClient("log_scanner");
