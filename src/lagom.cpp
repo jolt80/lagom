@@ -1,8 +1,11 @@
 /*
- * rcs_log_parser.cpp
+ * lagom.cpp
  *
  *  Created on: Nov 1, 2015
  *      Author: Tomas Szabo
+ *
+ *  lagom is a log viewer with regex filtering/search capabilities, configurable
+ *  tokenization.
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -64,7 +67,7 @@ void log_line_scanner(Log& log, State& state)  {
 
 int main(int argc, char* argv[]) {
 	if(argc != 2) {
-		cout << "Usage: rcs_log_parser <logfile>" << endl;
+		cout << "Usage: lagom <logfile>" << endl;
 		exit(1);
 	}
 

@@ -86,10 +86,23 @@ bool LogLineTokenizer::tokenizeLine(const re2::StringPiece line, std::string** t
 
 std::string LogLineTokenizer::toString() const {
 	stringstream ss;
-//
-//	ss << ">>name" << "," << pattern->pattern() << ",";
-//	for(auto match : matchMapping) {
-//		ss << match << ",";
-//	}
+
+	ss << "LogLineTokenizer{";
+	ss << "prefixMatcher=" << *prefixMatcher;
+	ss << ",tokenMatchers(=";
+	int index{0};
+	bool printSeparator = false;
+	for(auto tokenMatcher : tokenMatchers) {
+		if(printSeparator) ss << ",";
+		ss << index << ":" << *tokenMatcher;
+		printSeparator = true;
+		++index;
+	}
+	ss << ")}";
 	return ss.str();
 }
+
+std::ostream& operator<<(std::ostream& stream, const LogLineTokenizer& tokenizer) {
+	return stream << tokenizer.toString();
+}
+

@@ -42,6 +42,18 @@ public:
 
 	int getNumTokens() const;
 
+	bool operator!=(const LogLineTokenizer& other) const {
+		return !(*this == other);
+	}
+
+	bool operator==(const LogLineTokenizer& other) const {
+		if (*prefixMatcher != *other.prefixMatcher) return false;
+		if( tokenMatchers.size() != other.tokenMatchers.size()) return false;
+		for(unsigned int i{0}; i < tokenMatchers.size(); ++i) {
+			if(*tokenMatchers[i] != *other.tokenMatchers[i]) return false;
+		}
+		return true;
+	}
 	std::string toString() const;
 private:
 	std::string name;
@@ -50,5 +62,8 @@ private:
 
 	std::vector<TokenMatcher*> tokenMatchers;
 };
+
+std::ostream& operator<<(std::ostream& stream, const LogLineTokenizer& tokenizer);
+
 
 #endif /* LOGLINETOKENIZER_H_ */

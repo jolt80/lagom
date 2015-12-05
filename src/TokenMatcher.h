@@ -56,6 +56,15 @@ public:
 	bool consume(re2::StringPiece& input, std::string** result) const;
 	bool findAndConsume(re2::StringPiece& input, std::string** result) const;
 
+	bool operator!=(const TokenMatcher& other) const {
+		return !(*this == other);
+	}
+	bool operator==(const TokenMatcher& other) const {
+		return  pattern->pattern() == other.pattern->pattern() &&
+				combine == other.combine ;
+	}
+	std::string toString() const;
+
 	// Simple version
 	std::string getMatch(re2::StringPiece str) const;
 
@@ -95,5 +104,7 @@ private:
 		}
 	};
 };
+
+std::ostream& operator<<(std::ostream& stream, const TokenMatcher& tokenMatcher);
 
 #endif /* TOKENMATCHER_H_ */

@@ -38,5 +38,4 @@ TEST(HistoryTest, test1) {
 	EXPECT_EQ(entry2,history.getNextEntry());
 	EXPECT_EQ(entry3,history.getNextEntry());
 	EXPECT_EQ("",history.getNextEntry());
-
-};
+}

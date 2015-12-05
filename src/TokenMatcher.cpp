@@ -21,6 +21,7 @@
 #include <TokenMatcher.h>
 #include <StringLiteral.h>
 #include <cassert>
+#include <sstream>
 #include <iostream>
 
 using namespace std;
@@ -128,4 +129,19 @@ int TokenMatcher::findNumberOfMatches(std::string pattern) {
 	if(startParentheses != endParentheses) return -1;
 
 	return startParentheses;
+}
+
+
+std::string TokenMatcher::toString() const {
+	std::stringstream ss;
+
+	ss << "TokenMatcher{";
+	ss << "pattern=" << pattern->pattern();
+	ss << "combine=" << combine;
+	ss << "}";
+	return ss.str();
+}
+
+std::ostream& operator<<(std::ostream& stream, const TokenMatcher& tokenMatcher) {
+	return stream;
 }

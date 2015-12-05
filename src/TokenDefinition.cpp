@@ -1,7 +1,7 @@
 /*
- * Settings.h
+ * TokenDefinition.cpp
  *
- *  Created on: Nov 17, 2015
+ *  Created on: Nov 29, 2015
  *      Author: Tomas Szabo
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -18,33 +18,9 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SETTINGS_H_
-#define SETTINGS_H_
-#include <re2/re2.h>
-#include <vector>
-#include <LogLineTokenizer.h>
 #include <TokenDefinition.h>
 
-class Settings {
-public:
-	Settings();
-	Settings(std::string filePath);
-	virtual ~Settings();
-
-	bool operator==(const Settings& other) const;
-
-	const std::vector<LogLineTokenizer*> getTokenizers() const {
-		return tokenizers;
-	}
-
-	const TokenDefinition& getTokenDefinition(int tokenIndex) const;
-
-	std::string toString() const;
-private:
-	std::vector<LogLineTokenizer*> tokenizers;
-	std::array<TokenDefinition,10> tokens;
-};
-
-std::ostream& operator<<(std::ostream& stream, const Settings& settings);
-
-#endif /* SETTINGS_H_ */
+std::ostream& operator<<(std::ostream& stream, const TokenDefinition& tokenDef)
+{
+  return stream << tokenDef.toString();
+}

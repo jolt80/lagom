@@ -18,6 +18,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <iostream>
 #include <Settings.h>
 
 Settings::Settings() {
@@ -67,10 +68,67 @@ Settings::Settings() {
 	tokens[9] = TokenDefinition{"Msg", 500, Alignment::LEFT, Alignment::RIGHT, true};
 }
 
+Settings::Settings(std::string filePath) : Settings{} {
+
+}
+
+std::string Settings::toString() const {
+	std::stringstream ss;
+
+	ss << "Settings{tokenizers(";
+	int index{0};
+	bool printSeparator = false;
+	for(auto tokenizer : tokenizers) {
+		if(printSeparator) ss << ",";
+		ss << index << ":" << *tokenizer;
+		printSeparator = true;
+	}
+	ss << "),tokens(";
+	index = 0;
+	printSeparator = false;
+	for(auto token : tokens) {
+		if(printSeparator) ss << ",";
+		ss << index << ":" << token;
+		printSeparator = true;
+		++index;
+	}
+	ss << ")}";
+	return ss.str();
+}
+
+
+bool Settings::operator==(const Settings& other) const {
+	if(tokenizers.size() != other.tokenizers.size()) {
+		std::cout << "tokenizers size not the same" << std::endl;
+		return false;
+	}
+	for(unsigned int i{0}; i < tokenizers.size(); ++i) {
+		if(*tokenizers[i] != *(other.tokenizers[i])) {
+			std::cout << "tokenizers index " << i << " not the same" << std::endl;
+			return false;
+		}
+	}
+	if(tokens.size() != other.tokens.size()) {
+		return false;
+	}
+	for(unsigned int i{0}; i < tokenizers.size(); ++i) {
+		if(tokens[i] != other.tokens[i]) {
+			std::cout << "tokens size not the same" << std::endl;
+			return false;
+		}
+	}
+	return true;
+}
+
 Settings::~Settings() {
 	for(auto tokenizer : tokenizers) delete tokenizer;
 }
 
 const TokenDefinition& Settings::getTokenDefinition(int tokenIndex) const {
 	return tokens[tokenIndex];
+}
+
+std::ostream& operator<<(std::ostream& stream, const Settings& settings)
+{
+  return stream << settings.toString();
 }

@@ -32,8 +32,8 @@ LIBS += -ltinfo -L/app/vbuild/RHEL6-x86_64/gcc/4.9.2/lib64 -Wl,-rpath,/app/vbuil
 endif
 
 # Default
-#all: test
-all: bin/$(APP_NAME)
+all: test
+#all: bin/$(APP_NAME)
 
 compile: $(OBJS) | bin
 
