@@ -38,7 +38,8 @@ all: test
 compile: $(OBJS) | bin
 
 test: test/unit_tests
-	$(Q)test/unit_tests
+	$(Q)cd test; \
+	./unit_tests
 	 
 
 test/unit_tests: $(TEST_OBJS) $(OBJS)
@@ -54,7 +55,7 @@ bin/$(APP_NAME): $(APP_OBJ) $(OBJS) | bin
 	$(Q)echo 'Linking target: $@'; \
 	$(CXX) -g -o $@ $(filter %.o,$^) $(RE2_OBJS) $(LIBS) 
 		
-obj/%.o test/obj/%.o: %.cpp Makefile | obj  test/obj
+obj/%.o test/obj/%.o: %.cpp | obj  test/obj
 	$(Q)echo 'Compiling: $<'; \
 	$(CXX) -MMD -MP $(INC) $(CPPFLAGS) -c -o $@ $<
 

@@ -129,6 +129,12 @@ int StringLiteral::findFirstOf(char charToFind)const
 	return strLen;
 }
 
+void StringLiteral::trimWhitespaceFromStart() {
+	int i{0};
+	while(str[i] == ' ' || str[i] == '\t') ++i;
+	trimFromStart(i);
+}
+
 std::pair<int,int> StringLiteral::findFirstAndSecondOf(char charToFind) const
 {
 	int first = strLen;
@@ -234,12 +240,7 @@ bool StringLiteral::trimFromEnd(int offset)
 
 int32_t StringLiteral::toInt() const
 {
-  std::stringstream sstr(this->toString());
-  int32_t ret;
-
-  sstr >> ret;
-
-  return ret;
+	return std::atoi(str);
 }
 
 /**

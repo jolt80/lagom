@@ -130,6 +130,8 @@ class StringLiteral {
     bool trimFromStart(int offset);
     bool trimFromEnd(int offset);
 
+    void trimWhitespaceFromStart();
+
     /**
      * Attempt to convert the contents to an integer.
      */

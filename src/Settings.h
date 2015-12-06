@@ -24,6 +24,7 @@
 #include <vector>
 #include <LogLineTokenizer.h>
 #include <TokenDefinition.h>
+#include <StringLiteral.h>
 
 class Settings {
 public:
@@ -41,6 +42,8 @@ public:
 
 	std::string toString() const;
 private:
+	bool buildTokenDefinition(int index, StringLiteral line);
+
 	std::vector<LogLineTokenizer*> tokenizers;
 	std::array<TokenDefinition,10> tokens;
 };

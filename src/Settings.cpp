@@ -18,8 +18,14 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <StringLiteral.h>
 #include <iostream>
+#include <fstream>
 #include <Settings.h>
+#include <cstdlib>
+#include <cassert>
+
+using namespace std;
 
 Settings::Settings() {
 	const char* timeStr = "\\[\\d{4}-\\d{2}-\\d{2}\\s*(\\d{1,2}:\\d{1,2}:\\d{1,2}\\.\\d{3}).*?\\]";
@@ -69,7 +75,67 @@ Settings::Settings() {
 }
 
 Settings::Settings(std::string filePath) : Settings{} {
+	ifstream inFile{filePath,ios::in};
+	string inLine;
 
+	if (!inFile.is_open()) {
+		cerr << "Couldn't open settings file." << endl;
+		::exit(EXIT_FAILURE);
+	}
+
+	while ( getline (inFile,inLine) )
+	{
+		StringLiteral line{inLine};
+		line.trimWhitespaceFromStart();
+		if(line.startsWith("#") || line.empty()) continue;
+		if(line.startsWith("TokenDefinitions")) {
+			int index{0};
+			while ( getline (inFile,inLine)) {
+				StringLiteral line{inLine};
+				line.trimWhitespaceFromStart();
+				if(line.startsWith("#") || line.empty()) continue;
+				if(line.startsWith("/TokenDefinitions")) break;
+				assert(buildTokenDefinition(index++,line));
+			}
+		}
+		if(line.startsWith("LogLineTokenizer:")) {
+			line.trimFromStart(strlen("LogLineTokenizer:"));
+			std::string name = line.toString();
+			while ( getline (inFile,inLine)) {
+				StringLiteral line{inLine};
+				line.trimWhitespaceFromStart();
+				if(line.startsWith("#") || line.empty()) continue;
+				if(line.startsWith("/LogLineTokenizer")) break;
+				cout << name << ":" << line << endl;
+			}
+		}
+	}
+
+	inFile.close();
+}
+
+bool Settings::buildTokenDefinition(int index, StringLiteral line) {
+	if(index > 9) return false;
+
+	int keyNr;
+	std::string name;
+	int width;
+	Alignment alignment;
+	Alignment crop;
+
+	// find key nr
+	int commaPos = line.findFirstOf(':');
+	if(commaPos == line.getLength()) return false;
+	keyNr = line.subString(0,commaPos).toInt();
+	line.trimFromStart(commaPos+1);
+
+	// find name
+
+	cout << line << endl;
+
+
+	//cout << index << ":" << line << endl;
+	return true;
 }
 
 std::string Settings::toString() const {
@@ -130,5 +196,5 @@ const TokenDefinition& Settings::getTokenDefinition(int tokenIndex) const {
 
 std::ostream& operator<<(std::ostream& stream, const Settings& settings)
 {
-  return stream << settings.toString();
+	return stream << settings.toString();
 }
