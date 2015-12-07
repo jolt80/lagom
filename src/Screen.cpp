@@ -96,7 +96,7 @@ void Screen::printToken(StringLiteral _token, int formatIndex, bool printSeparat
 	}
 	// Trim from either end depending on crop alignment
 	else if(token.getLength() > charsToPrint) {
-		if(tokenDefinition.getCrop() == Alignment::LEFT) {
+		if(tokenDefinition.getCrop() == Alignment::left) {
 			token.trimFromStart(token.getLength() - charsToPrint);
 		}
 		else {
@@ -104,7 +104,7 @@ void Screen::printToken(StringLiteral _token, int formatIndex, bool printSeparat
 		}
 	}
 
-	if(tokenDefinition.getAlignment() == Alignment::RIGHT) {
+	if(tokenDefinition.getAlignment() == Alignment::right) {
 		for(int k = 0; k < blanksToPrint; ++k) {
 			::addch(' ');
 		}

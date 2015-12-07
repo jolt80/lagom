@@ -19,8 +19,25 @@
  */
 
 #include <TokenDefinition.h>
+#include <iomanip>
+
+using namespace std;
 
 std::ostream& operator<<(std::ostream& stream, const TokenDefinition& tokenDef)
 {
   return stream << tokenDef.toString();
+}
+
+std::string TokenDefinition::toString() const {
+	std::stringstream ss;
+	string nameStr = name + ",";
+	string widthStr = to_string(width) + ",";
+	string visibilityStr = to_string(initialVisibility) + ",";
+	string alignmentStr = alignmentToString(alignment) + ",";
+	ss << setfill(' ') << left << setw(20) << nameStr;
+	ss << setfill(' ') << left << setw(8) << widthStr;
+	ss << setfill(' ') << left << setw(5) << visibilityStr;
+	ss << setfill(' ') << left << setw(8) << alignmentStr;
+	ss << setfill(' ') << left << setw(8) << alignmentToString(crop);
+	return ss.str();
 }

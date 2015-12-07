@@ -43,6 +43,7 @@ public:
 	std::string toString() const;
 private:
 	bool buildTokenDefinition(int index, StringLiteral line);
+	bool buildTokenMatcherSettings(StringLiteral line, TokenMatcherSettings& matcherSettings);
 
 	std::vector<LogLineTokenizer*> tokenizers;
 	std::array<TokenDefinition,10> tokens;

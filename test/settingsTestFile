@@ -1,5 +1,3 @@
-# Settings for rcs_log_parser
-#############################
 # Any line starting with a # is assumed to be a comment
 
 ## TokenDefinitions
@@ -13,46 +11,48 @@
 TokenDefinitions
  # Key:Name,     Width,   Visible    Alignment      Crop
     
-     1:Line,         5,        1,        left,      left
+     1:Line,         5,        1,       right,      left
      2:Time,        12,        1,        left,      left
      3:TimeDiff,    12,        0,        left,      left
      4:Card,         3,        0,        left,      left
-     5:TraceLevel,   6,        1,        left,      left
+     5:TraceLevel,   6,        0,        left,      left
      6:CpuId,        2,        0,        left,      left
-     7:FileAndLine, 20,        1,        left,      left
-     8:Process,     10,        0,        left,      left
-     9:TraceObj,    10,        1,        left,      left
+     7:FileAndLine, 20,        0,        left,      left
+     8:Process,     10,        1,        left,     right
+     9:TraceObj,    10,        1,        left,     right
      0:Msg,        200,        1,        left,      left
 
 /TokenDefinitions
 
 ## Regex expressions for tokens in a log line
 #############################################
-# "prefixMatcher" is special; it will be matched against the start of each line and consumes its part of the line,
-# if it fails to match, the line is considered to be of an incorrect format for the matcher.
-# If there are more than 1 RegexMatchers defined in this file the next one will be applied to the line.
+# The first matcher has to be named "prefix" and is specially treated; it will be matched against the start of each line and 
+# consumes its part of the line, if it fails to match, the line is considered to be of an incorrect format for the matcher.
+# If there are more than 1 LogLineTOkenizers defined in this file the next one will be applied to the line.
 #
-# The rest of the matchers will be matched against the rest of the line (the part after prefix) and are assumed to be
-# optional for the line
+# If the prefix matcher matches the line the rest of the matchers will be matched against the rest of the line (the part after 
+# prefix) and are assumed to be optional for the line.
 #
-# More LogLineTokenizer entries can be added
+# The captures from the matchers are supposed to match the order of the token definitions.
+#
+# More LogLineTokenizer entries can be added.
 #####################################################################################################################
 
 LogLineTokenizer:LttngBase
 
  # 5 captures: Time, TimeDiff, Card, TraceLevel and CpuId
- prefixMatcher<5>=\[\d{4}-\d{2}-\d{2}\s*(\d{1,2}:\d{1,2}:\d{1,2}\.\d{3}).*?\]\s*\((\+\d+\.\d+)\)\s*(\w+)\s*\w+:(\w+):\s*{ cpu_id = (\w+) },"
+ prefix<5>=\[\d{4}-\d{2}-\d{2}\s*(\d{1,2}:\d{1,2}:\d{1,2}\.\d{3}).*?\]\s*\((\+\d+\.\d+)\)\s*(\w+)\s*\w+:(\w+):\s*{ cpu_id = (\w+) },
 
  # 2 captures, mapped to one token: FileAndLine with separator ":"
- fileAndLineMatcher<2,:>=fileAndLine = ".*?(\w+\.\w+):(\d+)",
+ fileAndLine<2,:>=fileAndLine = ".*?(\w+\.\w+):(\d+)",
 
  # 1 capture, Process
- processMatcher<1>=\\{ processAndObjIf = "(.*?)\(.*?\)\",
+ process<1>=\{ processAndObjIf = "(.*?)\(.*?\)",
 
  # 1 capture, TraceObj
- traceObjMatcher<1>=\\{ processAndObjIf = ".*?\((.*?)\)\",
+ traceObj<1>=\{ processAndObjIf = ".*?\((.*?)\)",
 
  # 1 capture: Msg
- msgMatcher<1>=msg = "\s*(.*)" }
+ msg<1>=msg = "\s*(.*)" }
 
 /LogLineTokenizer

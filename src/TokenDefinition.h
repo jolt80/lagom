@@ -25,14 +25,14 @@
 #include <string>
 
 enum class Alignment {
-	LEFT,
-	RIGHT
+	left,
+	right
 };
 
 class TokenDefinition {
 public:
-	TokenDefinition()  : name{}, width{}, alignment{Alignment::LEFT}, crop{Alignment::LEFT}, initialVisibility{false} { }
-	TokenDefinition(std::string _name, int _width, Alignment _alignment, bool _initialVisibility) : name{_name}, width{_width}, alignment{_alignment}, crop{Alignment::LEFT}, initialVisibility{_initialVisibility} { }
+	TokenDefinition()  : name{}, width{}, alignment{Alignment::left}, crop{Alignment::left}, initialVisibility{false} { }
+	TokenDefinition(std::string _name, int _width, Alignment _alignment, bool _initialVisibility) : name{_name}, width{_width}, alignment{_alignment}, crop{Alignment::left}, initialVisibility{_initialVisibility} { }
 	TokenDefinition(std::string _name, int _width, Alignment _alignment, Alignment _crop, bool _initialVisibility) : name{_name}, width{_width}, alignment{_alignment}, crop{_crop}, initialVisibility{_initialVisibility} { }
 	virtual ~TokenDefinition() {};
 
@@ -69,21 +69,12 @@ public:
 		return initialVisibility;
 	}
 
-	std::string toString() const {
-		std::stringstream ss;
-		ss  << "TokenDefinition{"
-			<< "name=" << name
-			<< " width=" << width
-			<< " alignment=" << alignmentToString(alignment)
-			<< " crop=" << alignmentToString(crop)
-			<< " initialVisibility=" << initialVisibility << "}";
-		return ss.str();
+	static std::string alignmentToString(Alignment a) {
+		if(a == Alignment::left) return "left";
+		else return "right";
 	}
 
-	static std::string alignmentToString(Alignment a) {
-		if(a == Alignment::LEFT) return "LEFT";
-		else return "RIGHT";
-	}
+	std::string toString() const;
 
 private:
 	std::string name;

@@ -42,7 +42,7 @@ test: test/unit_tests
 	./unit_tests
 	 
 
-test/unit_tests: $(TEST_OBJS) $(OBJS)
+test/unit_tests: $(TEST_OBJS) $(OBJS) test/settingsTestFile
 	$(Q)echo 'Linking target: $@'; \
 	$(CXX) -g -o $@  $(filter %.o,$^) $(RE2_OBJS) $(LIBS) $(TEST_LIBS)
 

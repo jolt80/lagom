@@ -26,7 +26,7 @@
 
 using namespace std;
 
-TokenMatcher::TokenMatcher(const TokenMatcherSettings& settings) : combine{settings.combine}, separator{settings.separator} {
+TokenMatcher::TokenMatcher(const TokenMatcherSettings& settings) : name{settings.name}, combine{settings.combine}, separator{settings.separator} {
 	numMatches = findNumberOfMatches(settings.pattern);
 	assert(numMatches > 0);
 
@@ -134,14 +134,23 @@ int TokenMatcher::findNumberOfMatches(std::string pattern) {
 
 std::string TokenMatcher::toString() const {
 	std::stringstream ss;
+	ss << name;
+	ss << "<" << pattern->NumberOfCapturingGroups();
+	if(combine) {
+		ss << "," << separator;
+	}
+	ss << ">=" << pattern->pattern();
+	return ss.str();
+
 
 	ss << "TokenMatcher{";
 	ss << "pattern=" << pattern->pattern();
-	ss << "combine=" << combine;
+	ss << ",combine=" << combine;
+	ss << ",separator=" << separator;
 	ss << "}";
 	return ss.str();
 }
 
 std::ostream& operator<<(std::ostream& stream, const TokenMatcher& tokenMatcher) {
-	return stream;
+	return stream << tokenMatcher.toString();
 }

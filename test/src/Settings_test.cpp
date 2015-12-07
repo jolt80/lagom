@@ -20,9 +20,13 @@ TEST(SettingsTest, test_parsing_of_file) {
 	// Default settings
 	Settings def;
 
+	cout << def << endl;
+
 	// Parse settings from file
 	Settings parsed{settingsTestFile};
 
-	// Compare with default
-//	EXPECT_EQ(def,parsed);
+	cout << parsed << endl;
+
+	//Compare with default
+	EXPECT_EQ(def,parsed);
 }

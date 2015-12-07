@@ -25,20 +25,20 @@
 #include <cstdlib>
 #include <cassert>
 
+#include <ParsingException.h>
+
 using namespace std;
 
 Settings::Settings() {
 	const char* timeStr = "\\[\\d{4}-\\d{2}-\\d{2}\\s*(\\d{1,2}:\\d{1,2}:\\d{1,2}\\.\\d{3}).*?\\]";
 	const char* timeDiffStr = "\\((\\+\\d+\\.\\d+)\\)";
 	const char* card = "(\\w+)";
-	const char* triTraceLevel = "com_ericsson_triobjif:(.*?):";
 	const char* lttngObjAndTraceLevel = "\\w+:(\\w+):";
 	const char* cpuId = "{ cpu_id = (\\w+) },";
 	const char* process = "\\{ processAndObjIf = \"(.*?)\\(.*?\\)\",";
 	const char* ObjIf = "\\{ processAndObjIf = \".*?\\((.*?)\\)\",";
 	const char* fileAndLine = "fileAndLine = \".*?(\\w+\\.\\w+):(\\d+)\",";
 	const char* msg = "msg = \"\\s*(.*)\" }";
-	const char* lttngMsg = "\\{ (.*) \\}";
 	const char* separator = "\\s*";
 
 	std::string lttngPrefixPattern;
@@ -52,29 +52,29 @@ Settings::Settings() {
 	lttngPrefixPattern += separator;
 	lttngPrefixPattern += cpuId;
 
-	TokenMatcherSettings prefix{ lttngPrefixPattern };
+	TokenMatcherSettings prefix{ "prefix", lttngPrefixPattern };
 	std::vector<TokenMatcherSettings> tokenPatterns;
-	tokenPatterns.push_back( { fileAndLine,true,":" } );
-	tokenPatterns.push_back( { process } );
-	tokenPatterns.push_back( { ObjIf } );
-	tokenPatterns.push_back( { msg } );
+	tokenPatterns.push_back( { "fileAndLine", fileAndLine,true,":" } );
+	tokenPatterns.push_back( { "process", process } );
+	tokenPatterns.push_back( { "traceObj", ObjIf } );
+	tokenPatterns.push_back( { "msg", msg } );
 
 	LogLineTokenizer* lttngBase = new LogLineTokenizer{"LttngBase", prefix, tokenPatterns};
 	tokenizers.push_back(lttngBase);
 
-	tokens[0] = TokenDefinition{"Line", 5, Alignment::RIGHT, true};
-	tokens[1] = TokenDefinition{"Time", 12, Alignment::LEFT, true};
-	tokens[2] = TokenDefinition{"TimeDiff", 12, Alignment::LEFT, false};
-	tokens[3] = TokenDefinition{"Card", 3, Alignment::LEFT, false};
-	tokens[4] = TokenDefinition{"TraceLevel", 10, Alignment::LEFT, false};
-	tokens[5] = TokenDefinition{"CpuId", 2, Alignment::LEFT, false};
-	tokens[6] = TokenDefinition{"FileAndLine", 30, Alignment::LEFT, false};
-	tokens[7] = TokenDefinition{"Process", 18, Alignment::LEFT, Alignment::RIGHT, true};
-	tokens[8] = TokenDefinition{"TraceObj", 20, Alignment::LEFT, Alignment::RIGHT, true};
-	tokens[9] = TokenDefinition{"Msg", 500, Alignment::LEFT, Alignment::RIGHT, true};
+	tokens[0] = TokenDefinition{"Line", 5, Alignment::right, true};
+	tokens[1] = TokenDefinition{"Time", 12, Alignment::left, true};
+	tokens[2] = TokenDefinition{"TimeDiff", 12, Alignment::left, false};
+	tokens[3] = TokenDefinition{"Card", 3, Alignment::left, false};
+	tokens[4] = TokenDefinition{"TraceLevel", 10, Alignment::left, false};
+	tokens[5] = TokenDefinition{"CpuId", 2, Alignment::left, false};
+	tokens[6] = TokenDefinition{"FileAndLine", 30, Alignment::left, false};
+	tokens[7] = TokenDefinition{"Process", 18, Alignment::left, Alignment::right, true};
+	tokens[8] = TokenDefinition{"TraceObj", 20, Alignment::left, Alignment::right, true};
+	tokens[9] = TokenDefinition{"Msg", 500, Alignment::left, Alignment::right, true};
 }
 
-Settings::Settings(std::string filePath) : Settings{} {
+Settings::Settings(std::string filePath) {
 	ifstream inFile{filePath,ios::in};
 	string inLine;
 
@@ -82,37 +82,85 @@ Settings::Settings(std::string filePath) : Settings{} {
 		cerr << "Couldn't open settings file." << endl;
 		::exit(EXIT_FAILURE);
 	}
+	int fileLine{0};
 
 	while ( getline (inFile,inLine) )
 	{
+		fileLine++;
 		StringLiteral line{inLine};
 		line.trimWhitespaceFromStart();
 		if(line.startsWith("#") || line.empty()) continue;
 		if(line.startsWith("TokenDefinitions")) {
 			int index{0};
 			while ( getline (inFile,inLine)) {
+				fileLine++;
 				StringLiteral line{inLine};
 				line.trimWhitespaceFromStart();
 				if(line.startsWith("#") || line.empty()) continue;
 				if(line.startsWith("/TokenDefinitions")) break;
-				assert(buildTokenDefinition(index++,line));
+				try {
+					buildTokenDefinition(index++,line);
+				}
+				catch(const ParsingException& e) {
+					if(e.hasStringPos()) {
+						int linePos = e.getStringPos() - inLine.c_str();
+						throw ParsingException{filePath,fileLine,linePos,e.what()};
+					}
+				}
 			}
 		}
+
+
 		if(line.startsWith("LogLineTokenizer:")) {
 			line.trimFromStart(strlen("LogLineTokenizer:"));
 			std::string name = line.toString();
+			TokenMatcherSettings prefix;
+			std::vector<TokenMatcherSettings> tokenMatchers;
 			while ( getline (inFile,inLine)) {
+				fileLine++;
 				StringLiteral line{inLine};
 				line.trimWhitespaceFromStart();
 				if(line.startsWith("#") || line.empty()) continue;
 				if(line.startsWith("/LogLineTokenizer")) break;
-				cout << name << ":" << line << endl;
+
+				if(!prefix.isInitialized()) {
+					if(!line.startsWith("prefix")) {
+						int linePos = line.getStr() - inLine.c_str();
+						throw ParsingException{filePath,fileLine,linePos,"Expected \"prefix\""};
+					}
+
+					try {
+						buildTokenMatcherSettings(line,prefix);
+					}
+					catch(const ParsingException& e) {
+						if(e.hasStringPos()) {
+							int linePos = e.getStringPos() - inLine.c_str();
+							throw ParsingException{filePath,fileLine,linePos,e.what()};
+						}
+					}
+				}
+				else {
+					TokenMatcherSettings matcher;
+					try {
+						buildTokenMatcherSettings(line,matcher);
+					}
+					catch(const ParsingException& e) {
+						if(e.hasStringPos()) {
+							int linePos = e.getStringPos() - inLine.c_str();
+							throw ParsingException{filePath,fileLine,linePos,e.what()};
+						}
+					}
+					tokenMatchers.push_back(matcher);
+				}
 			}
+			LogLineTokenizer* tokenizer = new LogLineTokenizer{name, prefix, tokenMatchers};
+			tokenizers.push_back(tokenizer);
 		}
 	}
 
 	inFile.close();
 }
+
 
 bool Settings::buildTokenDefinition(int index, StringLiteral line) {
 	if(index > 9) return false;
@@ -120,23 +168,140 @@ bool Settings::buildTokenDefinition(int index, StringLiteral line) {
 	int keyNr;
 	std::string name;
 	int width;
+	bool visibility;
 	Alignment alignment;
 	Alignment crop;
 
 	// find key nr
 	int commaPos = line.findFirstOf(':');
-	if(commaPos == line.getLength()) return false;
+	if(commaPos == line.getLength()) throw ParsingException{"Expected \":\"",line.getStr()};
 	keyNr = line.subString(0,commaPos).toInt();
 	line.trimFromStart(commaPos+1);
+	line.trimWhitespaceFromStart();
+	assert(keyNr == (index + 1) % 10);
 
 	// find name
+	commaPos = line.findFirstOf(',');
+	if(commaPos == line.getLength()) throw ParsingException{"Expected \",\"",line.getStr()};
+	name = line.subString(0,commaPos).toString();
+	line.trimFromStart(commaPos+1);
+	line.trimWhitespaceFromStart();
 
-	cout << line << endl;
+	// find width
+	commaPos = line.findFirstOf(',');
+	if(commaPos == line.getLength()) throw ParsingException{"Expected \",\"",line.getStr()};
+	width = line.subString(0,commaPos).toInt();
+	line.trimFromStart(commaPos+1);
+	line.trimWhitespaceFromStart();
 
+	// find visibility
+	commaPos = line.findFirstOf(',');
+	if(commaPos == line.getLength()) throw ParsingException{"Expected \",\"",line.getStr()};
+	visibility = static_cast<bool>(line.subString(0,commaPos).toInt());
+	line.trimFromStart(commaPos+1);
+	line.trimWhitespaceFromStart();
 
-	//cout << index << ":" << line << endl;
+	// find alignment
+	commaPos = line.findFirstOf(',');
+	if(commaPos == line.getLength()) throw ParsingException{"Expected \",\"",line.getStr()};
+	StringLiteral subStr = line.subString(0,commaPos);
+	if(subStr == "left") {
+		alignment = Alignment::left;
+	}
+	else if(subStr == "right") {
+		alignment = Alignment::right;
+	}
+	else {
+		throw ParsingException{"Expected \"left\" or \"right\"",line.getStr()};
+		return false;
+	}
+	line.trimFromStart(commaPos+1);
+	line.trimWhitespaceFromStart();
+
+	// find crop
+	subStr = line.subString(0,commaPos);
+	if(subStr == "left") {
+		crop = Alignment::left;
+	}
+	else if(subStr == "right") {
+		crop = Alignment::right;
+	}
+	else {
+		throw ParsingException{"Expected \"left\" or \"right\"",line.getStr()};
+		return false;
+	}
+
+	tokens[index] = TokenDefinition{name,width,alignment,crop,visibility};
 	return true;
 }
+
+bool Settings::buildTokenMatcherSettings(StringLiteral line, TokenMatcherSettings& matcherSettings) {
+	std::string name{};
+	//int numberOfMatches{};
+	std::string pattern{};
+	bool combine{false};
+	std::string separator{};
+
+	// find name
+	int separatorPos = line.findFirstOf('<');
+	if(separatorPos == line.getLength()) {
+		throw ParsingException{"Expected \"<\"",line.getStr()};
+		return false;
+	}
+	name = line.subString(0,separatorPos).toString();
+	line.trimFromStart(separatorPos+1);
+	line.trimWhitespaceFromStart();
+
+	// tokenMatcher with multiple captures mapped to single token
+	if(line.findFirstOf('>') > line.findFirstOf(':')) {
+		combine = true;
+		// find number of matches
+		separatorPos = line.findFirstOf(',');
+		if(separatorPos == line.getLength()) {
+			throw ParsingException{"Expected \",\"",line.getStr()};
+			return false;
+		}
+		//numberOfMatches = line.subString(0,separatorPos).toInt();
+		line.trimFromStart(separatorPos+1);
+		separatorPos = line.findFirstOf('>');
+		if(separatorPos == line.getLength()) {
+			throw ParsingException{"Expected \">\"",line.getStr()};
+			return false;
+		}
+		separator = line.subString(0,separatorPos).toString();
+		line.trimFromStart(separatorPos+1);
+		line.trimWhitespaceFromStart();
+	}
+	else {
+		// find number of matches
+		separatorPos = line.findFirstOf('>');
+		if(separatorPos == line.getLength()) {
+			throw ParsingException{"Expected \">\"",line.getStr()};
+			return false;
+		}
+		//numberOfMatches = line.subString(0,separatorPos).toInt();
+		line.trimFromStart(separatorPos+1);
+		line.trimWhitespaceFromStart();
+	}
+
+	// find number of matches
+	line.trimWhitespaceFromStart();
+	separatorPos = line.findFirstOf('=');
+	if(separatorPos > 0) {
+		throw ParsingException{"Expected \"=\"",line.getStr()};
+		return false;
+	}
+	line.trimFromStart(separatorPos+1);
+	pattern = line.toString();
+
+	matcherSettings.name = name;
+	matcherSettings.pattern = pattern;
+	matcherSettings.combine = combine;
+	matcherSettings.separator = separator;
+
+	return true;
+}
+
 
 std::string Settings::toString() const {
 	std::stringstream ss;
@@ -153,7 +318,7 @@ std::string Settings::toString() const {
 	index = 0;
 	printSeparator = false;
 	for(auto token : tokens) {
-		if(printSeparator) ss << ",";
+		if(printSeparator) ss << "\n";
 		ss << index << ":" << token;
 		printSeparator = true;
 		++index;
@@ -175,11 +340,12 @@ bool Settings::operator==(const Settings& other) const {
 		}
 	}
 	if(tokens.size() != other.tokens.size()) {
+		std::cout << "tokens size not the same" << std::endl;
 		return false;
 	}
 	for(unsigned int i{0}; i < tokenizers.size(); ++i) {
 		if(tokens[i] != other.tokens[i]) {
-			std::cout << "tokens size not the same" << std::endl;
+			std::cout << "tokens " << i << " not the same" << std::endl;
 			return false;
 		}
 	}

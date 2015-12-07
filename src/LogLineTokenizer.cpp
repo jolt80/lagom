@@ -88,14 +88,11 @@ std::string LogLineTokenizer::toString() const {
 	stringstream ss;
 
 	ss << "LogLineTokenizer{";
-	ss << "prefixMatcher=" << *prefixMatcher;
-	ss << ",tokenMatchers(=";
+	ss << "prefixMatcher=" << *prefixMatcher << "\n";
+	ss << "tokenMatchers(\n";
 	int index{0};
-	bool printSeparator = false;
 	for(auto tokenMatcher : tokenMatchers) {
-		if(printSeparator) ss << ",";
-		ss << index << ":" << *tokenMatcher;
-		printSeparator = true;
+		ss << index << ":" << *tokenMatcher << "\n";
 		++index;
 	}
 	ss << ")}";

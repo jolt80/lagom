@@ -26,11 +26,22 @@
 #include <array>
 #include <string>
 #include <re2/stringpiece.h>
+#include <iostream>
 
 struct TokenMatcherSettings {
-	TokenMatcherSettings(const std::string& _pattern, bool _combine, const std::string& _separator) : pattern{_pattern}, combine{_combine}, separator{_separator} {};
-	TokenMatcherSettings(const std::string& _pattern) : pattern{_pattern}, combine{false}, separator{":"} {};
+	TokenMatcherSettings() =default;
+	TokenMatcherSettings(const std::string& _name, const std::string& _pattern, bool _combine, const std::string& _separator) : name{_name}, pattern{_pattern}, combine{_combine}, separator{_separator} {};
+	TokenMatcherSettings(const std::string& _name, const std::string& _pattern) : name{_name}, pattern{_pattern}, combine{false}, separator{} {};
 
+	TokenMatcherSettings(const TokenMatcherSettings&) =default;
+
+	TokenMatcherSettings& operator=(const TokenMatcherSettings&) =default;
+
+	bool isInitialized() const {
+		return !pattern.empty();
+	}
+
+	std::string name;
 	std::string pattern;
 	bool combine;
 	std::string separator;
@@ -60,8 +71,26 @@ public:
 		return !(*this == other);
 	}
 	bool operator==(const TokenMatcher& other) const {
-		return  pattern->pattern() == other.pattern->pattern() &&
-				combine == other.combine ;
+		if(name != other.name) {
+			std::cout << "name" << std::endl;
+			return false;
+		}
+
+		if(pattern->pattern() != other.pattern->pattern()) {
+			std::cout << "pattern not matching" << std::endl;
+			std::cout << "1: " << pattern->pattern() << std::endl;
+			std::cout << "1: " << other.pattern->pattern() << std::endl;
+			return false;
+		}
+		if(combine != other.combine)  {
+			std::cout << "combine not matching" << std::endl;
+			return false;
+		}
+		if(separator != other.separator)  {
+			std::cout << "separator not matching" << std::endl;
+			return false;
+		}
+		return true;
 	}
 	std::string toString() const;
 
@@ -71,6 +100,7 @@ public:
 	static int findNumberOfMatches(std::string pattern);
 
 private:
+	std::string name;
 	bool combine = false;
 	int numMatches = 0;
 
