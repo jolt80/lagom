@@ -86,7 +86,13 @@ int FilteredLogView::getLineNumber(int index) {
 }
 
 std::string** FilteredLogView::getLogTokens(int index) {
-	return log->getLogTokens(matchingLines->at(index));
+	if(index < (int)matchingLines->size()) {
+		return log->getLogTokens(matchingLines->at(index));
+	}
+	else
+	{
+		return nullptr;
+	}
 }
 
 int FilteredLogView::findCurrentLine(int lineNumber) {

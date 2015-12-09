@@ -84,15 +84,17 @@ void Screen::printToken(StringLiteral _token, int formatIndex, bool printSeparat
 	// maximum possible chars to print
 	int charsToPrint = tokenDefinition.getWidth();
 
-	// limit to available space
-	if(charsToPrint > cols - xpos) {
-		charsToPrint = cols - xpos;
-	}
+//	// limit to available space
+//	if(charsToPrint > cols - xpos) {
+//		charsToPrint = cols - xpos;
+//	}
 
 	// pad with blanks if not long enough
 	int blanksToPrint = 0;
-	if(token.getLength() < charsToPrint) {
-		blanksToPrint = charsToPrint - token.getLength();
+	if(formatIndex != 9) {
+		if(token.getLength() < charsToPrint) {
+			blanksToPrint = charsToPrint - token.getLength();
+		}
 	}
 	// Trim from either end depending on crop alignment
 	else if(token.getLength() > charsToPrint) {
@@ -133,8 +135,9 @@ void Screen::printToken(StringLiteral token) {
 		attroff(COLOR_PAIR(1));
 	}
 
-	int charsToPrint = cols - xpos; // maximum possible chars to print
-	if(token.getLength() < charsToPrint) charsToPrint = token.getLength();
+	//int charsToPrint = cols - xpos; // maximum possible chars to print
+	//if(token.getLength() < charsToPrint)
+	int charsToPrint = token.getLength();
 	for(int k = 0; k < charsToPrint; ++k) {
 		::addch(token[k]);
 	}
@@ -170,11 +173,14 @@ void Screen::drawLog() {
 		logger.log("entering for-loop with currline " + to_string(currentState.currLine));
 		::erase();
 
-		for(int i = 0; i < numLinesToPrint; ++i) {
+		int xpos,ypos,lastSeparatorPos;
+		int lineIndex{0};
+		getyx(stdscr, ypos, xpos);
+		while(ypos < (rows - 1)) {
 			int tokensPrinted{0};
-			int logLine  =currentState.currLine + i;
+			int logLine  = currentState.currLine + lineIndex;
 			int lineNumber = logView->getLineNumber(logLine);
-			::move(i,0);
+			::move(ypos+1,0);
 			if(currentState.tokenVisible[0]) {
 				printLine(lineNumber);
 				tokensPrinted++;
@@ -188,14 +194,19 @@ void Screen::drawLog() {
 						if(currentState.tokenVisible[j+1]) {
 							printToken(StringLiteral{*(tokens[j])},formatIndex,tokensPrinted != 0);
 							tokensPrinted++;
+							getyx(stdscr, ypos, xpos);
 						}
 					}
+					lineIndex++;
 					continue;
 				}
 			}
 			//printToken(logView->getLine(line,cols,currentState.lineOffset));
 			printToken(StringLiteral{logView->getLine(logLine)});
+			lineIndex++;
+			getyx(stdscr, ypos, xpos);
 		}
+
 		::move(rows - 1,0);
 		::addstr(string(cols,' ').c_str());
 		::move(rows - 1,0);
