@@ -41,6 +41,9 @@ public:
 	const TokenDefinition& getTokenDefinition(int tokenIndex) const;
 
 	std::string toString() const;
+
+	static void writeDefaultSettingsFile(std::string filePath);
+
 private:
 	bool buildTokenDefinition(int index, StringLiteral line);
 	bool buildTokenMatcherSettings(StringLiteral line, TokenMatcherSettings& matcherSettings);

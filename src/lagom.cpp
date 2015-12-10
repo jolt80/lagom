@@ -37,6 +37,11 @@
 #include <thread>
 
 #include <History.h>
+#include <FileOperationException.h>
+
+extern "C" {
+	#include <sys/stat.h>
+}
 
 using namespace std;
 using namespace std::chrono;
@@ -65,13 +70,27 @@ void log_line_scanner(Log& log, State& state)  {
 	}
 }
 
+void createDirIfDoesntExist(std::string path) {
+	struct stat sb;
+	if (stat(path.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode)) {
+		// directory exists
+		return;
+	}
+	else {
+		mkdir(path.c_str(),S_IRWXU | S_IRWXG);
+	}
+}
+
 int main(int argc, char* argv[]) {
 	if(argc != 2) {
 		cout << "Usage: lagom <logfile>" << endl;
 		exit(1);
 	}
 
+	createDirIfDoesntExist("~/.lagom");
+
 	string logPath = argv[1];
+	string settingsPath = "~/.lagom/settings";
 
 	size_t tgfWebStringPos = logPath.find("tgfweb.lmera.ericsson.se/");
 	if(tgfWebStringPos != string::npos) {
@@ -80,25 +99,34 @@ int main(int argc, char* argv[]) {
 
 	logger.registerClient("main");
 
-	Settings settings;
+	Settings* settings;
+	try {
+		settings = new Settings{settingsPath};
+	}
+	catch(FileOperationException e) {
+		if(e.fault == FileOperationExceptionFailureCode::OPEN) {
+			Settings::writeDefaultSettingsFile(settingsPath);
+			settings = new Settings{settingsPath};
+		}
+	}
 	History searchHistory;
 	History filterHistory;
 
-	Log log(settings);
+	Log log(*settings);
 	LogViewRepository logViews(log);
 
 	if(!log.map(logPath.c_str())) {
 		return 1;
 	}
 
-	State currentState{settings};
+	State currentState{*settings};
 
 	// Spawn a thread that scans the whole file for log lines
     thread log_line_scanner_t(log_line_scanner,std::ref(log),std::ref(currentState));
 
 	UnfilteredLogView unfilteredLogView{&log};
     LogView* currentLogView = &unfilteredLogView;
-	Screen screen(currentLogView,currentState,settings);
+	Screen screen(currentLogView,currentState,*settings);
 	screen.drawLog();
 
 	int numSameInput = 0;

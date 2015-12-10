@@ -30,8 +30,9 @@
 
 struct TokenMatcherSettings {
 	TokenMatcherSettings() =default;
-	TokenMatcherSettings(const std::string& _name, const std::string& _pattern, bool _combine, const std::string& _separator) : name{_name}, pattern{_pattern}, combine{_combine}, separator{_separator} {};
-	TokenMatcherSettings(const std::string& _name, const std::string& _pattern) : name{_name}, pattern{_pattern}, combine{false}, separator{} {};
+	TokenMatcherSettings(const std::string& _name, int _numberOfMatches, const std::string& _pattern, bool _combine, const std::string& _separator) : name{_name}, numberOfTokens(_numberOfMatches), pattern{_pattern}, combine{_combine}, separator{_separator} {};
+	TokenMatcherSettings(const std::string& _name, int _numberOfMatches, const std::string& _pattern) : name{_name}, numberOfTokens(_numberOfMatches), pattern{_pattern}, combine{false}, separator{} {};
+	TokenMatcherSettings(const std::string& _name, const std::string& _pattern) : name{_name}, numberOfTokens(1), pattern{_pattern}, combine{false}, separator{} {};
 
 	TokenMatcherSettings(const TokenMatcherSettings&) =default;
 
@@ -42,6 +43,7 @@ struct TokenMatcherSettings {
 	}
 
 	std::string name;
+	int numberOfTokens;
 	std::string pattern;
 	bool combine;
 	std::string separator;

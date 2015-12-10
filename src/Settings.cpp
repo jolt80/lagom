@@ -26,6 +26,7 @@
 #include <cassert>
 
 #include <ParsingException.h>
+#include <FileOperationException.h>
 
 using namespace std;
 
@@ -52,9 +53,9 @@ Settings::Settings() {
 	lttngPrefixPattern += separator;
 	lttngPrefixPattern += cpuId;
 
-	TokenMatcherSettings prefix{ "prefix", lttngPrefixPattern };
+	TokenMatcherSettings prefix{ "prefix", 5, lttngPrefixPattern };
 	std::vector<TokenMatcherSettings> tokenPatterns;
-	tokenPatterns.push_back( { "fileAndLine", fileAndLine,true,":" } );
+	tokenPatterns.push_back( { "fileAndLine", 1, fileAndLine, true, ":" } );
 	tokenPatterns.push_back( { "process", process } );
 	tokenPatterns.push_back( { "traceObj", ObjIf } );
 	tokenPatterns.push_back( { "msg", msg } );
@@ -78,10 +79,7 @@ Settings::Settings(std::string filePath) {
 	ifstream inFile{filePath,ios::in};
 	string inLine;
 
-	if (!inFile.is_open()) {
-		cerr << "Couldn't open settings file." << endl;
-		::exit(EXIT_FAILURE);
-	}
+	if (!inFile.is_open()) throw FileOperationException{FileOperationExceptionFailureCode::OPEN,"couldn't open settings file " + filePath};
 	int fileLine{0};
 
 	while ( getline (inFile,inLine) )
@@ -115,13 +113,16 @@ Settings::Settings(std::string filePath) {
 			line.trimFromStart(strlen("LogLineTokenizer:"));
 			std::string name = line.toString();
 			TokenMatcherSettings prefix;
+			int numMatches{0};
 			std::vector<TokenMatcherSettings> tokenMatchers;
 			while ( getline (inFile,inLine)) {
+				cout << "numMatches " << numMatches << endl;
 				fileLine++;
 				StringLiteral line{inLine};
 				line.trimWhitespaceFromStart();
 				if(line.startsWith("#") || line.empty()) continue;
 				if(line.startsWith("/LogLineTokenizer")) break;
+				else if(numMatches >= 9) throw ParsingException{filePath,fileLine,0,"number of tokens is >=9 for the tokenizer, expected \"/LogLineTokenizer\""};
 
 				if(!prefix.isInitialized()) {
 					if(!line.startsWith("prefix")) {
@@ -131,6 +132,7 @@ Settings::Settings(std::string filePath) {
 
 					try {
 						buildTokenMatcherSettings(line,prefix);
+						numMatches += prefix.numberOfTokens;
 					}
 					catch(const ParsingException& e) {
 						if(e.hasStringPos()) {
@@ -143,6 +145,7 @@ Settings::Settings(std::string filePath) {
 					TokenMatcherSettings matcher;
 					try {
 						buildTokenMatcherSettings(line,matcher);
+						numMatches += matcher.numberOfTokens;
 					}
 					catch(const ParsingException& e) {
 						if(e.hasStringPos()) {
@@ -237,7 +240,7 @@ bool Settings::buildTokenDefinition(int index, StringLiteral line) {
 
 bool Settings::buildTokenMatcherSettings(StringLiteral line, TokenMatcherSettings& matcherSettings) {
 	std::string name{};
-	//int numberOfMatches{};
+	int numberOfMatches{};
 	std::string pattern{};
 	bool combine{false};
 	std::string separator{};
@@ -261,7 +264,7 @@ bool Settings::buildTokenMatcherSettings(StringLiteral line, TokenMatcherSetting
 			throw ParsingException{"Expected \",\"",line.getStr()};
 			return false;
 		}
-		//numberOfMatches = line.subString(0,separatorPos).toInt();
+		numberOfMatches = 1;
 		line.trimFromStart(separatorPos+1);
 		separatorPos = line.findFirstOf('>');
 		if(separatorPos == line.getLength()) {
@@ -279,7 +282,7 @@ bool Settings::buildTokenMatcherSettings(StringLiteral line, TokenMatcherSetting
 			throw ParsingException{"Expected \">\"",line.getStr()};
 			return false;
 		}
-		//numberOfMatches = line.subString(0,separatorPos).toInt();
+		numberOfMatches = line.subString(0,separatorPos).toInt();
 		line.trimFromStart(separatorPos+1);
 		line.trimWhitespaceFromStart();
 	}
@@ -295,6 +298,7 @@ bool Settings::buildTokenMatcherSettings(StringLiteral line, TokenMatcherSetting
 	pattern = line.toString();
 
 	matcherSettings.name = name;
+	matcherSettings.numberOfTokens = numberOfMatches;
 	matcherSettings.pattern = pattern;
 	matcherSettings.combine = combine;
 	matcherSettings.separator = separator;
@@ -364,3 +368,12 @@ std::ostream& operator<<(std::ostream& stream, const Settings& settings)
 {
 	return stream << settings.toString();
 }
+
+void Settings::writeDefaultSettingsFile(std::string filePath) {
+	ofstream outFile{filePath,ios::out};
+
+	if (!outFile.is_open()) throw FileOperationException{FileOperationExceptionFailureCode::OPEN,"couldn't open settings file " + filePath};
+
+	outFile << "hello world" << endl << flush;
+}
+
