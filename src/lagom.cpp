@@ -227,9 +227,13 @@ int main(int argc, char* argv[]) {
 			}
 			break;
 			case 'l':
+			{
 				::addstr("line> ");
-				currentState.currLine = screen.getInputInteger();
-				break;
+				int line = screen.getInputInteger();
+				if(line != 0) line--;
+				currentState.currLine = line;
+			}
+			break;
 			case KEY_IC:
 				currentState.tokenized = !currentState.tokenized;
 				break;

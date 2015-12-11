@@ -153,17 +153,10 @@ void Screen::drawLog() {
 	logger.log("entering with currLine = " + to_string(currentState.currLine));
 
 	// Find starting line and how many lines should be drawn
-	int numLinesToPrint = rows - 1;
-	if(currentState.currLine > (logView->getNumLines() - rows + 1)) {
-		// One more line to take into account the bottom line
-		currentState.currLine = logView->getNumLines() - rows + 1;
-		if(currentState.currLine < 0) {
-			currentState.currLine = 0;
-		}
+	if(currentState.currLine >= (logView->getNumLines())) {
+		currentState.currLine = logView->getNumLines() - 1;
 	}
-	if(logView->getNumLines() < numLinesToPrint) {
-		numLinesToPrint = logView->getNumLines();
-	}
+
 	if(currentState != lastDrawnState) {
 		logView->getLine(currentState.currLine);
 		if(currentState.currLine > logView->getNumLines()) {
@@ -179,10 +172,11 @@ void Screen::drawLog() {
 		while(ypos < (rows - 1)) {
 			int tokensPrinted{0};
 			int logLine  = currentState.currLine + lineIndex;
+			if(logLine >= logView->getNumLines()) break;
 			int lineNumber = logView->getLineNumber(logLine);
 			::move(ypos+1,0);
 			if(currentState.tokenVisible[0]) {
-				printLine(lineNumber);
+				printLine(lineNumber + 1);
 				tokensPrinted++;
 			}
 
