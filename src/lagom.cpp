@@ -87,11 +87,11 @@ int main(int argc, char* argv[]) {
 		exit(1);
 	}
 
-	createDirIfDoesntExist("~/.lagom");
-
+//	createDirIfDoesntExist("~/.lagom");
+//
 	string logPath = argv[1];
-	string settingsPath = "~/.lagom/settings";
-
+//	string settingsPath = "~/.lagom/settings";
+//
 	size_t tgfWebStringPos = logPath.find("tgfweb.lmera.ericsson.se/");
 	if(tgfWebStringPos != string::npos) {
 		logPath = "/proj/tgf_li/" + logPath.substr(tgfWebStringPos + 25);
@@ -100,15 +100,17 @@ int main(int argc, char* argv[]) {
 	logger.registerClient("main");
 
 	Settings* settings;
-	try {
-		settings = new Settings{settingsPath};
-	}
-	catch(FileOperationException e) {
-		if(e.fault == FileOperationExceptionFailureCode::OPEN) {
-			Settings::writeDefaultSettingsFile(settingsPath);
-			settings = new Settings{settingsPath};
-		}
-	}
+//	try {
+//		settings = new Settings{settingsPath};
+//	}
+//	catch(FileOperationException e) {
+//		if(e.fault == FileOperationExceptionFailureCode::OPEN) {
+//			Settings::writeDefaultSettingsFile(settingsPath);
+//			settings = new Settings{settingsPath};
+//		}
+//	}
+
+	settings = new Settings;
 	History searchHistory;
 	History filterHistory;
 

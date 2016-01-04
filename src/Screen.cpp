@@ -153,7 +153,7 @@ void Screen::drawLog() {
 	logger.log("entering with currLine = " + to_string(currentState.currLine));
 
 	// Find starting line and how many lines should be drawn
-	if(currentState.currLine >= (logView->getNumLines())) {
+	if(logView->getNumLines() > 0 && currentState.currLine >= (logView->getNumLines())) {
 		currentState.currLine = logView->getNumLines() - 1;
 	}
 

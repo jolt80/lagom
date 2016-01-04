@@ -69,7 +69,9 @@ int FilteredLogView::searchForLineContaining(int startLine, std::string search, 
 }
 
 StringLiteral FilteredLogView::getLine(int index) {
-	if(index < (int)matchingLines->size()) {
+	int i = index;
+	int size = matchingLines->size();
+	if(index < size) {
 		return log->getLine(matchingLines->at(index));
 	}
 	else

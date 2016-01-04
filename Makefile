@@ -7,7 +7,10 @@ APP_NAME := lagom
 # Search for source files in src
 VPATH += src test/src
 
-CPPFLAGS += -O3 -Wall -std=c++11 -g
+CPPFLAGS += -Wall -std=c++11 -g
+
+# Optimization flag for release build
+CPPFLAGS += -Wall -O3
 
 INC += -Isrc
 INC += -Ire2
