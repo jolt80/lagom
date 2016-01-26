@@ -26,8 +26,8 @@
 using namespace std;
 
 History::History(std::string _filePath) : filePath{_filePath}  {
-	readHistoryFile();
 	pos = storage.end();
+	readHistoryFile();
 }
 
 History::~History() {
@@ -48,12 +48,21 @@ void History::readHistoryFile() {
 	}
 	else
 	{
-		cerr << "Couldn't history file " << filePath << endl;
+		cerr << "Couldn't open history file " << filePath << endl;
 	}
 }
 
 void History::writeHistoryToFile() {
+	ofstream outFile{filePath};
 
+	if(outFile.is_open())
+	{
+		for(auto entry : storage) {
+			outFile << entry << endl;
+		}
+
+		outFile.close();
+	}
 }
 
 std::string History::getPrevEntry() {
@@ -79,7 +88,14 @@ std::string History::getNextEntry() {
 }
 
 void History::addEntry(std::string entry) {
-	storage.push_back(entry);
+	if(pos != storage.end()) {
+		if( *pos == entry ) {
+			moveCurrentToEnd();
+		}
+	}
+	else {
+		storage.push_back(entry);
+	}
 	pos = storage.end();
 }
 

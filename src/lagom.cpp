@@ -103,15 +103,16 @@ int main(int argc, char* argv[]) {
 
 	string settingsPath = homeDirPath + "/.lagom/settings";
 	Settings* settings = nullptr;
-	try {
-		settings = new Settings{settingsPath};
-	}
-	catch(FileOperationException e) {
-		if(e.fault == FileOperationExceptionFailureCode::OPEN) {
-			//Settings::writeDefaultSettingsFile(settingsPath);
-			settings = new Settings{settingsPath};
-		}
-	}
+//	try {
+//		settings = new Settings{settingsPath};
+//	}
+//	catch(FileOperationException e) {
+//		if(e.fault == FileOperationExceptionFailureCode::OPEN) {
+//			//Settings::writeDefaultSettingsFile(settingsPath);
+//			settings = new Settings{settingsPath};
+//		}
+//	}
+	settings = new Settings{};
 
 	Log log(*settings);
 	LogViewRepository logViews(log);

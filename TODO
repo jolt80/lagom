@@ -8,9 +8,10 @@ List of prioritized tasks:
 
 - Edit settings file in window in program
 
+DONE:
+
 - History written to file so that histroy survives restarts
 
-DONE:
 - Regex filtering
 
 - Search history for filter and search.

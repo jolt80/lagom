@@ -150,7 +150,7 @@ void Screen::printLine(int line) {
 }
 
 void Screen::drawLog() {
-	logger.log("entering with currLine = " + to_string(currentState.currLine));
+//	logger.log("entering with currLine = " + to_string(currentState.currLine));
 
 	// Find starting line and how many lines should be drawn
 	if(logView->getNumLines() > 0 && currentState.currLine >= (logView->getNumLines())) {
@@ -159,7 +159,7 @@ void Screen::drawLog() {
 
 	if(currentState != lastDrawnState) {
 		logView->getLine(currentState.currLine);
-		if(currentState.currLine > logView->getNumLines()) {
+		if(logView->getNumLines() != 0 && currentState.currLine > logView->getNumLines()) {
 			currentState.forceUpdate = true;
 			return drawLog();
 		}
