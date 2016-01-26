@@ -26,7 +26,7 @@
 
 class History {
 public:
-	History();
+	History(std::string filePath);
 	virtual ~History();
 
 	std::string getPrevEntry();
@@ -35,6 +35,11 @@ public:
 	void moveCurrentToEnd();
 	void resetPosition();
 private:
+	void readHistoryFile();
+	void writeHistoryToFile();
+
+	std::string filePath;
+
 	std::list<std::string> storage;
 	std::list<std::string>::iterator pos;
 };

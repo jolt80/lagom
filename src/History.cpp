@@ -19,12 +19,41 @@
  */
 
 #include <History.h>
+#include <FileOperationException.h>
+#include <fstream>
+#include <iostream>
 
-History::History() {
+using namespace std;
+
+History::History(std::string _filePath) : filePath{_filePath}  {
+	readHistoryFile();
 	pos = storage.end();
 }
 
 History::~History() {
+	writeHistoryToFile();
+}
+
+void History::readHistoryFile() {
+	ifstream inFile{filePath,ios::in};
+	string inLine;
+
+	if (inFile.is_open()) {
+		while ( getline (inFile,inLine) )
+		{
+			addEntry(inLine);
+		}
+
+		inFile.close();
+	}
+	else
+	{
+		cerr << "Couldn't history file " << filePath << endl;
+	}
+}
+
+void History::writeHistoryToFile() {
+
 }
 
 std::string History::getPrevEntry() {

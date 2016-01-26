@@ -77,7 +77,11 @@ void createDirIfDoesntExist(std::string path) {
 		return;
 	}
 	else {
-		mkdir(path.c_str(),S_IRWXU | S_IRWXG);
+		if(mkdir(path.c_str(),S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) != 0)
+		{
+			cout << "Mkdir failed with errno " << errno << endl;
+			exit(1);
+		}
 	}
 }
 
@@ -87,32 +91,27 @@ int main(int argc, char* argv[]) {
 		exit(1);
 	}
 
-//	createDirIfDoesntExist("~/.lagom");
-//
 	string logPath = argv[1];
-//	string settingsPath = "~/.lagom/settings";
-//
+
 	size_t tgfWebStringPos = logPath.find("tgfweb.lmera.ericsson.se/");
 	if(tgfWebStringPos != string::npos) {
 		logPath = "/proj/tgf_li/" + logPath.substr(tgfWebStringPos + 25);
 	}
 
-	logger.registerClient("main");
+	string homeDirPath = getenv("HOME");
+	createDirIfDoesntExist(homeDirPath + "/.lagom");
 
-	Settings* settings;
-//	try {
-//		settings = new Settings{settingsPath};
-//	}
-//	catch(FileOperationException e) {
-//		if(e.fault == FileOperationExceptionFailureCode::OPEN) {
-//			Settings::writeDefaultSettingsFile(settingsPath);
-//			settings = new Settings{settingsPath};
-//		}
-//	}
-
-	settings = new Settings;
-	History searchHistory;
-	History filterHistory;
+	string settingsPath = homeDirPath + "/.lagom/settings";
+	Settings* settings = nullptr;
+	try {
+		settings = new Settings{settingsPath};
+	}
+	catch(FileOperationException e) {
+		if(e.fault == FileOperationExceptionFailureCode::OPEN) {
+			//Settings::writeDefaultSettingsFile(settingsPath);
+			settings = new Settings{settingsPath};
+		}
+	}
 
 	Log log(*settings);
 	LogViewRepository logViews(log);
@@ -121,6 +120,10 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
+	string searchHistoryPath = homeDirPath + "/.lagom/search_history";
+	string filterHistoryPath = homeDirPath + "/.lagom/filter_history";
+	History searchHistory{searchHistoryPath};
+	History filterHistory{filterHistoryPath};
 	State currentState{*settings};
 
 	// Spawn a thread that scans the whole file for log lines

@@ -116,7 +116,6 @@ Settings::Settings(std::string filePath) {
 			int numMatches{0};
 			std::vector<TokenMatcherSettings> tokenMatchers;
 			while ( getline (inFile,inLine)) {
-				cout << "numMatches " << numMatches << endl;
 				fileLine++;
 				StringLiteral line{inLine};
 				line.trimWhitespaceFromStart();
@@ -334,22 +333,18 @@ std::string Settings::toString() const {
 
 bool Settings::operator==(const Settings& other) const {
 	if(tokenizers.size() != other.tokenizers.size()) {
-		std::cout << "tokenizers size not the same" << std::endl;
 		return false;
 	}
 	for(unsigned int i{0}; i < tokenizers.size(); ++i) {
 		if(*tokenizers[i] != *(other.tokenizers[i])) {
-			std::cout << "tokenizers index " << i << " not the same" << std::endl;
 			return false;
 		}
 	}
 	if(tokens.size() != other.tokens.size()) {
-		std::cout << "tokens size not the same" << std::endl;
 		return false;
 	}
 	for(unsigned int i{0}; i < tokenizers.size(); ++i) {
 		if(tokens[i] != other.tokens[i]) {
-			std::cout << "tokens " << i << " not the same" << std::endl;
 			return false;
 		}
 	}
