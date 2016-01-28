@@ -79,7 +79,7 @@ void createDirIfDoesntExist(std::string path) {
 	else {
 		if(mkdir(path.c_str(),S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) != 0)
 		{
-			cout << "Mkdir failed with errno " << errno << endl;
+			cerr << "mkdir() failed with errno " << errno << endl;
 			exit(1);
 		}
 	}
