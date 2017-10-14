@@ -1,6 +1,4 @@
 /*
- * FilteredLogView.cpp
- *
  *  Created on: Nov 30, 2015
  *      Author: Tomas Szabo
  *
@@ -18,10 +16,10 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <FilteredLogView.h>
 #include <cassert>
 #include <iostream>
-#include <AutoMeasureDuration.h>
+#include "auto_measure_duration.h"
+#include "filtered_log_view.h"
 
 using namespace std;
 
@@ -69,7 +67,6 @@ int FilteredLogView::searchForLineContaining(int startLine, std::string search, 
 }
 
 StringLiteral FilteredLogView::getLine(int index) {
-	int i = index;
 	int size = matchingLines->size();
 	if(index < size) {
 		return log->getLine(matchingLines->at(index));

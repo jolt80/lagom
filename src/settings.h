@@ -22,9 +22,9 @@
 #define SETTINGS_H_
 #include <re2/re2.h>
 #include <vector>
-#include <LogLineTokenizer.h>
-#include <TokenDefinition.h>
-#include <StringLiteral.h>
+#include "log_line_tokenizer.h"
+#include "token_definition.h"
+#include "string_literal.h"
 
 class Settings {
 public:

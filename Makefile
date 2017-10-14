@@ -10,21 +10,21 @@ VPATH += src test/src
 CPPFLAGS += -Wall -std=c++11 -g
 
 # Optimization flag for release build
-CPPFLAGS += -Wall -O3
+CPPFLAGS += -Wall -Werror -O3
 
 INC += -Isrc
 INC += -Ire2
 
-SRCS := $(wildcard src/*.cpp)
-OBJS := $(patsubst %.cpp,obj/%.o,$(filter-out $(APP_NAME).cpp,$(notdir $(SRCS))))
+SRCS := $(wildcard src/*.cc)
+OBJS := $(patsubst %.cc,obj/%.o,$(filter-out $(APP_NAME).c,$(notdir $(SRCS))))
 APP_OBJ := obj/$(APP_NAME).o
-DEPS := $(patsubst %.cpp,obj/%.d,$(notdir $(SRCS)))
+DEPS := $(patsubst %.cc,obj/%.d,$(notdir $(SRCS)))
 
 RE2_OBJS = $(wildcard re2/obj/re2/*.o)
 RE2_OBJS += $(wildcard re2/obj/util/*.o)
 
-TEST_SRCS := $(wildcard test/src/*.cpp)
-TEST_OBJS := $(patsubst %.cpp,test/obj/%.o,$(notdir $(TEST_SRCS)))
+TEST_SRCS := $(wildcard test/src/*.cc)
+TEST_OBJS := $(patsubst %.cc,test/obj/%.o,$(notdir $(TEST_SRCS)))
 
 TEST_LIBS := /usr/src/gtest/libgtest.a /usr/src/gtest/libgtest_main.a -pthread
 
@@ -60,7 +60,7 @@ bin/$(APP_NAME): $(APP_OBJ) $(OBJS) re2/obj/libre2.a | bin
 	$(Q)echo 'Linking target: $@'; \
 	$(CXX) -g -o $@ $(filter %.o,$^) $(LIBS) 
 		
-obj/%.o test/obj/%.o: %.cpp | obj  test/obj
+obj/%.o test/obj/%.o: %.cc | obj  test/obj
 	$(Q)echo 'Compiling: $<'; \
 	$(CXX) -MMD -MP $(INC) $(CPPFLAGS) -c -o $@ $<
 

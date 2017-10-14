@@ -1,6 +1,4 @@
 /*
- * LogViewFactory.cpp
- *
  *  Created on: Dec 2, 2015
  *      Author: Tomas Szabo
  *
@@ -18,11 +16,12 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <LogViewRepository.h>
-#include <AutoMeasureDuration.h>
 #include <iostream>
 #include <set>
 #include <re2/re2.h>
+
+#include "log_view_repository.h"
+#include "auto_measure_duration.h"
 
 using namespace std;
 

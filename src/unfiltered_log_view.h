@@ -21,8 +21,8 @@
 #ifndef UNFILTEREDLOGVIEW_H_
 #define UNFILTEREDLOGVIEW_H_
 
-#include <LogView.h>
-#include <Log.h>
+#include "log_view.h"
+#include "log.h"
 
 class UnfilteredLogView : public LogView {
 public:

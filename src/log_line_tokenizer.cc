@@ -1,6 +1,4 @@
 /*
- * LogLineTokenizer.cpp
- *
  *  Created on: Nov 17, 2015
  *      Author: Tomas Szabo
  *
@@ -18,11 +16,12 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <LogLineTokenizer.h>
 #include <assert.h>
 #include <sstream>
 #include <iostream>
-#include <StringLiteral.h>
+
+#include "string_literal.h"
+#include "log_line_tokenizer.h"
 
 using namespace std;
 using namespace re2;

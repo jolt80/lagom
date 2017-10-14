@@ -23,21 +23,21 @@
 
 #include <iostream>
 #include <string>
-#include <Screen.h>
-#include <State.h>
-#include <Log.h>
-#include <Logger.h>
-#include <TokenMatcher.h>
-#include <StringLiteral.h>
-#include <UnfilteredLogView.h>
-#include <LogViewRepository.h>
+#include "screen.h"
+#include "state.h"
+#include "log.h"
+#include "logger.h"
+#include "token_matcher.h"
+#include "string_literal.h"
+#include "unfiltered_log_view.h"
+#include "log_view_repository.h"
 
-#include <AutoMeasureDuration.h>
+#include "auto_measure_duration.h"
 #include <cassert>
 #include <thread>
 
-#include <History.h>
-#include <FileOperationException.h>
+#include "history.h"
+#include "file_operation_exception.h"
 
 extern "C" {
 	#include <sys/stat.h>

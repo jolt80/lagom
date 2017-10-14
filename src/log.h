@@ -21,11 +21,9 @@
 #ifndef LOG_H_
 #define LOG_H_
 
-#include <Settings.h>
 #include <string>
 #include <vector>
 #include <climits>
-#include <StringLiteral.h>
 #include <string>
 
 #include <stdio.h>
@@ -38,6 +36,9 @@
 #include <mutex>
 
 #include <re2/re2.h>
+
+#include "settings.h"
+#include "string_literal.h"
 
 struct Line {
 	StringLiteral contents;

@@ -1,6 +1,4 @@
 /*
- * Pad.cpp
- *
  *  Created on: Nov 1, 2015
  *      Author: Tomas Szabo
  *
@@ -18,7 +16,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <Pad.h>
+#include "pad.h"
 
 Pad::Pad() {
 	// TODO Auto-generated constructor stub

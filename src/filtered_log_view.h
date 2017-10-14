@@ -1,5 +1,5 @@
 /*
- * LogView.h
+ * FilteredLogView.h
  *
  *  Created on: Nov 30, 2015
  *      Author: Tomas Szabo
@@ -18,23 +18,31 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LOGVIEW_H_
-#define LOGVIEW_H_
+#ifndef FILTEREDLOGVIEW_H_
+#define FILTEREDLOGVIEW_H_
 
 #include <string>
-#include <StringLiteral.h>
 
-class LogView {
+#include "log_view.h"
+#include "log.h"
+
+class FilteredLogView : public LogView {
 public:
-	LogView() {}
-	virtual ~LogView() {}
+	friend class LogViewRepository;
 
-	virtual int getNumLines() const =0;
-	virtual int searchForLineContaining(int startLine, std::string search, bool searchBackwards = false) =0;
-	virtual StringLiteral getLine(int index) =0;
-	virtual int getLineNumber(int index) =0;
-	virtual std::string** getLogTokens(int index) =0;
-	virtual int findCurrentLine(int lineNumber) =0;
+	FilteredLogView(Log* _log, std::vector<int>* _matchingLines) : log{_log}, matchingLines{_matchingLines} { }
+	virtual ~FilteredLogView();
+
+	int getNumLines() const;
+	int searchForLineContaining(int startLine, std::string search, bool searchBackwards = false);
+	StringLiteral getLine(int index);
+	int getLineNumber(int index);
+	std::string** getLogTokens(int index);
+	int findCurrentLine(int lineNumber);
+
+protected:
+	Log* log;
+	std::vector<int>* matchingLines;
 };
 
-#endif /* LOGVIEW_H_ */
+#endif /* FILTEREDLOGVIEW_H_ */

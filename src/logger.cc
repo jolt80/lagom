@@ -18,12 +18,12 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "Logger.h"
 #include <chrono>
 #include <ctime>
 #include <iomanip>
 #include <thread>
-#include <AutoLock.h>
+#include "auto_lock.h"
+#include "logger.h"
 
 using namespace std;
 using namespace std::chrono;

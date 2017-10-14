@@ -1,6 +1,4 @@
 /*
- * TokenMatcher.cpp
- *
  *  Created on: Nov 27, 2015
  *      Author: Tomas Szabo
  *
@@ -18,11 +16,12 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <TokenMatcher.h>
-#include <StringLiteral.h>
 #include <cassert>
 #include <sstream>
 #include <iostream>
+
+#include "token_matcher.h"
+#include "string_literal.h"
 
 using namespace std;
 

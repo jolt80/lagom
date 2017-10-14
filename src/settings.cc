@@ -1,6 +1,4 @@
 /*
- * Settings.cpp
- *
  *  Created on: Nov 17, 2015
  *      Author: Tomas Szabo
  *
@@ -18,15 +16,15 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <StringLiteral.h>
 #include <iostream>
 #include <fstream>
-#include <Settings.h>
 #include <cstdlib>
 #include <cassert>
 
-#include <ParsingException.h>
-#include <FileOperationException.h>
+#include "settings.h"
+#include "string_literal.h"
+#include "parsing_exception.h"
+#include "file_operation_exception.h"
 
 using namespace std;
 

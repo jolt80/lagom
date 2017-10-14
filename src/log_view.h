@@ -1,7 +1,7 @@
 /*
- * LogViewFactory.h
+ * LogView.h
  *
- *  Created on: Dec 2, 2015
+ *  Created on: Nov 30, 2015
  *      Author: Tomas Szabo
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -18,29 +18,23 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LOGVIEWREPOSITORY_H_
-#define LOGVIEWREPOSITORY_H_
+#ifndef LOGVIEW_H_
+#define LOGVIEW_H_
 
-#include <FilteredLogView.h>
-#include <list>
+#include <string>
+#include "string_literal.h"
 
-class LogViewRepository {
+class LogView {
 public:
-	LogViewRepository(Log& _log) : log(_log) {};
-	virtual ~LogViewRepository();
+	LogView() {}
+	virtual ~LogView() {}
 
-	LogView* getFilteredLogView(std::string pattern);
-
-	static bool isMultiplePattern(std::string& pattern);
-
-	std::string getLastErrorMessage();
-private:
-	std::string errorMessage;
-	std::vector<int>* buildVectorOfMatchingLines(std::string pattern);
-	std::list<std::string> splitMultiplePattern(std::string& pattern);
-
-	Log& log;
-	std::map<std::string,FilteredLogView*> filteredViews;
+	virtual int getNumLines() const =0;
+	virtual int searchForLineContaining(int startLine, std::string search, bool searchBackwards = false) =0;
+	virtual StringLiteral getLine(int index) =0;
+	virtual int getLineNumber(int index) =0;
+	virtual std::string** getLogTokens(int index) =0;
+	virtual int findCurrentLine(int lineNumber) =0;
 };
 
-#endif /* LOGVIEWREPOSITORY_H_ */
+#endif /* LOGVIEW_H_ */

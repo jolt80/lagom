@@ -1,6 +1,4 @@
 /*
- * Log.cpp
- *
  *  Created on: Oct 31, 2015
  *      Author: Tomas Szabo
  *
@@ -18,19 +16,18 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <AutoLock.h>
-#include <Log.h>
-
 #include <sstream>
 #include <cstring>
 #include <cstdint>
 #include <cassert>
-#include <Logger.h>
-#include <AutoLock.h>
 #include <iostream>
 
 #include <re2/re2.h>
 #include <re2/stringpiece.h>
+
+#include "log.h"
+#include "logger.h"
+#include "auto_lock.h"
 
 using namespace std;
 using namespace std::chrono;

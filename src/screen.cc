@@ -1,6 +1,4 @@
 /*
- * Screen.cpp
- *
  *  Created on: Oct 31, 2015
  *      Author: Tomas Szabo
  *
@@ -18,10 +16,11 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "Screen.h"
 #include <iostream>
-#include <Logger.h>
 #include <cassert>
+
+#include "screen.h"
+#include "logger.h"
 
 extern Logger logger;
 
@@ -72,6 +71,7 @@ void Screen::printToken(StringLiteral _token, int formatIndex, bool printSeparat
 	StringLiteral token{_token};
 	const TokenDefinition& tokenDefinition = settings.getTokenDefinition(formatIndex);
 	int ypos;
+	(void)ypos;
 	int xpos;
 	if(printSeparatorPrefix) {
 		attron(COLOR_PAIR(1));
@@ -166,7 +166,7 @@ void Screen::drawLog() {
 		logger.log("entering for-loop with currline " + to_string(currentState.currLine));
 		::erase();
 
-		int xpos,ypos,lastSeparatorPos;
+		int xpos,ypos;
 		int lineIndex{0};
 		getyx(stdscr, ypos, xpos);
 		while(ypos < (rows - 1)) {

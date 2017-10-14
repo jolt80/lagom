@@ -1,6 +1,4 @@
 /*
- * Window.cpp
- *
  *  Created on: Nov 3, 2015
  *      Author: Tomas Szabo
  *
@@ -18,7 +16,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <Window.h>
+#include "window.h"
 
 Window::Window() {
 	// TODO Auto-generated constructor stub

@@ -1,6 +1,4 @@
 /*
- * StringLiteral.cpp
- *
  *  Created on: Nov 2, 2015
  *      Author: Tomas Szabo
  *
@@ -19,11 +17,12 @@
  *
  */
 
-#include <StringLiteral.h>
 #include <sstream>
 #include <stdint.h>
 #include <iostream>
 #include <cassert>
+
+#include "string_literal.h"
 
 using namespace std;
 

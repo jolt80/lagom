@@ -1,8 +1,6 @@
 /*
- * History.cpp
- *
  *  Created on: Dec 2, 2015
-  *      Author: Tomas Szabo
+ *      Author: Tomas Szabo
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
@@ -18,10 +16,10 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <History.h>
-#include <FileOperationException.h>
 #include <fstream>
 #include <iostream>
+#include "history.h"
+#include "file_operation_exception.h"
 
 using namespace std;
 

@@ -1,7 +1,7 @@
 /*
- * FilteredLogView.h
+ * LogViewFactory.h
  *
- *  Created on: Nov 30, 2015
+ *  Created on: Dec 2, 2015
  *      Author: Tomas Szabo
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -18,30 +18,30 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef FILTEREDLOGVIEW_H_
-#define FILTEREDLOGVIEW_H_
+#ifndef LOGVIEWREPOSITORY_H_
+#define LOGVIEWREPOSITORY_H_
 
-#include <LogView.h>
-#include <Log.h>
-#include <string>
+#include <list>
 
-class FilteredLogView : public LogView {
+#include "filtered_log_view.h"
+
+class LogViewRepository {
 public:
-	friend class LogViewRepository;
+	LogViewRepository(Log& _log) : log(_log) {};
+	virtual ~LogViewRepository();
 
-	FilteredLogView(Log* _log, std::vector<int>* _matchingLines) : log{_log}, matchingLines{_matchingLines} { }
-	virtual ~FilteredLogView();
+	LogView* getFilteredLogView(std::string pattern);
 
-	int getNumLines() const;
-	int searchForLineContaining(int startLine, std::string search, bool searchBackwards = false);
-	StringLiteral getLine(int index);
-	int getLineNumber(int index);
-	std::string** getLogTokens(int index);
-	int findCurrentLine(int lineNumber);
+	static bool isMultiplePattern(std::string& pattern);
 
-protected:
-	Log* log;
-	std::vector<int>* matchingLines;
+	std::string getLastErrorMessage();
+private:
+	std::string errorMessage;
+	std::vector<int>* buildVectorOfMatchingLines(std::string pattern);
+	std::list<std::string> splitMultiplePattern(std::string& pattern);
+
+	Log& log;
+	std::map<std::string,FilteredLogView*> filteredViews;
 };
 
-#endif /* FILTEREDLOGVIEW_H_ */
+#endif /* LOGVIEWREPOSITORY_H_ */

@@ -21,10 +21,10 @@
 #ifndef LOGLINETOKENIZER_H_
 #define LOGLINETOKENIZER_H_
 
-#include <TokenMatcher.h>
 #include <vector>
 #include <array>
 #include <string>
+#include "token_matcher.h"
 
 /**
  * Wraps an RE2 regex and provides matching for which log token index

@@ -21,14 +21,14 @@
 #ifndef SCREEN_H_
 #define SCREEN_H_
 
-#include <State.h>
 #include <ncurses.h>
 #include <string>
 #include <re2/stringpiece.h>
 #include <chrono>
-#include <Settings.h>
-#include <LogView.h>
-#include <History.h>
+#include "state.h"
+#include "settings.h"
+#include "log_view.h"
+#include "history.h"
 
 class Screen {
 public:
