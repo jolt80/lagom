@@ -28,10 +28,12 @@ TEST_OBJS := $(patsubst %.cpp,test/obj/%.o,$(notdir $(TEST_SRCS)))
 
 TEST_LIBS := /usr/src/gtest/libgtest.a /usr/src/gtest/libgtest_main.a -pthread
 
-LIBS += -lcurses -lpanel -pthread
+LIBS += -Lre2/obj -lre2 -lcurses -lpanel -pthread
 
 ifdef LMR_SITE
-LIBS += -ltinfo -L/app/vbuild/RHEL6-x86_64/gcc/4.9.2/lib64 -Wl,-rpath,/app/vbuild/RHEL6-x86_64/gcc/4.9.2/lib64
+export CXX := /app/vbuild/RHEL6-x86_64/gcc/5.2.0/bin/g++
+LIBS += -ltinfo -L/app/vbuild/RHEL6-x86_64/gcc/5.2.0/lib64 -Wl,-rpath,/app/vbuild/RHEL6-x86_64/gcc/5.2.0/lib64
+LIBS += -ltinfo -L/app/vbuild/RHEL6-x86_64/gcc/5.2.0/lib64 -Wl,-rpath,/app/vbuild/RHEL6-x86_64/gcc/5.2.0/lib64
 endif
 
 # Default
@@ -47,16 +49,16 @@ test: test/unit_tests
 
 test/unit_tests: $(TEST_OBJS) $(OBJS) test/settingsTestFile
 	$(Q)echo 'Linking target: $@'; \
-	$(CXX) -g -o $@  $(filter %.o,$^) $(RE2_OBJS) $(LIBS) $(TEST_LIBS)
+	$(CXX) -g -o $@  $(filter %.o,$^) $(LIBS) $(TEST_LIBS)
 
 print:
 	$(Q)echo $(TEST_SRCS)
 	$(Q)echo $(OBJS)
 	$(Q)echo $(TEST_OBJS)
 
-bin/$(APP_NAME): $(APP_OBJ) $(OBJS) | bin
+bin/$(APP_NAME): $(APP_OBJ) $(OBJS) re2/obj/libre2.a | bin
 	$(Q)echo 'Linking target: $@'; \
-	$(CXX) -g -o $@ $(filter %.o,$^) $(RE2_OBJS) $(LIBS) 
+	$(CXX) -g -o $@ $(filter %.o,$^) $(LIBS) 
 		
 obj/%.o test/obj/%.o: %.cpp | obj  test/obj
 	$(Q)echo 'Compiling: $<'; \
@@ -65,11 +67,15 @@ obj/%.o test/obj/%.o: %.cpp | obj  test/obj
 obj bin test/obj:
 	$(Q)mkdir -p $@
 
+re2/obj/libre2.a:
+	$(Q)make -C re2 -j8 all
+
 clean:
 	$(Q)$(RM) -rf obj
 	$(Q)$(RM) -rf test/obj
 	$(Q)$(RM) -rf bin
 	$(Q)$(RM) -rf test/unit_tests
+	$(Q)make -C re2 clean
 
 -include $(DEPS)
 -include $(TEST_DEPS)
