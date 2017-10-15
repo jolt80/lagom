@@ -1,9 +1,4 @@
 /*
- * LogLineTokenizer.h
- *
- *  Created on: Nov 17, 2015
- *      Author: Tomas Szabo
- *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -30,8 +25,8 @@
  * Wraps an RE2 regex and provides matching for which log token index
  * each regex match represents.
  *
- * This class will be expected to match a whole expect to be able to perform a FullMatch for a log line
- * or a specific format.
+ * This class will be expected to match a whole line with a FullMatch for a log line
+ * of a specific format.
  */
 class LogLineTokenizer {
 public:

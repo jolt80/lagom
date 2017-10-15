@@ -1,9 +1,4 @@
 /*
- * StringLiteral.h
- *
- *  Created on: Nov 2, 2015
-  *      Author: Tomas Szabo
- *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -16,7 +11,7 @@
  *
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 #ifndef STRINGLITERAL_H_
 #define STRINGLITERAL_H_
@@ -41,7 +36,7 @@
  * (ie not used as static const object) this class is only a wrapper for the
  * char buffer used in the constructor, it will never allocate any memory for
  * storing a copy of the string, therefore it will cause undefined behviour if
- * used after the char buffer that's used as input in the constructor is deleted.
+ * used after the char buffer used in the constructor is deleted.
  *
  */
 class StringLiteral {

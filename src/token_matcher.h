@@ -1,9 +1,4 @@
 /*
- * TokenMatcher.h
- *
- *  Created on: Nov 27, 2015
- *      Author: Tomas Szabo
- *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Affero General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -43,9 +38,9 @@ struct TokenMatcherSettings {
 	}
 
 	std::string name;
-	int numberOfTokens;
+	int numberOfTokens{0};
 	std::string pattern;
-	bool combine;
+	bool combine{false};
 	std::string separator;
 };
 
