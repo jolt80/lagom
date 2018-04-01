@@ -1,53 +1,59 @@
 # Stop echo of command lines
 Q=@
 
-
 APP_NAME := lagom
+
+# Default
+.PHONY: all
+all: bin/$(APP_NAME)
 
 # Search for source files in src
 VPATH += src test/src
 
-CPPFLAGS += -Wall -std=c++11 -g
+CPPFLAGS += -Wall -std=c++14 -g
 
 # Optimization flag for release build
 CPPFLAGS += -Wall -Werror -O3
 
 INC += -Isrc
-INC += -Ire2
 
 SRCS := $(wildcard src/*.cc)
-OBJS := $(patsubst %.cc,obj/%.o,$(filter-out $(APP_NAME).c,$(notdir $(SRCS))))
-APP_OBJ := obj/$(APP_NAME).o
+SRCS := $(filter-out src/lagom.cc,$(SRCS))
+APP_OBJ := out/$(APP_NAME).o
 DEPS := $(patsubst %.cc,obj/%.d,$(notdir $(SRCS)))
-
-RE2_OBJS = $(wildcard re2/obj/re2/*.o)
-RE2_OBJS += $(wildcard re2/obj/util/*.o)
+OBJS += $(patsubst %.cc,out/%.o,$(SRCS))
 
 TEST_SRCS := $(wildcard test/src/*.cc)
-TEST_OBJS := $(patsubst %.cc,test/obj/%.o,$(notdir $(TEST_SRCS)))
+TEST_OBJS := $(patsubst %.cc,out/%.o,$(notdir $(TEST_SRCS)))
 
-TEST_LIBS := /usr/src/gtest/libgtest.a /usr/src/gtest/libgtest_main.a -pthread
+#TEST_LIBS := /usr/src/gtest/libgtest.a /usr/src/gtest/libgtest_main.a -pthread
 
-LIBS += -Lre2/obj -lre2 -lcurses -lpanel -pthread
+OUT_DIR := out
 
+LIBS += -lcurses -lpanel -pthread
+
+# This makes it work out of the box in an Ericsson VDI environment
 ifdef LMR_SITE
 export CXX := /app/vbuild/RHEL6-x86_64/gcc/5.2.0/bin/g++
 LIBS += -ltinfo -L/app/vbuild/RHEL6-x86_64/gcc/5.2.0/lib64 -Wl,-rpath,/app/vbuild/RHEL6-x86_64/gcc/5.2.0/lib64
 LIBS += -ltinfo -L/app/vbuild/RHEL6-x86_64/gcc/5.2.0/lib64 -Wl,-rpath,/app/vbuild/RHEL6-x86_64/gcc/5.2.0/lib64
 endif
 
-# Default
-#all: test
-all: bin/$(APP_NAME)
+# Include all dependencies here
+include extern/build/re2.mk
+include extern/build/gtest.mk
+
+$(info $(OBJS))
+$(info $(TEST_OBJS))
 
 compile: $(OBJS) | bin
 
+.PHONY: test
 test: test/unit_tests
 	$(Q)cd test; \
 	./unit_tests
 	 
-
-test/unit_tests: $(TEST_OBJS) $(OBJS) test/settingsTestFile
+test/unit_tests: $(TEST_OBJS) $(OBJS) $(BUILD_DEPS) test/settingsTestFile
 	$(Q)echo 'Linking target: $@'; \
 	$(CXX) -g -o $@  $(filter %.o,$^) $(LIBS) $(TEST_LIBS)
 
@@ -56,26 +62,23 @@ print:
 	$(Q)echo $(OBJS)
 	$(Q)echo $(TEST_OBJS)
 
-bin/$(APP_NAME): $(APP_OBJ) $(OBJS) re2/obj/libre2.a | bin
+bin/$(APP_NAME): $(APP_OBJ) $(OBJS) $(BUILD_DEPS) | bin
 	$(Q)echo 'Linking target: $@'; \
+	
 	$(CXX) -g -o $@ $(filter %.o,$^) $(LIBS) 
+
+bin:
+	$(Q)mkdir -p bin
 		
-obj/%.o test/obj/%.o: %.cc | obj  test/obj
+out/%.o: %.cc
 	$(Q)echo 'Compiling: $<'; \
+	mkdir -p $(dir $@); \
 	$(CXX) -MMD -MP $(INC) $(CPPFLAGS) -c -o $@ $<
 
-obj bin test/obj:
-	$(Q)mkdir -p $@
-
-re2/obj/libre2.a:
-	$(Q)make -C re2 -j8 all
-
-clean:
-	$(Q)$(RM) -rf obj
-	$(Q)$(RM) -rf test/obj
+clean: $(CLEAN_DEPS)
+	$(Q)$(RM) -rf out
 	$(Q)$(RM) -rf bin
 	$(Q)$(RM) -rf test/unit_tests
-	$(Q)make -C re2 clean
 
 -include $(DEPS)
 -include $(TEST_DEPS)

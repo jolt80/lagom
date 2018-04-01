@@ -1,3 +1,12 @@
 [submodule "re2"]
-	path = re2
+	path = extern/re2
 	url = https://github.com/google/re2.git
+[submodule "glog"]
+	path = extern/glog
+	url = git@github.com:google/glog.git
+[submodule "yaml-cpp"]
+	path = extern/yaml-cpp
+	url = git@github.com:jbeder/yaml-cpp.git
+[submodule "extern/googletest"]
+	path = extern/googletest
+	url = git@github.com:google/googletest.git

@@ -1,7 +1,5 @@
 *~
 bin
 .settings
-obj
-test/obj
+out
 test/unit_tests
-
