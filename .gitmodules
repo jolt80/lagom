@@ -1,6 +1,6 @@
 [submodule "re2"]
 	path = extern/re2
-	url = https://github.com/google/re2.git
+	url = git@github.com:google/re2.git
 [submodule "glog"]
 	path = extern/glog
 	url = git@github.com:google/glog.git
