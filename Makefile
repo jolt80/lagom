@@ -1,5 +1,9 @@
 # Stop echo of command lines
-Q=@
+Q:=@
+
+ifdef V
+Q:=
+endif
 
 APP_NAME := lagom
 
@@ -19,14 +23,12 @@ INC += -Isrc
 
 SRCS := $(wildcard src/*.cc)
 SRCS := $(filter-out src/lagom.cc,$(SRCS))
+SRCS := $(patsubst src/%,%,$(SRCS))
 APP_OBJ := out/$(APP_NAME).o
-DEPS := $(patsubst %.cc,obj/%.d,$(notdir $(SRCS)))
 OBJS += $(patsubst %.cc,out/%.o,$(SRCS))
 
 TEST_SRCS := $(wildcard test/src/*.cc)
 TEST_OBJS := $(patsubst %.cc,out/%.o,$(notdir $(TEST_SRCS)))
-
-#TEST_LIBS := /usr/src/gtest/libgtest.a /usr/src/gtest/libgtest_main.a -pthread
 
 OUT_DIR := out
 
@@ -43,10 +45,9 @@ endif
 include extern/build/re2.mk
 include extern/build/gtest.mk
 
-$(info $(OBJS))
-$(info $(TEST_OBJS))
+DEPS := $(patsubst %.cc,%.d,$(SRCS))
 
-compile: $(OBJS) | bin
+compile: $(OBJS)
 
 .PHONY: test
 test: test/unit_tests
@@ -63,15 +64,14 @@ print:
 	$(Q)echo $(TEST_OBJS)
 
 bin/$(APP_NAME): $(APP_OBJ) $(OBJS) $(BUILD_DEPS) | bin
-	$(Q)echo 'Linking target: $@'; \
-	
+	$(Q)echo 'Linking:   $@'; \
 	$(CXX) -g -o $@ $(filter %.o,$^) $(LIBS) 
 
 bin:
 	$(Q)mkdir -p bin
 		
 out/%.o: %.cc
-	$(Q)echo 'Compiling: $<'; \
+	$(Q)echo 'Compiling: $@'; \
 	mkdir -p $(dir $@); \
 	$(CXX) -MMD -MP $(INC) $(CPPFLAGS) -c -o $@ $<
 

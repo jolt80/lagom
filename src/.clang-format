@@ -1,0 +1,63 @@
+###########################################################
+# Config Fwk clang format config file for codestyler/CppStyle
+#
+# Based on google style with some deviations.
+# Copy with (for now) no modifications from:
+# /proj/lte_twh/tools/codestyler/latest/default.clang-format
+###########################################################
+---
+Language: Cpp
+BasedOnStyle : Google
+
+# Ericsson deviations
+
+ColumnLimit: 120
+
+BraceWrapping:
+  BeforeCatch:           true
+  BeforeElse:            true
+BreakBeforeBraces: Custom
+
+AllowAllParametersOfDeclarationOnNextLine: false
+BinPackArguments: false
+BinPackParameters: false
+
+BreakConstructorInitializersBeforeComma: true
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+
+DerivePointerAlignment: false
+PointerAlignment: Left
+
+IndentCaseLabels: true
+
+KeepEmptyLinesAtTheStartOfBlocks: true
+
+AlwaysBreakBeforeMultilineStrings: false
+---
+Language: Proto
+BasedOnStyle : Google
+
+# Ericsson deviations
+
+ColumnLimit: 120
+
+BraceWrapping:
+  BeforeCatch:           true
+  BeforeElse:            true
+BreakBeforeBraces: Custom
+
+AllowAllParametersOfDeclarationOnNextLine: false
+BinPackArguments: false
+BinPackParameters: false
+
+BreakConstructorInitializersBeforeComma: true
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+
+DerivePointerAlignment: false
+PointerAlignment: Left
+
+IndentCaseLabels: true
+
+KeepEmptyLinesAtTheStartOfBlocks: true
+
+AlwaysBreakBeforeMultilineStrings: false
