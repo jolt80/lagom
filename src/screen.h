@@ -32,6 +32,9 @@
 #include "settings.h"
 #include "state.h"
 
+namespace lagom {
+
+
 class Screen {
  public:
   LogView* logView;
@@ -77,5 +80,7 @@ class Screen {
   int rows;
   int cols;
 };
+
+} // namespace lagom
 
 #endif /* SCREEN_H_ */

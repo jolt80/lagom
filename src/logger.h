@@ -28,6 +28,9 @@
 #include <mutex>
 #include <thread>
 
+namespace lagom {
+
+
 class Logger : public std::ostream {
  public:
   std::mutex mutex;
@@ -50,5 +53,7 @@ class Logger : public std::ostream {
  private:
   std::map<std::thread::id, std::string> clients;
 };
+
+} // namespace lagom
 
 #endif /* LOGGER_H_ */

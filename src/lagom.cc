@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018 Tomas Szabo
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -51,7 +51,11 @@ using namespace std;
 using namespace std::chrono;
 using namespace re2;
 
+using namespace lagom;
+
+namespace lagom {
 extern Logger logger;
+}
 
 void log_line_scanner(Log& log, State& state) {
   logger.registerClient("log_scanner");

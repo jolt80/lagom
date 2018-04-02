@@ -32,6 +32,8 @@
 
 using namespace std;
 
+namespace lagom {
+
 Settings::Settings() {
   const char* timeStr = "\\[\\d{4}-\\d{2}-\\d{2}\\s*(\\d{1,2}:\\d{1,2}:\\d{1,2}\\.\\d{3}).*?\\]";
   const char* timeDiffStr = "\\((\\+\\d+\\.\\d+)\\)";
@@ -368,3 +370,5 @@ void Settings::writeDefaultSettingsFile(std::string filePath) {
 
   outFile << "hello world" << endl << flush;
 }
+
+}  // namespace lagom

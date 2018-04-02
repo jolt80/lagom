@@ -25,6 +25,8 @@
 
 using namespace std;
 
+namespace lagom {
+
 std::ostream& operator<<(std::ostream& stream, const TokenDefinition& tokenDef) {
   return stream << tokenDef.toString();
 }
@@ -42,3 +44,5 @@ std::string TokenDefinition::toString() const {
   ss << setfill(' ') << left << setw(8) << alignmentToString(crop);
   return ss.str();
 }
+
+}  // namespace lagom

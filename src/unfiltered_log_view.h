@@ -26,6 +26,9 @@
 #include "log.h"
 #include "log_view.h"
 
+namespace lagom {
+
+
 class UnfilteredLogView : public LogView {
  public:
   UnfilteredLogView()
@@ -80,5 +83,7 @@ class UnfilteredLogView : public LogView {
  private:
   Log* log;
 };
+
+} // namespace lagom
 
 #endif /* UNFILTEREDLOGVIEW_H_ */

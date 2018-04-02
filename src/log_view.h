@@ -26,6 +26,9 @@
 #include <string>
 #include "string_literal.h"
 
+namespace lagom {
+
+
 class LogView {
  public:
   LogView() {}
@@ -38,5 +41,7 @@ class LogView {
   virtual std::string** getLogTokens(int index) = 0;
   virtual int findCurrentLine(int lineNumber) = 0;
 };
+
+} // namespace lagom
 
 #endif /* LOGVIEW_H_ */

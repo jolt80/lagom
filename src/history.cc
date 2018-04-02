@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018 Tomas Szabo
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -26,6 +26,8 @@
 #include "file_operation_exception.h"
 
 using namespace std;
+
+namespace lagom {
 
 History::History(std::string _filePath)
     : filePath{_filePath} {
@@ -104,3 +106,5 @@ void History::moveCurrentToEnd() {
 }
 
 void History::resetPosition() { pos = storage.end(); }
+
+}  // namespace lagom

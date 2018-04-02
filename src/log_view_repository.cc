@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018 Tomas Szabo
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -28,6 +28,8 @@
 #include "log_view_repository.h"
 
 using namespace std;
+
+namespace lagom {
 
 LogViewRepository::~LogViewRepository() {
   for (auto elem : filteredViews) {
@@ -116,3 +118,5 @@ std::list<std::string> LogViewRepository::splitMultiplePattern(std::string& patt
 
   return ret;
 }
+
+}  // namespace lagom

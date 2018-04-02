@@ -28,6 +28,9 @@
 #include <string>
 #include "settings.h"
 
+namespace lagom {
+
+
 class State {
  public:
   State(Settings& settings) {
@@ -69,5 +72,7 @@ class State {
 
   bool forceUpdate = false;
 };
+
+} // namespace lagom
 
 #endif /* STATE_H_ */

@@ -26,6 +26,9 @@
 #include <exception>
 #include <string>
 
+namespace lagom {
+
+
 class ParsingException : public std::exception {
  public:
   ParsingException(std::string _message)
@@ -59,5 +62,7 @@ class ParsingException : public std::exception {
   std::string message;
   const char* pos;
 };
+
+} // namespace lagom
 
 #endif /* PARSINGEXCEPTION_H_ */

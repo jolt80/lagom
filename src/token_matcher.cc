@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018 Tomas Szabo
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -28,6 +28,8 @@
 #include "token_matcher.h"
 
 using namespace std;
+
+namespace lagom {
 
 TokenMatcher::TokenMatcher(const TokenMatcherSettings& settings)
     : name{settings.name}
@@ -156,3 +158,5 @@ std::string TokenMatcher::toString() const {
 std::ostream& operator<<(std::ostream& stream, const TokenMatcher& tokenMatcher) {
   return stream << tokenMatcher.toString();
 }
+
+}  // namespace lagom

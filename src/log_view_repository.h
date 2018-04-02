@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018 Tomas Szabo
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -24,8 +24,9 @@
 #define LOGVIEWREPOSITORY_H_
 
 #include <list>
-
 #include "filtered_log_view.h"
+
+namespace lagom {
 
 class LogViewRepository {
  public:
@@ -47,5 +48,7 @@ class LogViewRepository {
   Log& log;
   std::map<std::string, FilteredLogView*> filteredViews;
 };
+
+}  // namespace lagom
 
 #endif /* LOGVIEWREPOSITORY_H_ */

@@ -26,6 +26,8 @@
 #include <sstream>
 #include <string>
 
+namespace lagom {
+
 enum class Alignment { left, right };
 
 class TokenDefinition {
@@ -85,5 +87,7 @@ class TokenDefinition {
 };
 
 std::ostream& operator<<(std::ostream& stream, const TokenDefinition& tokenDef);
+
+}  // namespace lagom
 
 #endif /* TOKENDEFINITION_H_ */

@@ -30,6 +30,9 @@ extern "C" {
 #include <sys/syscall.h>
 #include <sys/types.h>
 #include <sys/unistd.h>
+
+namespace lagom {
+
 }
 
 class AutoLock {
@@ -50,5 +53,7 @@ class AutoLock {
  private:
   std::mutex& mut;
 };
+
+} // namespace lagom
 
 #endif /* AUTOLOCK_H_ */

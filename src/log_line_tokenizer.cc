@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018 Tomas Szabo
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -29,6 +29,8 @@
 
 using namespace std;
 using namespace re2;
+
+namespace lagom {
 
 LogLineTokenizer::LogLineTokenizer(std::string _name,
                                    TokenMatcherSettings& prefix,
@@ -106,3 +108,5 @@ std::string LogLineTokenizer::toString() const {
 std::ostream& operator<<(std::ostream& stream, const LogLineTokenizer& tokenizer) {
   return stream << tokenizer.toString();
 }
+
+}  // namespace lagom

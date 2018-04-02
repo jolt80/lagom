@@ -27,6 +27,8 @@
 
 #include "string_literal.h"
 
+namespace lagom {
+
 using namespace std;
 
 const char* StringLiteral::getStr() const { return str; }
@@ -215,3 +217,5 @@ std::ostream& operator<<(std::ostream& os, const StringLiteral& stringLiteral) {
   os << stringLiteral.toString();
   return os;
 }
+
+}  // namespace lagom

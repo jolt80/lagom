@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018 Tomas Szabo
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -26,6 +26,8 @@
 #include <list>
 #include <string>
 
+namespace lagom {
+
 class History {
  public:
   History(std::string filePath);
@@ -46,5 +48,7 @@ class History {
   std::list<std::string> storage;
   std::list<std::string>::iterator pos;
 };
+
+} // namespace lagom
 
 #endif /* HISTORY_H_ */

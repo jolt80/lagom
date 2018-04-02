@@ -26,6 +26,9 @@
 #include <exception>
 #include <string>
 
+namespace lagom {
+
+
 enum class FileOperationExceptionFailureCode { OPEN, CLOSE };
 
 class FileOperationException : public std::exception {
@@ -41,5 +44,7 @@ class FileOperationException : public std::exception {
   FileOperationExceptionFailureCode fault{FileOperationExceptionFailureCode::OPEN};
   std::string message;
 };
+
+} // namespace lagom
 
 #endif /* FILEOPERATIONEXCEPTION_H_ */

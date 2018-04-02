@@ -30,6 +30,8 @@
 using namespace std;
 using namespace std::chrono;
 
+namespace lagom {
+
 Logger logger(".debug_log");
 
 Logger::Logger(const char* logFileName) {
@@ -59,3 +61,5 @@ void Logger::registerClient(std::string name) {
   // AutoLock lock(mutex);
   // clients.insert(std::pair<std::thread::id,std::string>(std::this_thread::get_id(),name));
 }
+
+}  // namespace lagom

@@ -36,6 +36,8 @@
 using namespace std;
 using namespace std::chrono;
 
+namespace lagom {
+
 extern Logger logger;
 
 Log::Log(Settings& _settings)
@@ -283,4 +285,5 @@ std::string Log::toString() const {
   ret << "size = " << dec << (intptr_t)((fileEnd - fileStart));
 
   return ret.str();
+}
 }

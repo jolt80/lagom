@@ -26,6 +26,9 @@
 #include <chrono>
 #include <iostream>
 
+namespace lagom {
+
+
 class AutoMeasureDuration {
  public:
   AutoMeasureDuration(std::ostream& _os, const std::string& _message)
@@ -46,5 +49,7 @@ class AutoMeasureDuration {
   std::chrono::time_point<std::chrono::high_resolution_clock> start;
   std::chrono::time_point<std::chrono::high_resolution_clock> end;
 };
+
+} // namespace lagom
 
 #endif /* AUTOMEASUREDURATION_H_ */

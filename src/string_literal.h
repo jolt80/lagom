@@ -31,6 +31,8 @@
 #include <string>
 #include <utility>
 
+namespace lagom {
+
 /**
  *
  * Wrapper class for a const char*.
@@ -169,16 +171,18 @@ class StringLiteral {
   size_t strLen;
 };
 
+}  // namespace lagom
+
 namespace std {
 template <>
-struct hash<StringLiteral> {
-  typedef StringLiteral argument_type;
+struct hash<lagom::StringLiteral> {
+  typedef lagom::StringLiteral argument_type;
   typedef std::size_t result_type;
 
   result_type operator()(argument_type const& s) const { return s.hash(); }
 };
 }
 
-std::ostream& operator<<(std::ostream& os, const StringLiteral& stringLiteral);
+std::ostream& operator<<(std::ostream& os, const lagom::StringLiteral& stringLiteral);
 
 #endif /* STRINGLITERAL_H_ */

@@ -1,21 +1,17 @@
 List of prioritized tasks:
 
+- Refactor settings file to use YAML syntax
+- Make tokenization work again
+- Highlighting of search matches
 - Negation flag for regex search
-
 - Settings file for token parsing, etc.
-
 - Windowed ui-element for filter expressions
-
 - Edit settings file in window in program
 
 DONE:
 
 - History written to file so that histroy survives restarts
-
 - Regex filtering
-
 - Search history for filter and search.
-
 - Search backwards Shift+n, ? should flip direction
-
 - Case insensitive search/filter

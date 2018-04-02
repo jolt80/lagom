@@ -28,6 +28,11 @@
 #include "string_literal.h"
 #include "token_definition.h"
 
+namespace lagom {
+
+/**
+ * Represents settings for the logline tokenizer.
+ */
 class Settings {
  public:
   Settings();
@@ -53,5 +58,7 @@ class Settings {
 };
 
 std::ostream& operator<<(std::ostream& stream, const Settings& settings);
+
+} // namespace lagom
 
 #endif /* SETTINGS_H_ */

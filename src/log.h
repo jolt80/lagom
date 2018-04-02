@@ -42,6 +42,8 @@
 #include "settings.h"
 #include "string_literal.h"
 
+namespace lagom {
+
 struct Line {
   StringLiteral contents;
   bool tokenized = false;
@@ -96,5 +98,7 @@ class Log {
 
   std::vector<Line*> lines;
 };
+
+}  // namespace lagom
 
 #endif /* LOG_H_ */
