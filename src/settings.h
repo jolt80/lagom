@@ -20,8 +20,8 @@
  * SOFTWARE.
  */
 
-#ifndef SETTINGS_H_
-#define SETTINGS_H_
+#ifndef LAGOM_SETTINGS_H_
+#define LAGOM_SETTINGS_H_
 #include <re2/re2.h>
 #include <vector>
 #include "log_line_tokenizer.h"
@@ -61,4 +61,4 @@ std::ostream& operator<<(std::ostream& stream, const Settings& settings);
 
 } // namespace lagom
 
-#endif /* SETTINGS_H_ */
+#endif /* LAGOM_SETTINGS_H_ */

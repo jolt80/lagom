@@ -20,8 +20,8 @@
  * SOFTWARE.
  */
 
-#ifndef STATE_H_
-#define STATE_H_
+#ifndef LAGOM_STATE_H_
+#define LAGOM_STATE_H_
 
 #include <array>
 #include <cstdint>
@@ -75,4 +75,4 @@ class State {
 
 } // namespace lagom
 
-#endif /* STATE_H_ */
+#endif /* LAGOM_STATE_H_ */

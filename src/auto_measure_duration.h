@@ -20,8 +20,8 @@
  * SOFTWARE.
  */
 
-#ifndef AUTOMEASUREDURATION_H_
-#define AUTOMEASUREDURATION_H_
+#ifndef LAGOM_AUTOMEASUREDURATION_H_
+#define LAGOM_AUTOMEASUREDURATION_H_
 
 #include <chrono>
 #include <iostream>
@@ -52,4 +52,4 @@ class AutoMeasureDuration {
 
 } // namespace lagom
 
-#endif /* AUTOMEASUREDURATION_H_ */
+#endif /* LAGOM_AUTOMEASUREDURATION_H_ */

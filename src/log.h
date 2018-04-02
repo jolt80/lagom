@@ -20,8 +20,8 @@
  * SOFTWARE.
  */
 
-#ifndef LOG_H_
-#define LOG_H_
+#ifndef LAGOM_LOG_H_
+#define LAGOM_LOG_H_
 
 #include <climits>
 #include <string>
@@ -43,7 +43,9 @@
 #include "string_literal.h"
 
 namespace lagom {
-
+/**
+ * @brief A single line in a Log
+ */
 struct Line {
   StringLiteral contents;
   bool tokenized = false;
@@ -64,6 +66,11 @@ struct Line {
   }
 };
 
+/**
+ *  @brief A whole log file.
+ *
+ *  Implementation uses memory mapping and a indexes directly into that mmap to keep track of each line.
+ */
 class Log {
  public:
   Log(Settings& _settings);
@@ -85,14 +92,14 @@ class Log {
   int tokenizeLines(int index, long maxDuration = 2000000);
 
  protected:
-  Line& lineAt(int index);
+  Line& at(int index);
   void tokenizeLine(Line& line);
   void scanForLinesNotLocked(int index, long maxDuration = 2000000);
 
   mutable std::mutex mutex;
 
   int numLines;
-  Settings& settings;
+  const Settings& settings;
   char* fileStart;
   char* fileEnd;
 
@@ -101,4 +108,4 @@ class Log {
 
 }  // namespace lagom
 
-#endif /* LOG_H_ */
+#endif /* LAGOM_LOG_H_ */

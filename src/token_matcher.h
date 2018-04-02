@@ -20,8 +20,8 @@
  * SOFTWARE.
  */
 
-#ifndef TOKENMATCHER_H_
-#define TOKENMATCHER_H_
+#ifndef LAGOM_TOKENMATCHER_H_
+#define LAGOM_TOKENMATCHER_H_
 
 #include <re2/re2.h>
 #include <re2/stringpiece.h>
@@ -34,26 +34,26 @@ namespace lagom {
 
 struct TokenMatcherSettings {
   TokenMatcherSettings() = default;
-  TokenMatcherSettings(const std::string& _name,
-                       int _numberOfMatches,
-                       const std::string& _pattern,
-                       bool _combine,
-                       const std::string& _separator)
-      : name{_name}
-      , numberOfTokens(_numberOfMatches)
-      , pattern{_pattern}
-      , combine{_combine}
-      , separator{_separator} {};
-  TokenMatcherSettings(const std::string& _name, int _numberOfMatches, const std::string& _pattern)
-      : name{_name}
-      , numberOfTokens(_numberOfMatches)
-      , pattern{_pattern}
+  TokenMatcherSettings(const std::string& name,
+                       int numberOfMatches,
+                       const std::string& pattern,
+                       bool combine,
+                       const std::string& separator)
+      : name{name}
+      , numberOfTokens{numberOfMatches}
+      , pattern{pattern}
+      , combine{combine}
+      , separator{separator} {};
+  TokenMatcherSettings(const std::string& name, int numberOfMatches, const std::string& pattern)
+      : name{name}
+      , numberOfTokens{numberOfMatches}
+      , pattern{pattern}
       , combine{false}
       , separator{} {};
-  TokenMatcherSettings(const std::string& _name, const std::string& _pattern)
-      : name{_name}
+  TokenMatcherSettings(const std::string& name, const std::string& pattern)
+      : name{name}
       , numberOfTokens(1)
-      , pattern{_pattern}
+      , pattern{pattern}
       , combine{false}
       , separator{} {};
 
@@ -157,6 +157,6 @@ class TokenMatcher {
 
 std::ostream& operator<<(std::ostream& stream, const TokenMatcher& tokenMatcher);
 
-} // namespace lagom
+}  // namespace lagom
 
-#endif /* TOKENMATCHER_H_ */
+#endif /* LAGOM_TOKENMATCHER_H_ */

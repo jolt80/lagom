@@ -20,8 +20,8 @@
  * SOFTWARE.
  */
 
-#ifndef HISTORY_H_
-#define HISTORY_H_
+#ifndef LAGOM_HISTORY_H_
+#define LAGOM_HISTORY_H_
 
 #include <list>
 #include <string>
@@ -51,4 +51,4 @@ class History {
 
 } // namespace lagom
 
-#endif /* HISTORY_H_ */
+#endif /* LAGOM_HISTORY_H_ */

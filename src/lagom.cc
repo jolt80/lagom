@@ -28,7 +28,6 @@
 #include <iostream>
 #include <string>
 #include "log.h"
-#include "log_view_repository.h"
 #include "logger.h"
 #include "screen.h"
 #include "state.h"
@@ -41,7 +40,10 @@
 #include "auto_measure_duration.h"
 
 #include "file_operation_exception.h"
+#include "filtered_log_view_factory.h"
 #include "history.h"
+
+#include <glog/logging.h>
 
 extern "C" {
 #include <sys/stat.h>
@@ -96,6 +98,10 @@ int main(int argc, char* argv[]) {
     exit(1);
   }
 
+  google::InitGoogleLogging(argv[0]);
+
+  LOG(ERROR) << "This should work";
+
   string logPath = argv[1];
 
   size_t tgfWebStringPos = logPath.find("tgfweb.lmera.ericsson.se/");
@@ -120,7 +126,7 @@ int main(int argc, char* argv[]) {
   settings = new Settings{};
 
   Log log(*settings);
-  LogViewRepository logViews(log);
+  FilteredLogViewFactory logViews(log);
 
   if (!log.map(logPath.c_str())) {
     return 1;
@@ -135,8 +141,8 @@ int main(int argc, char* argv[]) {
   // Spawn a thread that scans the whole file for log lines
   thread log_line_scanner_t(log_line_scanner, std::ref(log), std::ref(currentState));
 
-  UnfilteredLogView unfilteredLogView{&log};
-  LogView* currentLogView = &unfilteredLogView;
+  auto unfilteredLogView = std::make_shared<UnfilteredLogView>(log);
+  std::shared_ptr<LogView> currentLogView = unfilteredLogView;
   Screen screen(currentLogView, currentState, *settings);
   screen.drawLog();
 
@@ -187,13 +193,13 @@ int main(int argc, char* argv[]) {
         ::addstr("filter> ");
         // screen.saveCursorPosition();
         std::string filterExp = screen.getInputLine(&filterHistory);
-        LogView* filteredView;
+        std::shared_ptr<LogView> filteredView;
         if (filterExp == "") {
-          filteredView = &unfilteredLogView;
+          filteredView = unfilteredLogView;
         }
         else {
           filteredView = logViews.getFilteredLogView(filterExp);
-          if (nullptr == filteredView) {
+          if (!filteredView) {
             std::string errormsg{"     "};
             errormsg += logViews.getLastErrorMessage();
             screen.print(errormsg.c_str());
@@ -204,7 +210,7 @@ int main(int argc, char* argv[]) {
         }
         int newCurrLine = filteredView->findCurrentLine(currentLogView->getLineNumber(currentState.currLine));
         currentLogView = filteredView;
-        screen.setLogView(filteredView);
+        screen.switchLogView(filteredView);
         currentState.currLine = newCurrLine;
         currentState.forceUpdate = true;
 

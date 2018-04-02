@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018 Tomas Szabo
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -20,24 +20,21 @@
  * SOFTWARE.
  */
 
-#ifndef UNFILTEREDLOGVIEW_H_
-#define UNFILTEREDLOGVIEW_H_
+#ifndef LAGOM_UNFILTEREDLOGVIEW_H_
+#define LAGOM_UNFILTEREDLOGVIEW_H_
 
 #include "log.h"
 #include "log_view.h"
 
 namespace lagom {
 
-
 class UnfilteredLogView : public LogView {
  public:
-  UnfilteredLogView()
-      : log{nullptr} {}
-  UnfilteredLogView(Log* _log)
-      : log{_log} {}
+  UnfilteredLogView(Log& log)
+      : log{log} {}
   virtual ~UnfilteredLogView() {}
 
-  int getNumLines() const { return log->getNumLines(); }
+  int getNumLines() const { return log.getNumLines(); }
 
   int searchForLineContaining(int startLine, std::string search, bool searchBackwards = false) {
     int lineIndex;
@@ -49,14 +46,14 @@ class UnfilteredLogView : public LogView {
         return 0;
       }
 
-      while (!(log->getLine(lineIndex).containsCaseInsensitive(search))) {
+      while (!(log.getLine(lineIndex).containsCaseInsensitive(search))) {
         if (lineIndex == 0) return startLine;
         lineIndex--;
       }
       return lineIndex;
     }
     else {
-      int lastIndex = log->getNumLines() - 1;
+      int lastIndex = log.getNumLines() - 1;
       if (startLine < lastIndex) {
         lineIndex = startLine + 1;
       }
@@ -64,7 +61,7 @@ class UnfilteredLogView : public LogView {
         return lastIndex;
       }
 
-      while (!(log->getLine(lineIndex).containsCaseInsensitive(search))) {
+      while (!(log.getLine(lineIndex).containsCaseInsensitive(search))) {
         if (lineIndex >= lastIndex) return startLine;
         lineIndex++;
       }
@@ -72,18 +69,18 @@ class UnfilteredLogView : public LogView {
     }
   }
 
-  StringLiteral getLine(int index) { return log->getLine(index); }
+  StringLiteral getLine(int index) { return log.getLine(index); }
 
   int getLineNumber(int index) { return index; }
 
-  std::string** getLogTokens(int index) { return log->getLogTokens(index); }
+  std::string** getLogTokens(int index) { return log.getLogTokens(index); }
 
   int findCurrentLine(int lineNumber) { return lineNumber; }
 
  private:
-  Log* log;
+  Log& log;
 };
 
-} // namespace lagom
+}  // namespace lagom
 
-#endif /* UNFILTEREDLOGVIEW_H_ */
+#endif /* LAGOM_UNFILTEREDLOGVIEW_H_ */

@@ -20,21 +20,27 @@
  * SOFTWARE.
  */
 
-#ifndef LOGVIEWREPOSITORY_H_
-#define LOGVIEWREPOSITORY_H_
+#ifndef LAGOM_LOGVIEWREPOSITORY_H_
+#define LAGOM_LOGVIEWREPOSITORY_H_
 
 #include <list>
+#include <memory>
 #include "filtered_log_view.h"
 
 namespace lagom {
 
-class LogViewRepository {
+/**
+ * Use to create FilteredLogView objects.
+ *
+ * Caches already created filtered log views for reuse.
+ */
+class FilteredLogViewFactory {
  public:
-  LogViewRepository(Log& _log)
+  FilteredLogViewFactory(Log& _log)
       : log(_log){};
-  virtual ~LogViewRepository();
+  virtual ~FilteredLogViewFactory() = default;
 
-  LogView* getFilteredLogView(std::string pattern);
+  std::shared_ptr<LogView> getFilteredLogView(std::string pattern);
 
   static bool isMultiplePattern(std::string& pattern);
 
@@ -46,9 +52,9 @@ class LogViewRepository {
   std::list<std::string> splitMultiplePattern(std::string& pattern);
 
   Log& log;
-  std::map<std::string, FilteredLogView*> filteredViews;
+  std::map<std::string, std::shared_ptr<FilteredLogView>> filteredViews;
 };
 
 }  // namespace lagom
 
-#endif /* LOGVIEWREPOSITORY_H_ */
+#endif /* LAGOM_LOGVIEWREPOSITORY_H_ */

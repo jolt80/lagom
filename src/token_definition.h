@@ -20,8 +20,8 @@
  * SOFTWARE.
  */
 
-#ifndef TOKENDEFINITION_H_
-#define TOKENDEFINITION_H_
+#ifndef LAGOM_TOKENDEFINITION_H_
+#define LAGOM_TOKENDEFINITION_H_
 
 #include <sstream>
 #include <string>
@@ -38,12 +38,12 @@ class TokenDefinition {
       , alignment{Alignment::left}
       , crop{Alignment::left}
       , initialVisibility{false} {}
-  TokenDefinition(std::string _name, int _width, Alignment _alignment, bool _initialVisibility)
-      : name{_name}
-      , width{_width}
-      , alignment{_alignment}
+  TokenDefinition(std::string name, int width, Alignment alignment, bool initialVisibility)
+      : name{name}
+      , width{width}
+      , alignment{alignment}
       , crop{Alignment::left}
-      , initialVisibility{_initialVisibility} {}
+      , initialVisibility{initialVisibility} {}
   TokenDefinition(std::string _name, int _width, Alignment _alignment, Alignment _crop, bool _initialVisibility)
       : name{_name}
       , width{_width}
@@ -90,4 +90,4 @@ std::ostream& operator<<(std::ostream& stream, const TokenDefinition& tokenDef);
 
 }  // namespace lagom
 
-#endif /* TOKENDEFINITION_H_ */
+#endif /* LAGOM_TOKENDEFINITION_H_ */

@@ -20,8 +20,8 @@
  * SOFTWARE.
  */
 
-#ifndef LOGLINETOKENIZER_H_
-#define LOGLINETOKENIZER_H_
+#ifndef LAGOM_LOGLINETOKENIZER_H_
+#define LAGOM_LOGLINETOKENIZER_H_
 
 #include <array>
 #include <string>
@@ -39,7 +39,7 @@ namespace lagom {
  */
 class LogLineTokenizer {
  public:
-  LogLineTokenizer(std::string _name, TokenMatcherSettings& prefix, std::vector<TokenMatcherSettings>& tokenPatterns);
+  LogLineTokenizer(std::string name, TokenMatcherSettings& prefix, std::vector<TokenMatcherSettings>& tokenPatterns);
   virtual ~LogLineTokenizer();
 
   bool tokenizeLine(const re2::StringPiece line, std::string** tokens) const;
@@ -68,6 +68,6 @@ class LogLineTokenizer {
 
 std::ostream& operator<<(std::ostream& stream, const LogLineTokenizer& tokenizer);
 
-} // namespace lagom
+}  // namespace lagom
 
-#endif /* LOGLINETOKENIZER_H_ */
+#endif /* LAGOM_LOGLINETOKENIZER_H_ */

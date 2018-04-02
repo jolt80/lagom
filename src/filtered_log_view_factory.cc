@@ -20,43 +20,37 @@
  * SOFTWARE.
  */
 
+#include "filtered_log_view_factory.h"
+
 #include <re2/re2.h>
 #include <iostream>
+#include <memory>
 #include <set>
 
 #include "auto_measure_duration.h"
-#include "log_view_repository.h"
 
 using namespace std;
 
 namespace lagom {
 
-LogViewRepository::~LogViewRepository() {
-  for (auto elem : filteredViews) {
-    delete elem.second;
-    elem.second = nullptr;
-  }
-}
-
-std::string LogViewRepository::getLastErrorMessage() {
+std::string FilteredLogViewFactory::getLastErrorMessage() {
   std::string ret = errorMessage;
   errorMessage.clear();
   return ret;
 }
 
-LogView* LogViewRepository::getFilteredLogView(std::string pattern) {
-  LogView* filteredView = filteredViews[pattern];
-  if (nullptr == filteredView) {
+std::shared_ptr<LogView> FilteredLogViewFactory::getFilteredLogView(std::string pattern) {
+  std::shared_ptr<LogView> filteredView = filteredViews[pattern];
+  if (!filteredView) {
     AutoMeasureDuration meas(cout, "parsing " + pattern);
     std::vector<int>* vectorOfMatchingLines = buildVectorOfMatchingLines(pattern);
     if (nullptr == vectorOfMatchingLines) return nullptr;
-    filteredView = new FilteredLogView(&log, vectorOfMatchingLines);
+    filteredView.reset(new FilteredLogView(log, shared_ptr<vector<int>>(vectorOfMatchingLines)));
   }
-
   return filteredView;
 }
 
-std::vector<int>* LogViewRepository::buildVectorOfMatchingLines(std::string pattern) {
+std::vector<int>* FilteredLogViewFactory::buildVectorOfMatchingLines(std::string pattern) {
   std::vector<int>* matchingLines = new std::vector<int>();
   std::list<std::string> parts = splitMultiplePattern(pattern);
 
@@ -105,7 +99,7 @@ std::vector<int>* LogViewRepository::buildVectorOfMatchingLines(std::string patt
   return matchingLines;
 }
 
-std::list<std::string> LogViewRepository::splitMultiplePattern(std::string& pattern) {
+std::list<std::string> FilteredLogViewFactory::splitMultiplePattern(std::string& pattern) {
   std::list<std::string> ret;
   StringLiteral search{pattern};
 

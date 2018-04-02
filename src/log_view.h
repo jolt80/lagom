@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018 Tomas Szabo
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -20,21 +20,25 @@
  * SOFTWARE.
  */
 
-#ifndef LOGVIEW_H_
-#define LOGVIEW_H_
+#ifndef LAGOM_LOGVIEW_H_
+#define LAGOM_LOGVIEW_H_
 
 #include <string>
 #include "string_literal.h"
 
 namespace lagom {
 
-
+/**
+ * @brief Represents a 'view' into a Log, ie. a subset of lines.
+ *
+ */
 class LogView {
  public:
-  LogView() {}
-  virtual ~LogView() {}
+  LogView() = default;
+  virtual ~LogView() = 0;
 
   virtual int getNumLines() const = 0;
+
   virtual int searchForLineContaining(int startLine, std::string search, bool searchBackwards = false) = 0;
   virtual StringLiteral getLine(int index) = 0;
   virtual int getLineNumber(int index) = 0;
@@ -42,6 +46,8 @@ class LogView {
   virtual int findCurrentLine(int lineNumber) = 0;
 };
 
-} // namespace lagom
+inline LogView::~LogView() {}
 
-#endif /* LOGVIEW_H_ */
+}  // namespace lagom
+
+#endif /* LAGOM_LOGVIEW_H_ */

@@ -32,10 +32,10 @@ using namespace re2;
 
 namespace lagom {
 
-LogLineTokenizer::LogLineTokenizer(std::string _name,
+LogLineTokenizer::LogLineTokenizer(std::string name,
                                    TokenMatcherSettings& prefix,
                                    std::vector<TokenMatcherSettings>& tokenPatterns)
-    : name{_name}
+    : name{name}
     , numTokens{0} {
   prefixMatcher = new TokenMatcher{prefix};
   numTokens += prefixMatcher->getNumTokens();

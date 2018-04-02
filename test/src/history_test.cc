@@ -6,6 +6,8 @@
 
 using namespace std;
 
+namespace lagom {
+
 TEST(HistoryTest, test1) {
   string testHistoryFile{".lagomHistory_Test_File"};
   if (remove(testHistoryFile.c_str()) != 0) perror("Error deleting file");
@@ -59,3 +61,5 @@ TEST(HistoryTest, test1) {
 
   if (remove(testHistoryFile.c_str()) != 0) perror("Error deleting file");
 }
+
+}  // namespace lagom

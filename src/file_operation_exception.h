@@ -20,8 +20,8 @@
  * SOFTWARE.
  */
 
-#ifndef FILEOPERATIONEXCEPTION_H_
-#define FILEOPERATIONEXCEPTION_H_
+#ifndef LAGOM_FILEOPERATIONEXCEPTION_H_
+#define LAGOM_FILEOPERATIONEXCEPTION_H_
 
 #include <exception>
 #include <string>
@@ -47,4 +47,4 @@ class FileOperationException : public std::exception {
 
 } // namespace lagom
 
-#endif /* FILEOPERATIONEXCEPTION_H_ */
+#endif /* LAGOM_FILEOPERATIONEXCEPTION_H_ */

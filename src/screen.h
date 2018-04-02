@@ -20,8 +20,8 @@
  * SOFTWARE.
  */
 
-#ifndef SCREEN_H_
-#define SCREEN_H_
+#ifndef LAGOM_SCREEN_H_
+#define LAGOM_SCREEN_H_
 
 #include <ncurses.h>
 #include <re2/stringpiece.h>
@@ -34,14 +34,13 @@
 
 namespace lagom {
 
-
 class Screen {
  public:
-  LogView* logView;
+  std::shared_ptr<LogView> logView;
   State& currentState;
   Settings& settings;
 
-  Screen(LogView* _logView, State& _state, Settings& _settings);
+  Screen(std::shared_ptr<LogView> _logView, State& _state, Settings& _settings);
   virtual ~Screen();
 
   int getRows() const;
@@ -65,7 +64,7 @@ class Screen {
 
   void refresh();
 
-  void setLogView(LogView* newLogView);
+  void switchLogView(std::shared_ptr<LogView> newLogView);
 
   std::string getInputLine(History* history = nullptr);
   int getInputInteger();
@@ -81,6 +80,6 @@ class Screen {
   int cols;
 };
 
-} // namespace lagom
+}  // namespace lagom
 
-#endif /* SCREEN_H_ */
+#endif /* LAGOM_SCREEN_H_ */

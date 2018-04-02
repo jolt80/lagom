@@ -20,9 +20,10 @@
  * SOFTWARE.
  */
 
-#ifndef FILTEREDLOGVIEW_H_
-#define FILTEREDLOGVIEW_H_
+#ifndef LAGOM_FILTEREDLOGVIEW_H_
+#define LAGOM_FILTEREDLOGVIEW_H_
 
+#include <memory>
 #include <string>
 
 #include "log.h"
@@ -30,14 +31,17 @@
 
 namespace lagom {
 
+/**
+ * @brief A filtered LogView, ie. contains all lines matching a regular expression.
+ */
 class FilteredLogView : public LogView {
  public:
-  friend class LogViewRepository;
+  friend class FilteredLogViewFactory;
 
-  FilteredLogView(Log* _log, std::vector<int>* _matchingLines)
-      : log{_log}
-      , matchingLines{_matchingLines} {}
-  virtual ~FilteredLogView();
+  FilteredLogView(Log& log, std::shared_ptr<std::vector<int>> matchingLines)
+      : log{log}
+      , matchingLines{matchingLines} {}
+  virtual ~FilteredLogView() = default;
 
   int getNumLines() const;
   int searchForLineContaining(int startLine, std::string search, bool searchBackwards = false);
@@ -47,10 +51,10 @@ class FilteredLogView : public LogView {
   int findCurrentLine(int lineNumber);
 
  protected:
-  Log* log;
-  std::vector<int>* matchingLines;
+  Log& log;
+  std::shared_ptr<std::vector<int>> matchingLines;
 };
 
-} // namespace lagom
+}  // namespace lagom
 
-#endif /* FILTEREDLOGVIEW_H_ */
+#endif /* LAGOM_FILTEREDLOGVIEW_H_ */

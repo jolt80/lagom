@@ -52,7 +52,7 @@ Log::~Log() {
 
 bool Log::areLineNumbersParsed() const { return INT_MAX != numLines; }
 
-bool Log::areAllLinesTokenized() { return lineAt(numLines - 1).tokens != nullptr; }
+bool Log::areAllLinesTokenized() { return at(numLines - 1).tokens != nullptr; }
 
 int Log::getNumLines() const { return numLines; }
 
@@ -118,11 +118,11 @@ StringLiteral Log::getLine(int index) {
   }
   else {
     AutoLock lock(mutex);
-    return lineAt(index).contents;
+    return at(index).contents;
   }
 }
 
-Line& Log::lineAt(int index) {
+Line& Log::at(int index) {
   if (index < numLines) {
     if (static_cast<int>(lines.size()) <= index) {
       if (index <= (INT_MAX - 100))
@@ -146,7 +146,7 @@ std::string** Log::getLogTokens(int index) {
   }
   else {
     AutoLock lock(mutex);
-    line = &(lineAt(index));
+    line = &(at(index));
   }
   if (!line->tokenized) tokenizeLine(*line);
   return line->tokens;

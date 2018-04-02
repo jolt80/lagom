@@ -42,10 +42,10 @@ void Screen::updateSize() {
   // currentState.forceUpdate = true;
 }
 
-Screen::Screen(LogView* _logView, State& _state, Settings& _settings)
-    : logView(_logView)
-    , currentState(_state)
-    , settings(_settings) {
+Screen::Screen(std::shared_ptr<LogView> logView, State& state, Settings& settings)
+    : logView(logView)
+    , currentState(state)
+    , settings(settings) {
   ::initscr(); /* Start curses mode          */
   ::noecho();
   ::keypad(stdscr, TRUE);  // for KEY_UP, KEY_DOWN
@@ -61,7 +61,7 @@ Screen::Screen(LogView* _logView, State& _state, Settings& _settings)
   updateSize();
 }
 
-void Screen::setLogView(LogView* newLogView) { logView = newLogView; }
+void Screen::switchLogView(std::shared_ptr<LogView> newLogView) { logView = newLogView; }
 
 Screen::~Screen() {
   ::move(0, 0);

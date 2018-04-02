@@ -1,6 +1,7 @@
 # Fragment that compiles re2 from source
 
 INC += -Iextern/re2
+LIBS += -L$(OUT)/lib -lre2
 
 CPPFLAGS += -Wno-error=attributes -Wno-attributes
 
@@ -15,4 +16,11 @@ RE2_SRCS := $(filter-out extern/re2/util/benchmark.cc,$(RE2_SRCS))
 RE2_SRCS := $(filter-out extern/re2/util/test.cc,$(RE2_SRCS))
 RE2_SRCS := $(filter-out extern/re2/util/fuzz.cc,$(RE2_SRCS))
 
-OBJS += $(patsubst %.cc,out/%.o,$(RE2_SRCS))
+RE2_OBJS += $(patsubst %.cc,$(OUT)/%.o,$(RE2_SRCS))
+
+LIB_DEPS += $(OUT)/lib/libre2.a
+$(OUT)/lib/libre2.a: | $(OUT)/lib
+	$(Q) echo [re2] compiling...; \
+	make -j8 $(RE2_OBJS) $(REDIRECT) || exit 1; \
+	echo [re2] archiving $@; \
+	$(AR) rcs $@ $(RE2_OBJS) $(REDIRECT) || exit 1

@@ -4,6 +4,8 @@
 
 using namespace std;
 
+namespace lagom {
+
 TEST(SettingsTest, test_open_and_read_of_file) {
   std::string settingsTestFile{"settingsTestFile"};
 
@@ -47,3 +49,5 @@ TEST(SettingsTest, test_creation_of_default_settings_file) {
   // Compare with default
   EXPECT_EQ(def, parsed);
 }
+
+}  // namespace lagom

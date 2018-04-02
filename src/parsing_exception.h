@@ -20,8 +20,8 @@
  * SOFTWARE.
  */
 
-#ifndef PARSINGEXCEPTION_H_
-#define PARSINGEXCEPTION_H_
+#ifndef LAGOM_PARSINGEXCEPTION_H_
+#define LAGOM_PARSINGEXCEPTION_H_
 
 #include <exception>
 #include <string>
@@ -65,4 +65,4 @@ class ParsingException : public std::exception {
 
 } // namespace lagom
 
-#endif /* PARSINGEXCEPTION_H_ */
+#endif /* LAGOM_PARSINGEXCEPTION_H_ */

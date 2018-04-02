@@ -20,8 +20,8 @@
  * SOFTWARE.
  */
 
-#ifndef LOGGER_H_
-#define LOGGER_H_
+#ifndef LAGOM_LOGGER_H_
+#define LAGOM_LOGGER_H_
 
 #include <fstream>
 #include <map>
@@ -56,4 +56,4 @@ class Logger : public std::ostream {
 
 } // namespace lagom
 
-#endif /* LOGGER_H_ */
+#endif /* LAGOM_LOGGER_H_ */

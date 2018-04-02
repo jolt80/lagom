@@ -20,8 +20,8 @@
  * SOFTWARE.
  */
 
-#ifndef STRINGLITERAL_H_
-#define STRINGLITERAL_H_
+#ifndef LAGOM_STRINGLITERAL_H_
+#define LAGOM_STRINGLITERAL_H_
 
 #include <re2/stringpiece.h>
 #include <cstring>
@@ -185,4 +185,4 @@ struct hash<lagom::StringLiteral> {
 
 std::ostream& operator<<(std::ostream& os, const lagom::StringLiteral& stringLiteral);
 
-#endif /* STRINGLITERAL_H_ */
+#endif /* LAGOM_STRINGLITERAL_H_ */

@@ -20,8 +20,8 @@
  * SOFTWARE.
  */
 
-#ifndef AUTOLOCK_H_
-#define AUTOLOCK_H_
+#ifndef LAGOM_AUTOLOCK_H_
+#define LAGOM_AUTOLOCK_H_
 
 #include <cstdlib>
 #include <iostream>
@@ -31,14 +31,12 @@ extern "C" {
 #include <sys/types.h>
 #include <sys/unistd.h>
 
-namespace lagom {
-
-}
+namespace lagom {}
 
 class AutoLock {
  public:
-  AutoLock(std::mutex& _mut)
-      : mut{_mut} {
+  AutoLock(std::mutex& mut)
+      : mut{mut} {
     //		pid_t x = syscall(__NR_gettid);
     //		std::cout << std::hex << "0x" << x << " grabbing lock" << std::endl;
     mut.lock();
@@ -54,6 +52,6 @@ class AutoLock {
   std::mutex& mut;
 };
 
-} // namespace lagom
+}  // namespace lagom
 
-#endif /* AUTOLOCK_H_ */
+#endif /* LAGOM_AUTOLOCK_H_ */

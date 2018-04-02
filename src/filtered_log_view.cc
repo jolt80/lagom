@@ -29,8 +29,6 @@ using namespace std;
 
 namespace lagom {
 
-FilteredLogView::~FilteredLogView() { delete matchingLines; }
-
 int FilteredLogView::getNumLines() const { return matchingLines->size(); }
 
 int FilteredLogView::searchForLineContaining(int startLine, std::string search, bool searchBackwards) {
@@ -43,14 +41,14 @@ int FilteredLogView::searchForLineContaining(int startLine, std::string search, 
       return 0;
     }
 
-    while (!(log->getLine(matchingLines->at(lineIndex)).containsCaseInsensitive(search))) {
+    while (!(log.getLine(matchingLines->at(lineIndex)).containsCaseInsensitive(search))) {
       if (lineIndex == 0) return startLine;
       lineIndex--;
     }
     return lineIndex;
   }
   else {
-    int lastIndex = log->getNumLines() - 1;
+    int lastIndex = log.getNumLines() - 1;
     if (startLine < lastIndex) {
       lineIndex = startLine + 1;
     }
@@ -58,7 +56,7 @@ int FilteredLogView::searchForLineContaining(int startLine, std::string search, 
       return lastIndex;
     }
 
-    while (!(log->getLine(matchingLines->at(lineIndex)).containsCaseInsensitive(search))) {
+    while (!(log.getLine(matchingLines->at(lineIndex)).containsCaseInsensitive(search))) {
       if (lineIndex >= lastIndex) return startLine;
       lineIndex++;
     }
@@ -69,7 +67,7 @@ int FilteredLogView::searchForLineContaining(int startLine, std::string search, 
 StringLiteral FilteredLogView::getLine(int index) {
   int size = matchingLines->size();
   if (index < size) {
-    return log->getLine(matchingLines->at(index));
+    return log.getLine(matchingLines->at(index));
   }
   else {
     return StringLiteral{};
@@ -85,7 +83,7 @@ int FilteredLogView::getLineNumber(int index) {
 
 std::string** FilteredLogView::getLogTokens(int index) {
   if (index < (int)matchingLines->size()) {
-    return log->getLogTokens(matchingLines->at(index));
+    return log.getLogTokens(matchingLines->at(index));
   }
   else {
     return nullptr;
