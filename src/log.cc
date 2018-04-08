@@ -29,16 +29,14 @@
 #include <re2/re2.h>
 #include <re2/stringpiece.h>
 
+#include <glog/logging.h>
 #include "auto_lock.h"
 #include "log.h"
-#include "logger.h"
 
 using namespace std;
 using namespace std::chrono;
 
 namespace lagom {
-
-extern Logger logger;
 
 Log::Log(Settings& _settings)
     : numLines{INT_MAX}
@@ -205,8 +203,8 @@ void Log::scanForLinesNotLocked(int index, long maxDuration) {
   auto end = high_resolution_clock::now();
   auto duration = end - start;
 
-  logger << "scanned " << lastScannedLine - startLine << " in " << duration_cast<microseconds>(duration).count()
-         << " us\n";
+  LOG(INFO) << "scanned " << lastScannedLine - startLine << " in " << duration_cast<microseconds>(duration).count()
+            << " us\n";
 }
 
 int Log::tokenizeLines(int index, long maxDuration) {

@@ -23,15 +23,13 @@
 #include <cassert>
 #include <iostream>
 
-#include "logger.h"
+#include <glog/logging.h>
 #include "screen.h"
 
 using namespace std;
 using namespace std::chrono;
 
 namespace lagom {
-
-extern Logger logger;
 
 int Screen::getRows() const { return rows; }
 
@@ -152,8 +150,6 @@ void Screen::printLine(int line) {
 }
 
 void Screen::drawLog() {
-  //	logger.log("entering with currLine = " + to_string(currentState.currLine));
-
   // Find starting line and how many lines should be drawn
   if (logView->getNumLines() > 0 && currentState.currLine >= (logView->getNumLines())) {
     currentState.currLine = logView->getNumLines() - 1;
@@ -165,7 +161,7 @@ void Screen::drawLog() {
       currentState.forceUpdate = true;
       return drawLog();
     }
-    logger.log("entering for-loop with currline " + to_string(currentState.currLine));
+    LOG(INFO) << "entering for-loop with currline " << currentState.currLine;
     ::erase();
 
     int xpos, ypos;

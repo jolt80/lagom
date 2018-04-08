@@ -26,6 +26,7 @@
 #include <ncurses.h>
 #include <re2/stringpiece.h>
 #include <chrono>
+#include <memory>
 #include <string>
 #include "history.h"
 #include "log_view.h"

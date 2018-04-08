@@ -28,7 +28,6 @@
 #include <iostream>
 #include <string>
 #include "log.h"
-#include "logger.h"
 #include "screen.h"
 #include "state.h"
 #include "string_literal.h"
@@ -43,11 +42,11 @@
 #include "filtered_log_view_factory.h"
 #include "history.h"
 
-#include <glog/logging.h>
-
 extern "C" {
 #include <sys/stat.h>
 }
+
+#include <glog/logging.h>
 
 using namespace std;
 using namespace std::chrono;
@@ -55,12 +54,7 @@ using namespace re2;
 
 using namespace lagom;
 
-namespace lagom {
-extern Logger logger;
-}
-
 void log_line_scanner(Log& log, State& state) {
-  logger.registerClient("log_scanner");
   int lastTokenizedLine{0};
   {
     AutoMeasureDuration meas(cout, "parse log numbers ");
@@ -98,9 +92,13 @@ int main(int argc, char* argv[]) {
     exit(1);
   }
 
-  google::InitGoogleLogging(argv[0]);
+  string homeDirPath = getenv("HOME");
+  createDirIfDoesntExist(homeDirPath + "/.lagom");
+  createDirIfDoesntExist(homeDirPath + "/.lagom/logs");
+  std::string glogLogPath{homeDirPath + "/.lagom/logs/info.log"};
 
-  LOG(ERROR) << "This should work";
+  ::google::SetLogDestination(::google::GLOG_INFO, glogLogPath.c_str());
+  ::google::InitGoogleLogging(argv[0]);
 
   string logPath = argv[1];
 
@@ -108,9 +106,6 @@ int main(int argc, char* argv[]) {
   if (tgfWebStringPos != string::npos) {
     logPath = "/proj/tgf_li/" + logPath.substr(tgfWebStringPos + 25);
   }
-
-  string homeDirPath = getenv("HOME");
-  createDirIfDoesntExist(homeDirPath + "/.lagom");
 
   string settingsPath = homeDirPath + "/.lagom/settings";
   Settings* settings = nullptr;
@@ -269,7 +264,7 @@ int main(int argc, char* argv[]) {
         currentState.tokenVisible[9] = !currentState.tokenVisible[9];
         break;
       case KEY_RESIZE: {
-        logger.log("Triggering resize");
+        LOG(INFO) << "Triggering resize";
         screen.updateSize();
         currentState.forceUpdate = true;
       }
