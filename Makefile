@@ -23,7 +23,7 @@ OBJS += $(patsubst %.cc,$(OUT)/%.o,$(SRCS))
 TEST_SRCS := $(wildcard test/src/*.cc)
 TEST_OBJS := $(patsubst %.cc,$(OUT)/%.o,$(notdir $(TEST_SRCS)))
 
-LIBS += -lcurses -lpanel -pthread
+LIBS += -lcurses -lpanel -pthread -ltinfo
 
 # Include all dependencies here
 include extern/build/re2.mk
