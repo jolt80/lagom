@@ -1,6 +1,6 @@
 # README #
 
-lagom is an ncruses based log viewer with regex filtering/search capabilities and (soon) configurable tokenization.
+lagom is an ncruses based log viewer with regex filtering/search capabilities and configurable tokenization (broken right now).
 
 ## Getting started ##
 
@@ -19,6 +19,7 @@ git submodule init
 git submodule update
 
 *Build the external libraries*
+
 make lib-deps
 
 # Make rules
@@ -30,4 +31,3 @@ make clean     - removes all lagom objects files but keeps the extrenal compiled
 make all       - builds lagom release version
 
 make test      - builds and runs unit-tests
-
