@@ -44,7 +44,7 @@ test/unit_tests: $(TEST_OBJS) $(filter-out $(OUT)/$(APP_NAME).o,$(OBJS)) $(BUILD
 	$(Q)echo 'Linking target: $@'; \
 	$(CXX) -g -o $@  $(filter %.o,$^) $(LIBS) $(TEST_LIBS)
 
-bin/$(APP_NAME): $(OBJS) $(BUILD_DEPS) | bin
+bin/$(APP_NAME): $(BUILD_DEPS) $(OBJS) | bin
 	$(Q)echo 'Linking:   $@'; \
 	$(CXX) -g -o $@ $(filter %.o,$^) $(LIBS) 
 

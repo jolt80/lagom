@@ -16,7 +16,7 @@ endif
 
 # Add correct path to clib to get the binary to work in Ericssons old redhat VDI env
 ifdef LMR_SITE
-LMR_SITE_CLIB_PATH = $(subst /bin/,,$(dir $(CXX)))/lib64
+LMR_SITE_CLIB_PATH = $(subst /bin/,,$(dir $(shell which $(CXX))))/lib64
 LIBS += -ltinfo -L$(LMR_SITE_CLIB_PATH) -Wl,-rpath,$(LMR_SITE_CLIB_PATH)
 endif
 
