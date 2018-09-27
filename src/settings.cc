@@ -35,15 +35,13 @@ using namespace std;
 namespace lagom {
 
 Settings::Settings() {
-  const char* timeStr = "\\[\\d{4}-\\d{2}-\\d{2}\\s*(\\d{1,2}:\\d{1,2}:\\d{1,2}\\.\\d{3}).*?\\]";
-  const char* timeDiffStr = "\\((\\+\\d+\\.\\d+)\\)";
-  const char* card = "(\\w+)";
-  const char* lttngObjAndTraceLevel = "\\w+:(\\w+):";
-  const char* cpuId = "{ cpu_id = (\\w+) },";
-  const char* process = "\\{ processAndObjIf = \"(.*?)\\(.*?\\)\",";
-  const char* ObjIf = "\\{ processAndObjIf = \".*?\\((.*?)\\)\",";
-  const char* fileAndLine = "fileAndLine = \".*?(\\w+\\.\\w+):(\\d+)\",";
-  const char* msg = "msg = \"\\s*(.*)\" }";
+  const char* timeStr = "\\[.*?(\\d{1,2}:\\d{1,2}:\\d{1,2}\\.\\d{3}).*?\\]";
+  const char* timeDiffStr = "\\((\\+[\\?\\d]+\\.[\\?\\d]+)\\)";
+  const char* host = "(\\S+)";
+  const char* providerAndTp = "(\\w+:\\w+):";
+  const char* procInfo = ".*\\{ (proc\\w* = \".*?\",\\s*vpid\\s*=\\s*\\d+,\\s*vtid\\s*=\\s*\\d+)\\s*},";
+  const char* fileAndLine = "\\{ file_line = \".*?(\\w+\\.\\w+):(\\d+)\",";
+  const char* msg = "\\{ file_line = \".*?\\w+\\.\\w+:\\d+\",\\s*(.*)";
   const char* separator = "\\s*";
 
   std::string lttngPrefixPattern;
@@ -51,17 +49,15 @@ Settings::Settings() {
   lttngPrefixPattern += separator;
   lttngPrefixPattern += timeDiffStr;
   lttngPrefixPattern += separator;
-  lttngPrefixPattern += card;
+  lttngPrefixPattern += host;
   lttngPrefixPattern += separator;
-  lttngPrefixPattern += lttngObjAndTraceLevel;
+  lttngPrefixPattern += providerAndTp;
   lttngPrefixPattern += separator;
-  lttngPrefixPattern += cpuId;
+  lttngPrefixPattern += procInfo;
 
   TokenMatcherSettings prefix{"prefix", 5, lttngPrefixPattern};
   std::vector<TokenMatcherSettings> tokenPatterns;
   tokenPatterns.push_back({"fileAndLine", 1, fileAndLine, true, ":"});
-  tokenPatterns.push_back({"process", process});
-  tokenPatterns.push_back({"traceObj", ObjIf});
   tokenPatterns.push_back({"msg", msg});
 
   LogLineTokenizer* lttngBase = new LogLineTokenizer{"LttngBase", prefix, tokenPatterns};
@@ -70,13 +66,11 @@ Settings::Settings() {
   tokens[0] = TokenDefinition{"Line", 5, Alignment::right, true};
   tokens[1] = TokenDefinition{"Time", 12, Alignment::left, true};
   tokens[2] = TokenDefinition{"TimeDiff", 12, Alignment::left, false};
-  tokens[3] = TokenDefinition{"Card", 3, Alignment::left, false};
-  tokens[4] = TokenDefinition{"TraceLevel", 10, Alignment::left, false};
-  tokens[5] = TokenDefinition{"CpuId", 2, Alignment::left, false};
-  tokens[6] = TokenDefinition{"FileAndLine", 30, Alignment::left, false};
-  tokens[7] = TokenDefinition{"Process", 18, Alignment::left, Alignment::right, true};
-  tokens[8] = TokenDefinition{"TraceObj", 20, Alignment::left, Alignment::right, true};
-  tokens[9] = TokenDefinition{"Msg", 500, Alignment::left, Alignment::right, true};
+  tokens[3] = TokenDefinition{"Host", 15, Alignment::left, false};
+  tokens[4] = TokenDefinition{"TraceProviderAndTp", 35, Alignment::left, false};
+  tokens[5] = TokenDefinition{"ProcInfo", 60, Alignment::left, Alignment::right, false};
+  tokens[6] = TokenDefinition{"FileAndLine", 30, Alignment::left, true};
+  tokens[7] = TokenDefinition{"Msg", 500, Alignment::left, Alignment::right, true};
 }
 
 Settings::Settings(std::string filePath) {
